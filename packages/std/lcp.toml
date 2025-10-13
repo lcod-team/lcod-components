@@ -1,0 +1,9 @@
+schemaVersion = "1.0"
+id = "lcod://pkg/std@0.1.0"
+name = "std"
+namespace = "pkg"
+version = "0.1.0"
+kind = "workspace-package"
+
+[workspace]
+components = []

@@ -1,0 +1,13 @@
+schemaVersion = "1.0"
+id = "lcod://workspace/components@0.1.0"
+name = "lcod-components"
+version = "0.1.0"
+kind = "workspace"
+
+[workspace]
+packages = [
+  "std"
+]
+
+[workspace.scopeAliases]
+# future aliases (e.g. std/tooling -> tooling)
