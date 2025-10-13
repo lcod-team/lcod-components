@@ -1,0 +1,18 @@
+{
+  "schema": "lcod-registry@1",
+  "registries": [
+    {
+      "id": "main",
+      "type": "git",
+      "url": "https://github.com/example"
+    }
+  ],
+  "namespaces": {},
+  "packages": [
+    {
+      "id": "lcod://example/pkg",
+      "registryId": "main",
+      "versionsPath": "packages/example/pkg/versions.json"
+    }
+  ]
+}

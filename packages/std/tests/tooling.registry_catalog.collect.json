@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "id": "lcod://pkg/std/tooling.registry_catalog.collect.test@0.1.0",
+  "kind": "test",
+  "tests": [
+    {
+      "name": "collects registry lines",
+      "compose": [
+        {
+          "call": "lcod://tooling/registry_catalog.collect@0.1.0",
+          "in": {
+            "rootPath": "./tests/fixtures/registry",
+            "catalogPath": "catalog.json"
+          },
+          "out": {
+            "result": "$"
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "packages": [
+            {
+              "id": "lcod://example/pkg",
+              "versions": [
+                {
+                  "version": "1.0.0",
+                  "manifest": "tests/fixtures/registry/packages/example/pkg/1.0.0/manifest.json"
+                }
+              ]
+            }
+          ],
+          "warnings": []
+        }
+      }
+    }
+  ]
+}

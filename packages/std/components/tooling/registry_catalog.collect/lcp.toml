@@ -1,0 +1,13 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/registry_catalog/collect@0.1.0"
+name = "collect"
+namespace = "tooling/registry_catalog"
+version = "0.1.0"
+kind = "component"
+
+[deps]
+requires = [
+  "lcod://axiom/path/join@1",
+  "lcod://axiom/fs/read-file@1",
+  "lcod://tooling/script@1"
+]
