@@ -1,0 +1,122 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const root = state.rootPath || './packages/std/components';
+          const errors = [];
+          const components = [];
+
+          const listDir = async (dir) => {
+            try {
+              const result = await imports.fsListDir({ path: dir });
+              return Array.isArray(result?.entries) ? result.entries : [];
+            } catch (err) {
+              errors.push(`fs/list-dir failed for ${dir}: ${err?.message ?? err}`);
+              return [];
+            }
+          };
+
+          const fileExists = async (file) => {
+            try {
+              await imports.fsReadFile({ path: file, encoding: 'utf-8' });
+              return true;
+            } catch (err) {
+              if (err && (err.code === 'ENOENT' || err.message?.includes('ENOENT'))) {
+                return false;
+              }
+              throw err;
+            }
+          };
+
+          const joinPath = async (base, segment) => {
+            const joined = await imports.pathJoin({ base, segment });
+            return joined?.path ?? `${base.replace(/\/$/, '')}/${segment}`;
+          };
+
+          const stack = [root];
+          const visited = new Set();
+          while (stack.length > 0) {
+            const current = stack.pop();
+            if (visited.has(current)) continue;
+            visited.add(current);
+            const entries = await listDir(current);
+            let hasLcp = false;
+            let hasCompose = false;
+            for (const entry of entries) {
+              if (!entry || typeof entry !== 'object') continue;
+              if (entry.type === 'directory') {
+                stack.push(entry.path ?? `${current}/${entry.name}`);
+              }
+              if (entry.name === 'lcp.toml') hasLcp = true;
+              if (entry.name === 'compose.yaml') hasCompose = true;
+            }
+            if (hasLcp && hasCompose) {
+              components.push(current);
+            }
+          }
+
+          for (const dir of components) {
+            const rel = dir === root ? '.' : (dir.startsWith(root + '/') ? dir.slice(root.length + 1) : dir);
+            const lcpPath = await joinPath(dir, 'lcp.toml');
+            const readmePath = await joinPath(dir, 'README.md');
+
+            let descriptor;
+            try {
+              const raw = await imports.fsReadFile({ path: lcpPath, encoding: 'utf-8' });
+              const parsed = await imports.tomlParse({ text: raw?.data ?? raw });
+              descriptor = parsed?.value ?? {};
+            } catch (err) {
+              errors.push(`${rel}: failed to read/parse lcp.toml (${err?.message ?? err})`);
+              continue;
+            }
+
+            if (!descriptor.summary || typeof descriptor.summary !== 'string' || descriptor.summary.trim().length === 0) {
+              errors.push(`${rel}: missing or empty summary`);
+            }
+
+            const palette = descriptor.palette;
+            if (!palette || typeof palette !== 'object') {
+              errors.push(`${rel}: missing [palette] section`);
+            } else {
+              if (!palette.category || palette.category.trim().length === 0) {
+                errors.push(`${rel}: palette.category is missing`);
+              }
+              if (!palette.icon || palette.icon.trim().length === 0) {
+                errors.push(`${rel}: palette.icon is missing`);
+              }
+              if (!Array.isArray(palette.tags) || palette.tags.length === 0) {
+                errors.push(`${rel}: palette.tags must be a non-empty array`);
+              }
+            }
+
+            const docs = descriptor.docs;
+            if (!docs || typeof docs.readme !== 'string' || docs.readme.trim().length === 0) {
+              errors.push(`${rel}: docs.readme must reference README.md`);
+            } else {
+              const readmeExists = await fileExists(readmePath);
+              if (!readmeExists) {
+                errors.push(`${rel}: README.md not found (${docs.readme})`);
+              }
+            }
+
+            const io = descriptor.io || {};
+            const inputs = Array.isArray(io.input) ? io.input : [];
+            const outputs = Array.isArray(io.output) ? io.output : [];
+            if (inputs.length === 0 && outputs.length === 0) {
+              errors.push(`${rel}: missing [[io.input]] / [[io.output]] definitions`);
+            }
+          }
+
+          if (errors.length > 0) {
+            throw new Error(errors.join('\n'));
+          }
+          return { count: components.length };
+        }
+      input:
+        rootPath: "./packages/std/components"
+      imports:
+        fsListDir: lcod://contract/core/fs/list-dir@1
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        pathJoin: lcod://axiom/path/join@1
+        tomlParse: lcod://axiom/toml/parse@1
