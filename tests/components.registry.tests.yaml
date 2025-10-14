@@ -1,0 +1,113 @@
+compose:
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.projectPath
+      segment: "../../tests/fixtures/registry"
+    out:
+      registryRoot: path
+
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.projectPath
+      segment: "../../tests/fixtures/registry_invalid"
+    out:
+      registryInvalidRoot: path
+
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.registryRoot
+      segment: "catalog.json"
+    out:
+      registryCatalogPath: path
+
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.registryInvalidRoot
+      segment: "catalog.json"
+    out:
+      registryInvalidCatalogPath: path
+
+  - call: lcod://tooling/test_checker@1
+    in:
+      input:
+        rootPath: $.registryRoot
+        catalogPath: $.registryCatalogPath
+      compose:
+        - call: lcod://tooling/registry_catalog/collect@0.1.0
+          in:
+            rootPath: $.rootPath
+            catalogPath: $.catalogPath
+          out:
+            result: $
+      expected:
+        result:
+          packages:
+            - id: "lcod://example/pkg"
+              versions:
+                - version: "1.0.0"
+                  manifest: "tests/fixtures/registry/packages/example/pkg/1.0.0/manifest.json"
+          warnings: []
+    out:
+      collectReport: $
+
+  - call: lcod://tooling/test_checker@1
+    in:
+      input:
+        rootPath: $.registryRoot
+        catalogPath: $.registryCatalogPath
+      compose:
+        - call: lcod://tooling/registry_catalog/validate@0.1.0
+          in:
+            rootPath: $.rootPath
+            catalogPath: $.catalogPath
+          out:
+            result: $
+      expected:
+        result:
+          errors: []
+          packages:
+            - packageId: "lcod://example/pkg"
+              errors: []
+    out:
+      validateReport: $
+
+  - call: lcod://tooling/test_checker@1
+    in:
+      input:
+        rootPath: $.registryInvalidRoot
+        catalogPath: $.registryInvalidCatalogPath
+      compose:
+        - call: lcod://tooling/registry_catalog/validate@0.1.0
+          in:
+            rootPath: $.rootPath
+            catalogPath: $.catalogPath
+          out:
+            result: $
+      expected:
+        result:
+          errors:
+            - "catalog.json: duplicate package id lcod://example/pkg"
+    out:
+      validateInvalidReport: $
+
+  - call: lcod://tooling/test_checker@1
+    in:
+      input:
+        rootPath: $.registryRoot
+        catalogPath: $.registryCatalogPath
+      compose:
+        - call: lcod://tooling/registry_catalog/refresh@0.1.0
+          in:
+            rootPath: $.rootPath
+            catalogPath: $.catalogPath
+          out:
+            result: $
+      expected:
+        result:
+          packagesJsonl: |
+            {"kind":"registry","id":"main","type":"git","url":"https://github.com/example"}
+            {"kind":"component","id":"lcod://example/pkg","version":"1.0.0","manifest":"packages/example/pkg/1.0.0/manifest.json","registryId":"main"}
+          warnings: []
+          errors: []
+    out:
+      refreshReport: $

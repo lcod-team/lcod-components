@@ -13,18 +13,6 @@ compose:
     out:
       registryInvalidRoot: path
 
-  - call: lcod://tooling/script@1
-    in:
-      source: |
-        async ({ state }) => {
-          console.log('registryRoot', state.registryRoot);
-          console.log('registryInvalidRoot', state.registryInvalidRoot);
-          return {};
-        }
-      input:
-        registryRoot: $.registryRoot
-        registryInvalidRoot: $.registryInvalidRoot
-
   - call: lcod://axiom/path/join@1
     in:
       base: $.registryRoot

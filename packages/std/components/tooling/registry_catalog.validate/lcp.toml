@@ -44,6 +44,7 @@ requires = [
   "lcod://flow/foreach@1",
   "lcod://tooling/json/read_file@0.1.0",
   "lcod://tooling/value/is_array@0.1.0",
+  "lcod://tooling/value/is_string_nonempty@0.1.0",
   "lcod://tooling/array/append@0.1.0",
   "lcod://tooling/array/flatten@0.1.0",
   "lcod://tooling/array/pluck@0.1.0",

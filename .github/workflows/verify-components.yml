@@ -23,3 +23,6 @@ jobs:
 
       - name: Run registry component tests
         run: ./run-compose --project packages/std --compose tests/components.registry.yaml
+
+      - name: Run component unit tests
+        run: ./run-compose --project packages/std --compose tests/components.registry.tests.yaml

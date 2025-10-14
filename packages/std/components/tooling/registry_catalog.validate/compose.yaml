@@ -8,6 +8,18 @@ compose:
       rawRootPath: rawRootPath
       rawCatalogPath: rawCatalogPath
 
+  - call: lcod://tooling/value/is_string_nonempty@0.1.0
+    in:
+      value: $.rawRootPath
+    out:
+      hasRootPath: ok
+
+  - call: lcod://tooling/value/is_string_nonempty@0.1.0
+    in:
+      value: $.rawCatalogPath
+    out:
+      hasCatalogPath: ok
+
   - call: lcod://impl/set@1
     in:
       rootPath: "."
@@ -18,7 +30,7 @@ compose:
 
   - call: lcod://flow/if@1
     in:
-      cond: $.rawRootPath
+      cond: $.hasRootPath
     children:
       then:
         - call: lcod://impl/set@1
@@ -31,7 +43,7 @@ compose:
 
   - call: lcod://flow/if@1
     in:
-      cond: $.rawCatalogPath
+      cond: $.hasCatalogPath
     children:
       then:
         - call: lcod://impl/set@1
