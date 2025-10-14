@@ -18,16 +18,17 @@ async function main() {
   const components = entries
     .filter((entry) => entry && typeof entry === 'object' && typeof entry.id === 'string' && typeof entry.path === 'string')
     .map((entry) => {
-      const composeRel = path.join(entry.path, 'compose.yaml');
+      const composeRel = path.join(entry.path, 'compose.yaml').replace(/\\/g, '/');
       return {
         id: entry.id,
-        composePath: composeRel
+        composePath: path.posix.join('packages/std', composeRel)
       };
     })
     .sort((a, b) => a.id.localeCompare(b.id));
 
-  const outputPath = path.join(repoRoot, 'registry', 'components.std.json');
-  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  const outputDir = path.join(repoRoot, 'registry');
+  const outputPath = path.join(outputDir, 'components.std.json');
+  await fs.mkdir(outputDir, { recursive: true });
   await fs.writeFile(outputPath, JSON.stringify(components, null, 2) + '\n', 'utf-8');
   console.log(`Exported ${components.length} components to ${path.relative(repoRoot, outputPath)}`);
 }
