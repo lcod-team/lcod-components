@@ -9,6 +9,7 @@ This repository is organised as an LCOD workspace (`workspace.lcp.toml`) with ve
 - Replace ad-hoc scripts (especially registry refresh scripts) with declarative LCOD components.
 - Provide a curated catalogue that other projects can depend on (registry CI, IDE demos, tests).
 - Keep components small, documented and covered by tests where possible.
+- See `docs/COMPONENT_CONVENTIONS.md` for the expected component metadata (summary, palette hints, inputs/outputs).
 
 ## Structure
 

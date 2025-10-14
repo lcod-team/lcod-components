@@ -1,0 +1,15 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const ok = Array.isArray(state.value);
+          const length = ok ? state.value.length : 0;
+          return { ok, length };
+        }
+      input:
+        value: $.value
+    out:
+      ok: ok
+      length: length

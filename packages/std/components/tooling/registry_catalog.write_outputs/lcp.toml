@@ -1,0 +1,61 @@
+
+schemaVersion = "1.0"
+id = "lcod://tooling/registry_catalog/write_outputs@0.1.0"
+name = "write_outputs"
+namespace = "tooling/registry_catalog"
+version = "0.1.0"
+kind = "component"
+summary = "Persist registry artefacts to disk when content changes."
+
+[palette]
+category = "Registry"
+icon = "mdi:database-export"
+tags = ["catalog", "io"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "rootPath"
+type = "string"
+required = false
+description = "Directory where artefacts are written (defaults to current working directory)."
+
+[[io.input]]
+name = "packagesJsonl"
+type = "string"
+required = true
+description = "JSON Lines catalogue content to write."
+
+[[io.input]]
+name = "registryJson"
+type = "object"
+required = true
+description = "Registry descriptor that will be serialised with indentation."
+
+[[io.input]]
+name = "packagesFilename"
+type = "string"
+required = false
+description = "Override for the JSONL filename (defaults to packages.jsonl)."
+
+[[io.input]]
+name = "registryFilename"
+type = "string"
+required = false
+description = "Override for the JSON filename (defaults to registry.json)."
+
+[[io.output]]
+name = "updates"
+type = "object"
+description = "Flags indicating which files were rewritten."
+
+[deps]
+requires = [
+  "lcod://impl/set@1",
+  "lcod://flow/if@1",
+  "lcod://axiom/path/join@1",
+  "lcod://tooling/json/stringify@0.1.0",
+  "lcod://tooling/string/ensure_trailing_newline@0.1.0",
+  "lcod://tooling/fs/write_if_changed@0.1.0"
+]

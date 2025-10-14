@@ -1,0 +1,14 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const duplicates = Array.isArray(state.duplicates) ? state.duplicates : [];
+          const errors = duplicates.map((pkgId) => `catalog.json: duplicate package id ${pkgId}`);
+          return { errors };
+        }
+      input:
+        duplicates: $.duplicates
+    out:
+      errors: errors

@@ -1,0 +1,84 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const warnings = [];
+          const entry = state && typeof state.entry === "object" && !Array.isArray(state.entry)
+            ? state.entry
+            : null;
+          const packageId = typeof state.packageId === "string" ? state.packageId : null;
+          const baseRegistryId = typeof state.registryId === "string" ? state.registryId : null;
+
+          if (!entry) {
+            warnings.push(`package ${packageId ?? "unknown"}: version entry is not an object`);
+            return { ok: false, warnings };
+          }
+
+          const version = typeof entry.version === "string" && entry.version.length > 0
+            ? entry.version
+            : null;
+          if (!version) {
+            warnings.push(`package ${packageId ?? "unknown"}: missing version`);
+            return { ok: false, warnings };
+          }
+
+          const manifest = typeof entry.manifest === "string" && entry.manifest.length > 0
+            ? entry.manifest
+            : null;
+          if (!manifest) {
+            warnings.push(`package ${packageId ?? "unknown"}@${version}: missing manifest path`);
+            return { ok: false, warnings };
+          }
+
+          const registryId = typeof entry.registryId === "string" && entry.registryId.length > 0
+            ? entry.registryId
+            : baseRegistryId;
+
+          const line = {
+            kind: "component",
+            id: packageId,
+            version,
+            manifest,
+            registryId
+          };
+
+          if (typeof entry.sha256 === "string" && entry.sha256.length > 0) {
+            line.sha256 = entry.sha256;
+          }
+
+          const packagePriority = Number.isFinite(state.packagePriority)
+            ? Math.trunc(state.packagePriority)
+            : null;
+          const versionPriority = Number.isFinite(entry.priority)
+            ? Math.trunc(entry.priority)
+            : null;
+          const chosenPriority = versionPriority ?? packagePriority;
+          if (chosenPriority !== null) {
+            line.priority = chosenPriority;
+          }
+
+          const detail = {
+            version,
+            manifest,
+            registryId,
+            priority: chosenPriority
+          };
+
+          return {
+            ok: true,
+            line,
+            detail,
+            warnings
+          };
+        }
+      input:
+        packageId: $.packageId
+        registryId: $.registryId
+        packagePriority: $.packagePriority
+        entry: $.entry
+    out:
+      ok: ok
+      line: line
+      detail: detail
+      warnings: warnings

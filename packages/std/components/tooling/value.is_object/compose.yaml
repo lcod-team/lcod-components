@@ -1,0 +1,14 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const value = state.value;
+          const ok = !!value && typeof value === "object" && !Array.isArray(value);
+          return { ok };
+        }
+      input:
+        value: $.value
+    out:
+      ok: ok

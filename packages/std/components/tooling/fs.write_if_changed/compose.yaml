@@ -1,0 +1,43 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const path = state.path;
+          if (typeof path !== 'string' || path.length === 0) {
+            throw new Error('write_if_changed: path is required');
+          }
+          const encoding = typeof state.encoding === 'string' && state.encoding.length > 0
+            ? state.encoding
+            : 'utf-8';
+          const content = typeof state.content === 'string'
+            ? state.content
+            : (state.content === undefined || state.content === null ? '' : String(state.content));
+
+          let previous = null;
+          try {
+            const file = await imports.fsReadFile({ path, encoding });
+            previous = typeof file?.data === 'string' ? file.data : null;
+          } catch (err) {
+            if (err && err.code !== 'ENOENT') {
+              throw err;
+            }
+          }
+
+          if (previous === content) {
+            return { changed: false };
+          }
+
+          await imports.fsWriteFile({ path, data: content, encoding });
+          return { changed: true };
+        }
+      input:
+        path: $.path
+        content: $.content
+        encoding: $.encoding
+      imports:
+        fsReadFile: lcod://axiom/fs/read-file@1
+        fsWriteFile: lcod://axiom/fs/write-file@1
+    out:
+      changed: changed

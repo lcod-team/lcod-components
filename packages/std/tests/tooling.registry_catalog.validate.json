@@ -1,0 +1,34 @@
+
+{
+  "schemaVersion": "1.0",
+  "id": "lcod://pkg/std/tooling.registry_catalog.validate.test@0.1.0",
+  "kind": "test",
+  "tests": [
+    {
+      "name": "valid catalog passes with no errors",
+      "compose": [
+        {
+          "call": "lcod://tooling/registry_catalog.validate@0.1.0",
+          "in": {
+            "rootPath": "./tests/fixtures/registry",
+            "catalogPath": "catalog.json"
+          },
+          "out": {
+            "result": "$"
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "errors": [],
+          "packages": [
+            {
+              "packageId": "lcod://example/pkg",
+              "errors": []
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

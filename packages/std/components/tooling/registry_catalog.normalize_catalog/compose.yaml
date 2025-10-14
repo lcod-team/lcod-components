@@ -1,0 +1,43 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const warnings = [];
+          const catalog = state && typeof state.catalog === "object" && !Array.isArray(state.catalog)
+            ? state.catalog
+            : {};
+
+          const registries = Array.isArray(catalog.registries)
+            ? catalog.registries.filter((entry) => entry && typeof entry === "object" && typeof entry.id === "string" && entry.id.length > 0)
+            : [];
+
+          const packages = Array.isArray(catalog.packages)
+            ? catalog.packages.filter((entry) => entry && typeof entry === "object" && typeof entry.id === "string" && entry.id.length > 0)
+            : [];
+
+          const namespaces = catalog.namespaces && typeof catalog.namespaces === "object"
+            ? catalog.namespaces
+            : {};
+
+          const schema = typeof catalog.schema === "string" && catalog.schema.trim().length > 0
+            ? catalog.schema
+            : "lcod-registry@1";
+
+          return {
+            registries,
+            packages,
+            namespaces,
+            schema,
+            warnings
+          };
+        }
+      input:
+        catalog: $.catalog
+    out:
+      registries: registries
+      packages: packages
+      namespaces: namespaces
+      schema: schema
+      warnings: warnings

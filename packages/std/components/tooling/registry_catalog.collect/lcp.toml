@@ -4,10 +4,63 @@ name = "collect"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
+summary = "Collect registry metadata into JSONL and JSON descriptors."
+
+[palette]
+category = "Registry"
+icon = "mdi:database-cog-outline"
+tags = ["catalog", "registry"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "rootPath"
+type = "string"
+required = false
+description = "Base directory used to resolve relative catalog and versions files."
+
+[[io.input]]
+name = "catalogPath"
+type = "string"
+required = false
+description = "Path to catalog.json relative to rootPath (defaults to catalog.json)."
+
+[[io.output]]
+name = "packagesJsonl"
+type = "string"
+description = "JSON Lines document describing registries and components."
+
+[[io.output]]
+name = "registryJson"
+type = "object"
+description = "Registry descriptor ready to be written to registry.json."
+
+[[io.output]]
+name = "packages"
+type = "array"
+description = "Per-package diagnostics (versions metadata)."
+
+[[io.output]]
+name = "warnings"
+type = "array"
+description = "Non-fatal issues encountered during collection."
+
 
 [deps]
 requires = [
-  "lcod://axiom/path/join@1",
-  "lcod://axiom/fs/read-file@1",
-  "lcod://tooling/script@1"
+  "lcod://impl/set@1",
+  "lcod://flow/if@1",
+  "lcod://flow/foreach@1",
+  "lcod://tooling/json/read_file@0.1.0",
+  "lcod://tooling/registry_catalog/normalize_catalog@0.1.0",
+  "lcod://tooling/registry_catalog/normalize_registry@0.1.0",
+  "lcod://tooling/registry_catalog/normalize_package@0.1.0",
+  "lcod://tooling/registry_catalog/normalize_versions_doc@0.1.0",
+  "lcod://tooling/registry_catalog/normalize_version@0.1.0",
+  "lcod://tooling/registry_catalog/packages_map@0.1.0",
+  "lcod://tooling/array/pluck@0.1.0",
+  "lcod://tooling/array/compact@0.1.0",
+  "lcod://tooling/array/flatten@0.1.0",
+  "lcod://tooling/jsonl/from_objects@0.1.0"
 ]

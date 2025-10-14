@@ -1,0 +1,22 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const values = [];
+          const source = Array.isArray(state.items) ? state.items : [];
+          for (const entry of source) {
+            if (Array.isArray(entry)) {
+              for (const nested of entry) {
+                values.push(nested);
+              }
+            } else if (entry !== null && entry !== undefined) {
+              values.push(entry);
+            }
+          }
+          return { values };
+        }
+      input:
+        items: $.items
+    out:
+      values: values

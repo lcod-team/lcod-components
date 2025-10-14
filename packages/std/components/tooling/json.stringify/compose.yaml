@@ -1,0 +1,20 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const indent = Number.isFinite(state.indent) ? state.indent : undefined;
+          const newline = state.trailingNewline === true;
+          const text = JSON.stringify(state.value, null, indent);
+          return {
+            json: newline ? `${text}
+` : text
+          };
+        }
+      input:
+        value: $.value
+        indent: $.indent
+        trailingNewline: $.trailingNewline
+    out:
+      json: json

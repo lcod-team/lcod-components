@@ -1,0 +1,12 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/registry_catalog/normalize_package@0.1.0"
+name = "normalize_package"
+namespace = "tooling/registry_catalog"
+version = "0.1.0"
+kind = "component"
+summary = "Validate and normalize a package entry from the catalog."
+
+[deps]
+requires = [
+  "lcod://tooling/script@1"
+]

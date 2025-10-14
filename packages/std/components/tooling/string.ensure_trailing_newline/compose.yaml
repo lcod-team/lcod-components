@@ -1,0 +1,18 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const text = typeof state.text === 'string' ? state.text : '';
+          if (text.endsWith('
+')) {
+            return { text };
+          }
+          return { text: `${text}
+` };
+        }
+      input:
+        text: $.text
+    out:
+      text: text

@@ -1,0 +1,16 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/json/read_file@0.1.0"
+name = "read_file"
+namespace = "tooling/json"
+version = "0.1.0"
+kind = "component"
+summary = "Read and parse a JSON file, optionally relative to a base path."
+
+[deps]
+requires = [
+  "lcod://impl/set@1",
+  "lcod://flow/if@1",
+  "lcod://axiom/path/join@1",
+  "lcod://axiom/fs/read-file@1",
+  "lcod://axiom/json/parse@1"
+]

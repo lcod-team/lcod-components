@@ -1,0 +1,29 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const warnings = [];
+          const doc = state && typeof state.doc === "object" && !Array.isArray(state.doc)
+            ? state.doc
+            : null;
+          if (!doc) {
+            warnings.push("versions document is not an object");
+            return { versions: [], warnings };
+          }
+
+          const versions = Array.isArray(doc.versions)
+            ? doc.versions.filter((entry) => entry && typeof entry === "object")
+            : [];
+
+          if (!Array.isArray(doc.versions)) {
+            warnings.push("versions document missing versions array");
+          }
+
+          return { versions, warnings };
+        }
+      input:
+        doc: $.doc
+    out:
+      versions: versions
+      warnings: warnings

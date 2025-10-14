@@ -1,0 +1,14 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const value = state.value;
+          const ok = typeof value === "string" && value.length > 0;
+          return { ok };
+        }
+      input:
+        value: $.value
+    out:
+      ok: ok

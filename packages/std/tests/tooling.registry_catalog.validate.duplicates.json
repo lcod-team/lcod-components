@@ -1,0 +1,30 @@
+
+{
+  "schemaVersion": "1.0",
+  "id": "lcod://pkg/std/tooling.registry_catalog.validate.duplicates.test@0.1.0",
+  "kind": "test",
+  "tests": [
+    {
+      "name": "duplicate package ids are reported",
+      "compose": [
+        {
+          "call": "lcod://tooling/registry_catalog.validate@0.1.0",
+          "in": {
+            "rootPath": "./tests/fixtures/registry_invalid",
+            "catalogPath": "catalog.json"
+          },
+          "out": {
+            "result": "$"
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "errors": [
+            "catalog.json: duplicate package id lcod://example/pkg"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const errors = [];
+          const entry = state.packageEntry;
+          const rootPath = typeof state.rootPath === 'string' && state.rootPath.length > 0
+            ? state.rootPath
+            : '.';
+
+          const addError = (message) => {
+            if (typeof message === 'string' && message.length > 0) {
+              errors.push(message);
+            }
+          };
+
+          const makeManifestPath = (pkgId, version) => {
+            const withoutScheme = pkgId.replace(/^lcod:\/\//, '');
+            const normalized = withoutScheme.replace(/\\/g, '/');
+            return `packages/${normalized}/${version}/manifest.json`;
+          };
+
+          const compareSemverDesc = (prev, current) => {
+            const parse = (value) => String(value).split(/[.-]/).map((part) => (/^\d+$/.test(part) ? Number(part) : part));
+            const a = parse(prev);
+            const b = parse(current);
+            const len = Math.max(a.length, b.length);
+            for (let i = 0; i < len; i += 1) {
+              const av = a[i] ?? 0;
+              const bv = b[i] ?? 0;
+              if (typeof av === 'number' && typeof bv === 'number') {
+                if (av !== bv) return av > bv;
+              } else {
+                const as = String(av);
+                const bs = String(bv);
+                if (as !== bs) return as > bs;
+              }
+            }
+            return true;
+          };
+
+          const resolvePath = async (segment) => {
+            const joined = await imports.pathJoin({ base: rootPath, segment });
+            return joined?.path ?? segment;
+          };
+
+          const readJson = async (relativePath) => {
+            const targetPath = await resolvePath(relativePath);
+            try {
+              const { data } = await imports.fsReadFile({ path: targetPath, encoding: 'utf-8' });
+              return { path: relativePath, value: JSON.parse(data) };
+            } catch (err) {
+              addError(`Failed to read ${relativePath}: ${err.message}`);
+              return null;
+            }
+          };
+
+          if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+            addError('catalog.json: invalid package entry (not an object)');
+            return { errors, packageId: null };
+          }
+
+          const pkgId = entry.id;
+          if (typeof pkgId !== 'string' || pkgId.length === 0) {
+            addError('catalog.json: package entry missing "id"');
+            return { errors, packageId: null };
+          }
+
+          if (typeof entry.versionsPath !== 'string' || entry.versionsPath.length === 0) {
+            addError(`catalog.json: ${pkgId} missing "versionsPath"`);
+            return { errors, packageId: pkgId };
+          }
+
+          const versionsDoc = await readJson(entry.versionsPath);
+          if (!versionsDoc) {
+            return { errors, packageId: pkgId };
+          }
+
+          if (versionsDoc.value?.id !== pkgId) {
+            addError(`${entry.versionsPath}: id mismatch (expected ${pkgId}, found ${versionsDoc.value?.id})`);
+          }
+
+          const versionsList = Array.isArray(versionsDoc.value?.versions)
+            ? versionsDoc.value.versions
+            : null;
+          if (!versionsList || versionsList.length === 0) {
+            addError(`${entry.versionsPath}: versions array must be non-empty`);
+            return { errors, packageId: pkgId };
+          }
+
+          const seenVersions = new Set();
+          let previousVersion = null;
+
+          for (const versionEntry of versionsList) {
+            if (!versionEntry || typeof versionEntry !== 'object') {
+              addError(`${entry.versionsPath}: invalid version entry (not an object)`);
+              continue;
+            }
+            const version = versionEntry.version;
+            if (typeof version !== 'string' || version.length === 0) {
+              addError(`${entry.versionsPath}: entry missing "version"`);
+              continue;
+            }
+            if (seenVersions.has(version)) {
+              addError(`${entry.versionsPath}: duplicate version ${version}`);
+            }
+            seenVersions.add(version);
+
+            if (previousVersion && !compareSemverDesc(previousVersion, version)) {
+              addError(`${entry.versionsPath}: versions must be ordered newest to oldest (found ${previousVersion} before ${version})`);
+            }
+            previousVersion = version;
+
+            const manifestRelative = typeof versionEntry.manifest === 'string' && versionEntry.manifest.length > 0
+              ? versionEntry.manifest
+              : makeManifestPath(pkgId, version);
+
+            const manifestDoc = await readJson(manifestRelative);
+            if (!manifestDoc) {
+              continue;
+            }
+
+            const expectedManifestId = `${pkgId}@${version}`;
+            if (manifestDoc.value?.id !== expectedManifestId) {
+              addError(`${manifestRelative}: id mismatch (expected ${expectedManifestId}, found ${manifestDoc.value?.id})`);
+            }
+
+            const source = manifestDoc.value?.source;
+            if (!source || typeof source !== 'object') {
+              addError(`${manifestRelative}: missing source metadata`);
+            } else if (source.commit === 'SPEC_COMMIT_PLACEHOLDER') {
+              addError(`${manifestRelative}: source.commit must not be SPEC_COMMIT_PLACEHOLDER`);
+            }
+
+            const files = Array.isArray(manifestDoc.value?.files) ? manifestDoc.value.files : null;
+            if (!files || files.length === 0) {
+              addError(`${manifestRelative}: files array must be non-empty`);
+            } else {
+              for (const fileEntry of files) {
+                if (!fileEntry || typeof fileEntry.path !== 'string') {
+                  addError(`${manifestRelative}: invalid file entry (missing path)`);
+                  continue;
+                }
+                if (typeof fileEntry.sha256 !== 'string' || fileEntry.sha256.length === 0) {
+                  addError(`${manifestRelative}: file ${fileEntry.path} missing sha256`);
+                }
+              }
+            }
+          }
+
+          return {
+            errors,
+            packageId: pkgId
+          };
+        }
+      input:
+        rootPath: $.rootPath
+        packageEntry: $.packageEntry
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+        fsReadFile: lcod://axiom/fs/read-file@1
+    out:
+      packageErrors: errors
+      packageId: packageId

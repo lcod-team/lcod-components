@@ -1,0 +1,15 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          if (!Array.isArray(state.items)) {
+            return { values: [] };
+          }
+          const values = state.items.filter((item) => item !== null && item !== undefined);
+          return { values };
+        }
+      input:
+        items: $.items
+    out:
+      values: values

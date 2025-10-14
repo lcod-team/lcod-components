@@ -1,0 +1,56 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const warnings = [];
+          const entry = state && typeof state.entry === "object" && !Array.isArray(state.entry)
+            ? state.entry
+            : null;
+          if (!entry) {
+            warnings.push("package entry is not an object");
+            return { ok: false, warnings };
+          }
+
+          const id = typeof entry.id === "string" && entry.id.length > 0 ? entry.id : null;
+          if (!id) {
+            warnings.push("package entry missing id");
+            return { ok: false, warnings };
+          }
+
+          const registryId = typeof entry.registryId === "string" && entry.registryId.length > 0
+            ? entry.registryId
+            : null;
+          if (!registryId) {
+            warnings.push(`package ${id}: missing registryId`);
+            return { ok: false, warnings };
+          }
+
+          const versionsPath = typeof entry.versionsPath === "string" && entry.versionsPath.length > 0
+            ? entry.versionsPath
+            : null;
+          if (!versionsPath) {
+            warnings.push(`package ${id}: missing versionsPath`);
+            return { ok: false, warnings };
+          }
+
+          const priority = Number.isFinite(entry.priority) ? Math.trunc(entry.priority) : null;
+
+          return {
+            ok: true,
+            id,
+            registryId,
+            versionsPath,
+            priority,
+            warnings
+          };
+        }
+      input:
+        entry: $.entry
+    out:
+      ok: ok
+      id: id
+      registryId: registryId
+      versionsPath: versionsPath
+      priority: priority
+      warnings: warnings

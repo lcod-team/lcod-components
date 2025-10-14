@@ -1,0 +1,20 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const result = Object.create(null);
+          const entries = Array.isArray(state.entries) ? state.entries : [];
+          for (const entry of entries) {
+            if (!entry || typeof entry !== "object") continue;
+            const id = typeof entry.id === "string" && entry.id.length > 0 ? entry.id : null;
+            const registry = typeof entry.registry === "string" && entry.registry.length > 0 ? entry.registry : null;
+            if (!id || !registry) continue;
+            result[id] = { registry };
+          }
+          return { map: result };
+        }
+      input:
+        entries: $.entries
+    out:
+      map: map

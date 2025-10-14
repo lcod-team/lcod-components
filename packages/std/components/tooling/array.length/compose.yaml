@@ -1,0 +1,10 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => ({ length: Array.isArray(state.items) ? state.items.length : 0 })
+      input:
+        items: $.items
+    out:
+      length: length

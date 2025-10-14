@@ -1,0 +1,14 @@
+{
+  "id": "lcod://example/pkg@1.0.0",
+  "source": {
+    "type": "git",
+    "url": "https://github.com/example/pkg",
+    "commit": "abc123"
+  },
+  "files": [
+    {
+      "path": "compose.yaml",
+      "sha256": "deadbeef"
+    }
+  ]
+}

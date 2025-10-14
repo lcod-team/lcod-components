@@ -1,0 +1,19 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const items = Array.isArray(state.items) ? state.items : [];
+          const lines = [];
+          for (const entry of items) {
+            if (entry === undefined) continue;
+            lines.push(JSON.stringify(entry));
+          }
+          const text = lines.join("\n") + "\n";
+          return { text };
+        }
+      input:
+        items: $.items
+    out:
+      text: text

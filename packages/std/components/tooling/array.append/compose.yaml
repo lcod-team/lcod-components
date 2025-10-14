@@ -1,0 +1,17 @@
+
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const list = Array.isArray(state.items) ? state.items.slice() : [];
+          if (state.value !== undefined) {
+            list.push(state.value);
+          }
+          return { items: list };
+        }
+      input:
+        items: $.items
+        value: $.value
+    out:
+      items: items

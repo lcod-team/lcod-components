@@ -1,0 +1,43 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const warnings = [];
+          const entry = state && typeof state.entry === "object" && !Array.isArray(state.entry)
+            ? state.entry
+            : null;
+          if (!entry) {
+            warnings.push("registry entry is not an object");
+            return { ok: false, warnings };
+          }
+
+          const id = typeof entry.id === "string" && entry.id.length > 0 ? entry.id : null;
+          if (!id) {
+            warnings.push("registry entry missing id");
+            return { ok: false, warnings };
+          }
+
+          const type = typeof entry.type === "string" && entry.type.length > 0 ? entry.type : "git";
+          const url = typeof entry.url === "string" && entry.url.length > 0 ? entry.url : null;
+          if (!url) {
+            warnings.push(`registry ${id}: missing url`);
+          }
+
+          const line = { kind: "registry", id, type, url };
+          if (Number.isFinite(entry.priority)) {
+            line.priority = Math.trunc(entry.priority);
+          }
+
+          return {
+            ok: true,
+            line,
+            warnings
+          };
+        }
+      input:
+        entry: $.entry
+    out:
+      ok: ok
+      line: line
+      warnings: warnings

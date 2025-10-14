@@ -1,0 +1,168 @@
+
+compose:
+  - call: lcod://impl/set@1
+    in:
+      rawRootPath: $.rootPath
+      rawCatalogPath: $.catalogPath
+    out:
+      rawRootPath: rawRootPath
+      rawCatalogPath: rawCatalogPath
+
+  - call: lcod://impl/set@1
+    in:
+      rootPath: "."
+      catalogPath: "catalog.json"
+    out:
+      rootPath: rootPath
+      catalogPath: catalogPath
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.rawRootPath
+    children:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            rootPath: $.rawRootPath
+          out:
+            rootPath: rootPath
+    out:
+      rootPath: rootPath
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.rawCatalogPath
+    children:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            catalogPath: $.rawCatalogPath
+          out:
+            catalogPath: catalogPath
+    out:
+      catalogPath: catalogPath
+
+  - call: lcod://tooling/json/read_file@0.1.0
+    in:
+      basePath: $.rootPath
+      path: $.catalogPath
+    out:
+      catalogPathResolved: path
+      catalog: value
+
+  - call: lcod://impl/set@1
+    in:
+      baseErrors: []
+    out:
+      baseErrors: baseErrors
+
+  - call: lcod://tooling/value/is_array@0.1.0
+    in:
+      value: $.catalog.packages
+    out:
+      hasPackagesArray: ok
+      packagesCount: length
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.hasPackagesArray
+    children:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            packageEntries: $.catalog.packages
+          out:
+            packageEntries: packageEntries
+      else:
+        - call: lcod://tooling/array/append@0.1.0
+          in:
+            items: $.baseErrors
+            value: 'catalog.json: "packages" must be an array'
+          out:
+            baseErrors: items
+        - call: lcod://impl/set@1
+          in:
+            packageEntries: []
+          out:
+            packageEntries: packageEntries
+    out:
+      baseErrors: baseErrors
+      packageEntries: packageEntries
+
+  - call: lcod://flow/foreach@1
+    in:
+      list: $.packageEntries
+    collectPath: $.packageOutcome
+    children:
+      body:
+        - call: lcod://tooling/registry_catalog/validate_package@0.1.0
+          in:
+            rootPath: $.rootPath
+            packageEntry: $slot.item
+          out:
+            packageErrors: packageErrors
+            packageId: packageId
+        - call: lcod://impl/set@1
+          in:
+            packageOutcome:
+              packageId: $.packageId
+              errors: $.packageErrors
+          out:
+            packageOutcome: packageOutcome
+    out:
+      packageOutcomes: results
+
+  - call: lcod://tooling/array/pluck@0.1.0
+    in:
+      items: $.packageOutcomes
+      field: "packageId"
+    out:
+      packageIds: values
+
+  - call: lcod://tooling/array/find_duplicates@0.1.0
+    in:
+      items: $.packageIds
+    out:
+      duplicatePackages: duplicates
+
+  - call: lcod://tooling/registry_catalog/duplicate_package_errors@0.1.0
+    in:
+      duplicates: $.duplicatePackages
+    out:
+      duplicateErrors: errors
+
+  - call: lcod://tooling/array/pluck@0.1.0
+    in:
+      items: $.packageOutcomes
+      field: "errors"
+    out:
+      packageErrorGroups: values
+
+  - call: lcod://tooling/array/flatten@0.1.0
+    in:
+      items: $.packageErrorGroups
+    out:
+      packageErrorsFlat: values
+
+  - call: lcod://impl/set@1
+    in:
+      errorGroups:
+        - $.baseErrors
+        - $.packageErrorsFlat
+        - $.duplicateErrors
+    out:
+      errorGroups: errorGroups
+
+  - call: lcod://tooling/array/flatten@0.1.0
+    in:
+      items: $.errorGroups
+    out:
+      errors: values
+
+  - call: lcod://impl/set@1
+    in:
+      errors: $.errors
+      packages: $.packageOutcomes
+    out:
+      errors: errors
+      packages: packages

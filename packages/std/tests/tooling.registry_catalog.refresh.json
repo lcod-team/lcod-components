@@ -1,0 +1,30 @@
+
+{
+  "schemaVersion": "1.0",
+  "id": "lcod://pkg/std/tooling.registry_catalog.refresh.test@0.1.0",
+  "kind": "test",
+  "tests": [
+    {
+      "name": "refresh combines collect and validate",
+      "compose": [
+        {
+          "call": "lcod://tooling/registry_catalog.refresh@0.1.0",
+          "in": {
+            "rootPath": "./tests/fixtures/registry",
+            "catalogPath": "catalog.json"
+          },
+          "out": {
+            "result": "$"
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "packagesJsonl": "{"kind":"registry","id":"main","type":"git","url":"https://github.com/example"}\n{"kind":"component","id":"lcod://example/pkg","version":"1.0.0","manifest":"packages/example/pkg/1.0.0/manifest.json","registryId":"main"}\n",
+          "warnings": [],
+          "errors": []
+        }
+      }
+    }
+  ]
+}

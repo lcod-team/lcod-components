@@ -1,0 +1,60 @@
+compose:
+  - call: lcod://impl/set@1
+    in:
+      effectiveEncoding: "utf-8"
+    out:
+      effectiveEncoding: effectiveEncoding
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.encoding
+    children:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            effectiveEncoding: $.encoding
+          out:
+            effectiveEncoding: effectiveEncoding
+    out:
+      effectiveEncoding: effectiveEncoding
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.basePath
+    children:
+      then:
+        - call: lcod://axiom/path/join@1
+          in:
+            base: $.basePath
+            segment: $.path
+          out:
+            resolvedPath: path
+      else:
+        - call: lcod://impl/set@1
+          in:
+            resolvedPath: $.path
+          out:
+            resolvedPath: resolvedPath
+    out:
+      resolvedPath: resolvedPath
+
+  - call: lcod://axiom/fs/read-file@1
+    in:
+      path: $.resolvedPath
+      encoding: $.effectiveEncoding
+    out:
+      fileContent: data
+
+  - call: lcod://axiom/json/parse@1
+    in:
+      text: $.fileContent
+    out:
+      parsed: value
+
+  - call: lcod://impl/set@1
+    in:
+      path: $.resolvedPath
+      value: $.parsed
+    out:
+      path: path
+      value: value

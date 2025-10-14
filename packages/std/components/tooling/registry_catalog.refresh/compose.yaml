@@ -1,0 +1,61 @@
+
+compose:
+  - call: lcod://tooling/registry_catalog.collect@0.1.0
+    in:
+      rootPath: $.rootPath
+      catalogPath: $.catalogPath
+    out:
+      collectedPackagesJsonl: packagesJsonl
+      collectedRegistryJson: registryJson
+      collectedPackages: packages
+      collectWarnings: warnings
+
+  - call: lcod://tooling/registry_catalog.validate@0.1.0
+    in:
+      rootPath: $.rootPath
+      catalogPath: $.catalogPath
+    out:
+      validationErrors: errors
+      validationPackages: packages
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.collectWarnings
+    children:
+      else:
+        - call: lcod://impl/set@1
+          in:
+            collectWarnings: []
+          out:
+            collectWarnings: collectWarnings
+    out:
+      collectWarnings: collectWarnings
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.validationErrors
+    children:
+      else:
+        - call: lcod://impl/set@1
+          in:
+            validationErrors: []
+          out:
+            validationErrors: validationErrors
+    out:
+      validationErrors: validationErrors
+
+  - call: lcod://impl/set@1
+    in:
+      packagesJsonl: $.collectedPackagesJsonl
+      registryJson: $.collectedRegistryJson
+      packages: $.collectedPackages
+      warnings: $.collectWarnings
+      errors: $.validationErrors
+      validation: $.validationPackages
+    out:
+      packagesJsonl: packagesJsonl
+      registryJson: registryJson
+      packages: packages
+      warnings: warnings
+      errors: errors
+      validation: validation
