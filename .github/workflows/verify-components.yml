@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
+
       - name: Download run_compose
         run: |
           curl -sSL https://github.com/lcod-team/lcod-kernel-rs/releases/download/run-compose-v0.1.1/run-compose-linux-x86_64.tar.gz -o run-compose.tar.gz
@@ -26,3 +29,16 @@ jobs:
 
       - name: Run component unit tests
         run: ./run-compose --project packages/std --compose tests/components.registry.tests.yaml
+
+      - name: Export components manifest
+        run: npm run export:components
+
+      - name: Ensure manifest is up to date
+        run: |
+          if git diff --quiet registry/components.std.json; then
+            echo "components.std.json is up to date"
+          else
+            echo "::error::registry/components.std.json is out of date. Run 'npm run export:components' locally and commit the changes." >&2
+            git diff registry/components.std.json
+            exit 1
+          fi
