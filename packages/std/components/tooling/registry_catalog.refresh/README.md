@@ -1,26 +1,21 @@
-# registry_catalog.refresh
+# lcod://tooling/registry_catalog/refresh@0.1.0
 
-High-level component that orchestrates catalogue collection and validation.
-It runs `registry_catalog.collect` followed by `registry_catalog.validate`
-and returns both the generated artefacts and diagnostics.
+Collect and validate registry data, ready to publish artefacts.
 
 ## Inputs
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| `rootPath` | string (optional) | Base directory used to resolve catalogue and package files. |
-| `catalogPath` | string (optional) | Path to `catalog.json` relative to `rootPath`. |
+| Name | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `rootPath` | string | No | Base directory used to resolve catalogue files. |
+| `catalogPath` | string | No | Path to catalog.json relative to rootPath. |
 
 ## Outputs
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `packagesJsonl` | string | JSON Lines catalogue produced by the collect step. |
-| `registryJson` | object | Registry descriptor (`registry.json`). |
-| `packages` | array | Collect step diagnostics (per package versions/manifests). |
-| `warnings` | array | Non-fatal issues emitted by the collect step. |
-| `errors` | array | Validation errors (empty array means the catalogue is valid). |
+| `packagesJsonl` | string | JSON Lines catalogue emitted by the collect step. |
+| `registryJson` | object | Registry descriptor ready to be written to registry.json. |
+| `packages` | array | Collect step diagnostics (per package). |
+| `warnings` | array | Non-fatal issues reported during collection. |
+| `errors` | array | Validation errors (empty array means success). |
 | `validation` | array | Per-package validation diagnostics. |
-
-Combine this component with `registry_catalog.write_outputs` to refresh the
-registry artefacts in a single compose.

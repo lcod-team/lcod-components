@@ -1,23 +1,19 @@
-# registry_catalog.collect
+# lcod://tooling/registry_catalog/collect@0.1.0
 
-Collect registry entries declared in `catalog.json` (and associated
-`versions.json` files) and emit the aggregated catalogue artefacts.
+Collect registry metadata into JSONL and JSON descriptors.
 
 ## Inputs
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| `rootPath` | string (optional) | Base directory used to resolve relative paths (defaults to the working directory). |
-| `catalogPath` | string (optional) | Path to `catalog.json` relative to `rootPath` (defaults to `catalog.json`). |
+| Name | Type | Required | Description |
+| ---- | ---- | -------- | ----------- |
+| `rootPath` | string | No | Base directory used to resolve relative catalog and versions files. |
+| `catalogPath` | string | No | Path to catalog.json relative to rootPath. |
 
 ## Outputs
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `packagesJsonl` | string | JSON Lines document listing registry and component entries. |
-| `registryJson` | object | Registry descriptor ready to be written to `registry.json`. |
-| `packages` | array | Per-package diagnostics (versions and manifests). |
-| `warnings` | array | Non-fatal issues encountered during the collection phase. |
-
-Use this component alongside `registry_catalog.validate` and
-`registry_catalog.write_outputs` to refresh the registry artefacts.
+| `packagesJsonl` | string | JSON Lines document describing registries and components. |
+| `registryJson` | object | Registry descriptor ready to be written to registry.json. |
+| `packages` | array | Per-package diagnostics (versions metadata). |
+| `warnings` | array | Non-fatal issues encountered during collection. |
