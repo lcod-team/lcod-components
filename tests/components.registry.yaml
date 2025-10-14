@@ -1,8 +1,48 @@
 compose:
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.projectPath
+      segment: "../../tests/fixtures/registry"
+    out:
+      registryRoot: path
+
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.projectPath
+      segment: "../../tests/fixtures/registry_invalid"
+    out:
+      registryInvalidRoot: path
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          console.log('registryRoot', state.registryRoot);
+          console.log('registryInvalidRoot', state.registryInvalidRoot);
+          return {};
+        }
+      input:
+        registryRoot: $.registryRoot
+        registryInvalidRoot: $.registryInvalidRoot
+
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.registryRoot
+      segment: "catalog.json"
+    out:
+      registryCatalogPath: path
+
+  - call: lcod://axiom/path/join@1
+    in:
+      base: $.registryInvalidRoot
+      segment: "catalog.json"
+    out:
+      registryInvalidCatalogPath: path
+
   - call: lcod://tooling/registry_catalog/collect@0.1.0
     in:
-      rootPath: "./tests/fixtures/registry"
-      catalogPath: "catalog.json"
+      rootPath: $.registryRoot
+      catalogPath: $.registryCatalogPath
     out:
       collectResult: $
 
@@ -41,8 +81,8 @@ compose:
 
   - call: lcod://tooling/registry_catalog/validate@0.1.0
     in:
-      rootPath: "./tests/fixtures/registry"
-      catalogPath: "catalog.json"
+      rootPath: $.registryRoot
+      catalogPath: $.registryCatalogPath
     out:
       validateResult: $
 
@@ -61,8 +101,8 @@ compose:
 
   - call: lcod://tooling/registry_catalog/validate@0.1.0
     in:
-      rootPath: "./tests/fixtures/registry_invalid"
-      catalogPath: "catalog.json"
+      rootPath: $.registryInvalidRoot
+      catalogPath: $.registryInvalidCatalogPath
     out:
       validateInvalid: $
 
@@ -85,8 +125,8 @@ compose:
 
   - call: lcod://tooling/registry_catalog/refresh@0.1.0
     in:
-      rootPath: "./tests/fixtures/registry"
-      catalogPath: "catalog.json"
+      rootPath: $.registryRoot
+      catalogPath: $.registryCatalogPath
     out:
       refreshResult: $
 
