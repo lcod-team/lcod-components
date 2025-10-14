@@ -1,10 +1,10 @@
-
 schemaVersion = "1.0"
 id = "lcod://tooling/registry_catalog/validate@0.1.0"
 name = "validate"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
+
 summary = "Validate the registry catalog against structural and manifest rules."
 
 [palette]
@@ -25,7 +25,7 @@ description = "Base directory used to resolve catalog and package files."
 name = "catalogPath"
 type = "string"
 required = false
-description = "Path to catalog.json relative to rootPath (defaults to catalog.json)."
+description = "Path to catalog.json relative to rootPath."
 
 [[io.output]]
 name = "errors"

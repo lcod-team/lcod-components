@@ -1,10 +1,10 @@
-
 schemaVersion = "1.0"
 id = "lcod://tooling/registry_catalog/refresh@0.1.0"
 name = "refresh"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
+
 summary = "Collect and validate registry data, ready to publish artefacts."
 
 [palette]
@@ -50,7 +50,7 @@ description = "Non-fatal issues reported during collection."
 [[io.output]]
 name = "errors"
 type = "array"
-description = "Validation errors (empty array means the catalogue is valid)."
+description = "Validation errors (empty array means success)."
 
 [[io.output]]
 name = "validation"

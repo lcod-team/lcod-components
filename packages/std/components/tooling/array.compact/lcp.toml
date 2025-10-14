@@ -4,7 +4,27 @@ name = "compact"
 namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
+
 summary = "Remove null and undefined entries from an array."
+
+[palette]
+category = "Array"
+icon = "mdi:filter-variant"
+tags = ["array", "cleanup"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "items"
+type = "array"
+required = false
+description = "Array that may contain null or undefined values."
+
+[[io.output]]
+name = "values"
+type = "array"
+description = "Array without null/undefined entries."
 
 [deps]
 requires = [

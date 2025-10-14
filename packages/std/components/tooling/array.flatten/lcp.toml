@@ -4,7 +4,27 @@ name = "flatten"
 namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-summary = "Flatten a list of arrays into a single array (one level deep)."
+
+summary = "Flatten an array one level deep."
+
+[palette]
+category = "Array"
+icon = "mdi:arrange-bring-forward"
+tags = ["array", "transform"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "items"
+type = "array"
+required = false
+description = "Nested array or scalar values to flatten."
+
+[[io.output]]
+name = "values"
+type = "array"
+description = "Flattened sequence preserving order."
 
 [deps]
 requires = [

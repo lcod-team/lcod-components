@@ -4,7 +4,32 @@ name = "normalize_versions_doc"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-summary = "Normalize the versions document referenced by a catalog package."
+
+summary = "Normalise a versions document."
+
+[palette]
+category = "Registry/Internal"
+icon = "mdi:file-document-outline"
+tags = ["catalog", "normalize"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "doc"
+type = "object"
+required = false
+description = "Parsed versions document."
+
+[[io.output]]
+name = "versions"
+type = "array"
+description = "Filtered list of version entries."
+
+[[io.output]]
+name = "warnings"
+type = "array"
+description = "Issues detected while parsing the document."
 
 [deps]
 requires = [

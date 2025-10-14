@@ -4,6 +4,7 @@ name = "collect"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
+
 summary = "Collect registry metadata into JSONL and JSON descriptors."
 
 [palette]
@@ -24,7 +25,7 @@ description = "Base directory used to resolve relative catalog and versions file
 name = "catalogPath"
 type = "string"
 required = false
-description = "Path to catalog.json relative to rootPath (defaults to catalog.json)."
+description = "Path to catalog.json relative to rootPath."
 
 [[io.output]]
 name = "packagesJsonl"
@@ -45,7 +46,6 @@ description = "Per-package diagnostics (versions metadata)."
 name = "warnings"
 type = "array"
 description = "Non-fatal issues encountered during collection."
-
 
 [deps]
 requires = [

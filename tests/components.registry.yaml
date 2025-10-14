@@ -1,0 +1,113 @@
+compose:
+  - call: lcod://tooling/registry_catalog.collect@0.1.0
+    in:
+      rootPath: "./tests/fixtures/registry"
+      catalogPath: "catalog.json"
+    out:
+      collectResult: $
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const result = state.collectResult;
+          if (!result || typeof result !== 'object') {
+            throw new Error('collect: result missing');
+          }
+          if (!Array.isArray(result.warnings) || result.warnings.length !== 0) {
+            throw new Error('collect: warnings should be empty');
+          }
+          if (!Array.isArray(result.packages) || result.packages.length !== 1) {
+            throw new Error('collect: expected a single package entry');
+          }
+          const pkg = result.packages[0];
+          if (pkg.id !== 'lcod://example/pkg') {
+            throw new Error(`collect: unexpected package id ${pkg.id}`);
+          }
+          if (!Array.isArray(pkg.versions) || pkg.versions.length !== 1) {
+            throw new Error('collect: expected a single version entry');
+          }
+          const version = pkg.versions[0];
+          if (version.version !== '1.0.0') {
+            throw new Error(`collect: unexpected version ${version.version}`);
+          }
+          if (version.manifest !== 'tests/fixtures/registry/packages/example/pkg/1.0.0/manifest.json') {
+            throw new Error('collect: unexpected manifest path');
+          }
+          return {};
+        }
+      input:
+        collectResult: $.collectResult
+
+  - call: lcod://tooling/registry_catalog.validate@0.1.0
+    in:
+      rootPath: "./tests/fixtures/registry"
+      catalogPath: "catalog.json"
+    out:
+      validateResult: $
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const result = state.validateResult;
+          if (!Array.isArray(result.errors) || result.errors.length !== 0) {
+            throw new Error('validate: expected no errors for valid catalog');
+          }
+          return {};
+        }
+      input:
+        validateResult: $.validateResult
+
+  - call: lcod://tooling/registry_catalog.validate@0.1.0
+    in:
+      rootPath: "./tests/fixtures/registry_invalid"
+      catalogPath: "catalog.json"
+    out:
+      validateInvalid: $
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const result = state.validateInvalid;
+          if (!Array.isArray(result.errors) || result.errors.length === 0) {
+            throw new Error('validate: expected errors for invalid catalog');
+          }
+          const duplicate = result.errors.find((err) => typeof err === 'string' && err.includes('duplicate package id lcod://example/pkg'));
+          if (!duplicate) {
+            throw new Error('validate: missing duplicate package error');
+          }
+          return {};
+        }
+      input:
+        validateInvalid: $.validateInvalid
+
+  - call: lcod://tooling/registry_catalog.refresh@0.1.0
+    in:
+      rootPath: "./tests/fixtures/registry"
+      catalogPath: "catalog.json"
+    out:
+      refreshResult: $
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const result = state.refreshResult;
+          if (!result || typeof result !== 'object') {
+            throw new Error('refresh: result missing');
+          }
+          if (!Array.isArray(result.errors) || result.errors.length !== 0) {
+            throw new Error('refresh: expected no validation errors');
+          }
+          if (!Array.isArray(result.warnings) || result.warnings.length !== 0) {
+            throw new Error('refresh: expected no warnings');
+          }
+          if (!Array.isArray(result.packages) || result.packages.length !== 1) {
+            throw new Error('refresh: unexpected packages length');
+          }
+          return {};
+        }
+      input:
+        refreshResult: $.refreshResult

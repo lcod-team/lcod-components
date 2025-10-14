@@ -1,0 +1,38 @@
+name: Verify Components
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify metadata
+        run: npm run verify:metadata
+
+      - name: Download run_compose
+        run: |
+          curl -sSL https://github.com/lcod-team/lcod-kernel-rs/releases/download/run-compose-v0.1.0/run-compose-linux-x86_64.tar.gz -o run-compose.tar.gz
+          tar -xzf run-compose.tar.gz
+          chmod +x run-compose
+
+      - name: Checkout spec repository
+        uses: actions/checkout@v4
+        with:
+          repository: lcod-team/lcod-spec
+          path: lcod-spec
+
+      - name: Run component tests
+        env:
+          SPEC_REPO_PATH: ${{ github.workspace }}/lcod-spec
+        run: ./run-compose --compose tests/components.registry.yaml --core --resolver

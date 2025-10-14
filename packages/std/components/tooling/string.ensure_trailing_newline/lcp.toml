@@ -1,11 +1,30 @@
-
 schemaVersion = "1.0"
 id = "lcod://tooling/string/ensure_trailing_newline@0.1.0"
 name = "ensure_trailing_newline"
 namespace = "tooling/string"
 version = "0.1.0"
 kind = "component"
-summary = "Ensure a string ends with a newline character."
+
+summary = "Ensure a string terminates with a newline."
+
+[palette]
+category = "Strings"
+icon = "mdi:format-text"
+tags = ["string", "formatting"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "text"
+type = "string"
+required = false
+description = "Input string."
+
+[[io.output]]
+name = "text"
+type = "string"
+description = "String guaranteed to end with a newline."
 
 [deps]
 requires = [

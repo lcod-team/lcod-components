@@ -4,7 +4,37 @@ name = "normalize_registry"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-summary = "Validate and normalize a registry entry from the catalog."
+
+summary = "Normalise a registry entry declared in catalog.json."
+
+[palette]
+category = "Registry/Internal"
+icon = "mdi:server"
+tags = ["catalog", "normalize"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "entry"
+type = "object"
+required = true
+description = "Registry entry to validate."
+
+[[io.output]]
+name = "ok"
+type = "boolean"
+description = "True when the registry entry is valid."
+
+[[io.output]]
+name = "line"
+type = "object"
+description = "Registry line inserted into the JSONL output."
+
+[[io.output]]
+name = "warnings"
+type = "array"
+description = "Issues detected for the registry entry."
 
 [deps]
 requires = [

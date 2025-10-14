@@ -4,7 +4,52 @@ name = "normalize_package"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-summary = "Validate and normalize a package entry from the catalog."
+
+summary = "Validate and normalise a package entry."
+
+[palette]
+category = "Registry/Internal"
+icon = "mdi:package-variant"
+tags = ["catalog", "normalize"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "entry"
+type = "object"
+required = true
+description = "Package entry from catalog.json."
+
+[[io.output]]
+name = "ok"
+type = "boolean"
+description = "True when the package entry is valid."
+
+[[io.output]]
+name = "id"
+type = "string"
+description = "Package identifier when valid."
+
+[[io.output]]
+name = "registryId"
+type = "string"
+description = "Associated registry identifier."
+
+[[io.output]]
+name = "versionsPath"
+type = "string"
+description = "Path to the versions document."
+
+[[io.output]]
+name = "priority"
+type = "number"
+description = "Package-level priority (nullable)."
+
+[[io.output]]
+name = "warnings"
+type = "array"
+description = "Issues detected while processing the package."
 
 [deps]
 requires = [

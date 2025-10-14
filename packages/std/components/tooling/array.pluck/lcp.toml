@@ -4,7 +4,33 @@ name = "pluck"
 namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
+
 summary = "Extract a property from each object in an array."
+
+[palette]
+category = "Array"
+icon = "mdi:format-list-text"
+tags = ["array", "mapping"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "items"
+type = "array"
+required = false
+description = "Array containing objects."
+
+[[io.input]]
+name = "field"
+type = "string"
+required = true
+description = "Property name to extract."
+
+[[io.output]]
+name = "values"
+type = "array"
+description = "Extracted property values (undefined when missing)."
 
 [deps]
 requires = [

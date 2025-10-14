@@ -4,7 +4,44 @@ name = "read_file"
 namespace = "tooling/json"
 version = "0.1.0"
 kind = "component"
-summary = "Read and parse a JSON file, optionally relative to a base path."
+
+summary = "Read and parse a JSON file from disk."
+
+[palette]
+category = "JSON"
+icon = "mdi:file-json"
+tags = ["json", "io"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "basePath"
+type = "string"
+required = false
+description = "Base directory joined with the JSON path."
+
+[[io.input]]
+name = "path"
+type = "string"
+required = true
+description = "Path to the JSON file."
+
+[[io.input]]
+name = "encoding"
+type = "string"
+required = false
+description = "File encoding (defaults to utf-8)."
+
+[[io.output]]
+name = "path"
+type = "string"
+description = "Resolved absolute path."
+
+[[io.output]]
+name = "value"
+type = "any"
+description = "Parsed JSON value."
 
 [deps]
 requires = [

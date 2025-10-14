@@ -4,7 +4,27 @@ name = "packages_map"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-summary = "Convert package registry references into the registry.json packages map."
+
+summary = "Build the registry packages map from package metadata."
+
+[palette]
+category = "Registry/Internal"
+icon = "mdi:map-legend"
+tags = ["catalog", "mapping"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "entries"
+type = "array"
+required = false
+description = "Package registry references."
+
+[[io.output]]
+name = "map"
+type = "object"
+description = "Mapping suitable for registry.json."
 
 [deps]
 requires = [

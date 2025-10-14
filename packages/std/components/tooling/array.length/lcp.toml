@@ -1,11 +1,30 @@
-
 schemaVersion = "1.0"
 id = "lcod://tooling/array/length@0.1.0"
 name = "length"
 namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-summary = "Return the length of an array (0 if not an array)."
+
+summary = "Return the number of items in an array."
+
+[palette]
+category = "Array"
+icon = "mdi:numeric"
+tags = ["array", "metrics"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "items"
+type = "array"
+required = false
+description = "Array to measure (non-arrays yield length 0)."
+
+[[io.output]]
+name = "length"
+type = "number"
+description = "Number of elements in the array."
 
 [deps]
 requires = [

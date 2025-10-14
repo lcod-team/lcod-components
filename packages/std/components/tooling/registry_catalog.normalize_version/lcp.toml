@@ -4,7 +4,60 @@ name = "normalize_version"
 namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-summary = "Validate and normalize a package version entry."
+
+summary = "Normalise a single package version entry."
+
+[palette]
+category = "Registry/Internal"
+icon = "mdi:tag-outline"
+tags = ["catalog", "normalize"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "packageId"
+type = "string"
+required = false
+description = "Parent package identifier."
+
+[[io.input]]
+name = "registryId"
+type = "string"
+required = false
+description = "Registry identifier applied to the version."
+
+[[io.input]]
+name = "packagePriority"
+type = "number"
+required = false
+description = "Default priority declared at package level."
+
+[[io.input]]
+name = "entry"
+type = "object"
+required = true
+description = "Version entry to normalise."
+
+[[io.output]]
+name = "ok"
+type = "boolean"
+description = "True when the version entry is valid."
+
+[[io.output]]
+name = "line"
+type = "object"
+description = "Component line for the JSONL output."
+
+[[io.output]]
+name = "detail"
+type = "object"
+description = "Simplified version details used by diagnostics."
+
+[[io.output]]
+name = "warnings"
+type = "array"
+description = "Issues detected for the version entry."
 
 [deps]
 requires = [

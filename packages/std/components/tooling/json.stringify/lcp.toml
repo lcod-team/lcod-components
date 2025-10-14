@@ -1,11 +1,42 @@
-
 schemaVersion = "1.0"
 id = "lcod://tooling/json/stringify@0.1.0"
 name = "stringify"
 namespace = "tooling/json"
 version = "0.1.0"
 kind = "component"
-summary = "Convert a JSON-compatible value into a string with optional indentation."
+
+summary = "Serialize a value into JSON text."
+
+[palette]
+category = "JSON"
+icon = "mdi:code-json"
+tags = ["json", "serialization"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "value"
+type = "any"
+required = true
+description = "Value to serialize."
+
+[[io.input]]
+name = "indent"
+type = "number"
+required = false
+description = "Number of spaces used for indentation."
+
+[[io.input]]
+name = "trailingNewline"
+type = "boolean"
+required = false
+description = "Append a newline when true."
+
+[[io.output]]
+name = "json"
+type = "string"
+description = "Serialized JSON string."
 
 [deps]
 requires = [

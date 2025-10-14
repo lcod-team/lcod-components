@@ -1,11 +1,30 @@
-
 schemaVersion = "1.0"
 id = "lcod://tooling/array/find_duplicates@0.1.0"
 name = "find_duplicates"
 namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-summary = "Find duplicate string values in an array (case-sensitive)."
+
+summary = "Return duplicated string values present in an array."
+
+[palette]
+category = "Array"
+icon = "mdi:alert-octagon-outline"
+tags = ["array", "dedupe"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "items"
+type = "array"
+required = false
+description = "Array inspected for duplicate string values."
+
+[[io.output]]
+name = "duplicates"
+type = "array"
+description = "Unique list of duplicated strings."
 
 [deps]
 requires = [
