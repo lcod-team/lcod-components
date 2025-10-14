@@ -7,6 +7,8 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      LCOD_RESOLVER_PATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
 
