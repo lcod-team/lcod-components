@@ -6,31 +6,107 @@ version = "0.1.0"
 kind = "workspace-package"
 
 [workspace]
-components = [
-  "lcod://tooling/array/append@0.1.0",
-  "lcod://tooling/array/compact@0.1.0",
-  "lcod://tooling/array/find_duplicates@0.1.0",
-  "lcod://tooling/array/flatten@0.1.0",
-  "lcod://tooling/array/length@0.1.0",
-  "lcod://tooling/array/pluck@0.1.0",
-  "lcod://tooling/fs/write_if_changed@0.1.0",
-  "lcod://tooling/json/read_file@0.1.0",
-  "lcod://tooling/json/stringify@0.1.0",
-  "lcod://tooling/jsonl/from_objects@0.1.0",
-  "lcod://tooling/registry_catalog/collect@0.1.0",
-  "lcod://tooling/registry_catalog/duplicate_package_errors@0.1.0",
-  "lcod://tooling/registry_catalog/normalize_catalog@0.1.0",
-  "lcod://tooling/registry_catalog/normalize_package@0.1.0",
-  "lcod://tooling/registry_catalog/normalize_registry@0.1.0",
-  "lcod://tooling/registry_catalog/normalize_version@0.1.0",
-  "lcod://tooling/registry_catalog/normalize_versions_doc@0.1.0",
-  "lcod://tooling/registry_catalog/packages_map@0.1.0",
-  "lcod://tooling/registry_catalog/refresh@0.1.0",
-  "lcod://tooling/registry_catalog/validate@0.1.0",
-  "lcod://tooling/registry_catalog/validate_package@0.1.0",
-  "lcod://tooling/registry_catalog/write_outputs@0.1.0",
-  "lcod://tooling/string/ensure_trailing_newline@0.1.0",
-  "lcod://tooling/value/is_array@0.1.0",
-  "lcod://tooling/value/is_object@0.1.0",
-  "lcod://tooling/value/is_string_nonempty@0.1.0"
-]
+[[workspace.components]]
+id = "lcod://tooling/array/append@0.1.0"
+path = "components/tooling/array.append"
+
+[[workspace.components]]
+id = "lcod://tooling/array/compact@0.1.0"
+path = "components/tooling/array.compact"
+
+[[workspace.components]]
+id = "lcod://tooling/array/find_duplicates@0.1.0"
+path = "components/tooling/array.find_duplicates"
+
+[[workspace.components]]
+id = "lcod://tooling/array/flatten@0.1.0"
+path = "components/tooling/array.flatten"
+
+[[workspace.components]]
+id = "lcod://tooling/array/length@0.1.0"
+path = "components/tooling/array.length"
+
+[[workspace.components]]
+id = "lcod://tooling/array/pluck@0.1.0"
+path = "components/tooling/array.pluck"
+
+[[workspace.components]]
+id = "lcod://tooling/fs/write_if_changed@0.1.0"
+path = "components/tooling/fs.write_if_changed"
+
+[[workspace.components]]
+id = "lcod://tooling/json/read_file@0.1.0"
+path = "components/tooling/json.read_file"
+
+[[workspace.components]]
+id = "lcod://tooling/json/stringify@0.1.0"
+path = "components/tooling/json.stringify"
+
+[[workspace.components]]
+id = "lcod://tooling/jsonl/from_objects@0.1.0"
+path = "components/tooling/jsonl.from_objects"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/collect@0.1.0"
+path = "components/tooling/registry_catalog.collect"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/duplicate_package_errors@0.1.0"
+path = "components/tooling/registry_catalog.duplicate_package_errors"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/normalize_catalog@0.1.0"
+path = "components/tooling/registry_catalog.normalize_catalog"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/normalize_package@0.1.0"
+path = "components/tooling/registry_catalog.normalize_package"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/normalize_registry@0.1.0"
+path = "components/tooling/registry_catalog.normalize_registry"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/normalize_version@0.1.0"
+path = "components/tooling/registry_catalog.normalize_version"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/normalize_versions_doc@0.1.0"
+path = "components/tooling/registry_catalog.normalize_versions_doc"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/packages_map@0.1.0"
+path = "components/tooling/registry_catalog.packages_map"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/refresh@0.1.0"
+path = "components/tooling/registry_catalog.refresh"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/validate@0.1.0"
+path = "components/tooling/registry_catalog.validate"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/validate_package@0.1.0"
+path = "components/tooling/registry_catalog.validate_package"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_catalog/write_outputs@0.1.0"
+path = "components/tooling/registry_catalog.write_outputs"
+
+[[workspace.components]]
+id = "lcod://tooling/string/ensure_trailing_newline@0.1.0"
+path = "components/tooling/string.ensure_trailing_newline"
+
+[[workspace.components]]
+id = "lcod://tooling/value/is_array@0.1.0"
+path = "components/tooling/value.is_array"
+
+[[workspace.components]]
+id = "lcod://tooling/value/is_object@0.1.0"
+path = "components/tooling/value.is_object"
+
+[[workspace.components]]
+id = "lcod://tooling/value/is_string_nonempty@0.1.0"
+path = "components/tooling/value.is_string_nonempty"
+
