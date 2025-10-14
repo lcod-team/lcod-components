@@ -1,0 +1,12 @@
+{
+  "name": "lcod-components",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "export:components": "node scripts/export-components.mjs"
+  },
+  "dependencies": {
+    "@iarna/toml": "^3.0.0"
+  }
+}
