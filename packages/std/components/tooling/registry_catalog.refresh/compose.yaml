@@ -1,6 +1,6 @@
 
 compose:
-  - call: lcod://tooling/registry_catalog.collect@0.1.0
+  - call: lcod://tooling/registry_catalog/collect@0.1.0
     in:
       rootPath: $.rootPath
       catalogPath: $.catalogPath
@@ -10,7 +10,7 @@ compose:
       collectedPackages: packages
       collectWarnings: warnings
 
-  - call: lcod://tooling/registry_catalog.validate@0.1.0
+  - call: lcod://tooling/registry_catalog/validate@0.1.0
     in:
       rootPath: $.rootPath
       catalogPath: $.catalogPath

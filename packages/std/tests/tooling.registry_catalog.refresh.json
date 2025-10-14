@@ -8,7 +8,7 @@
       "name": "refresh combines collect and validate",
       "compose": [
         {
-          "call": "lcod://tooling/registry_catalog.refresh@0.1.0",
+          "call": "lcod://tooling/registry_catalog/refresh@0.1.0",
           "in": {
             "rootPath": "./tests/fixtures/registry",
             "catalogPath": "catalog.json"

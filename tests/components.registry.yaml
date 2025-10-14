@@ -1,5 +1,5 @@
 compose:
-  - call: lcod://tooling/registry_catalog.collect@0.1.0
+  - call: lcod://tooling/registry_catalog/collect@0.1.0
     in:
       rootPath: "./tests/fixtures/registry"
       catalogPath: "catalog.json"
@@ -39,7 +39,7 @@ compose:
       input:
         collectResult: $.collectResult
 
-  - call: lcod://tooling/registry_catalog.validate@0.1.0
+  - call: lcod://tooling/registry_catalog/validate@0.1.0
     in:
       rootPath: "./tests/fixtures/registry"
       catalogPath: "catalog.json"
@@ -59,7 +59,7 @@ compose:
       input:
         validateResult: $.validateResult
 
-  - call: lcod://tooling/registry_catalog.validate@0.1.0
+  - call: lcod://tooling/registry_catalog/validate@0.1.0
     in:
       rootPath: "./tests/fixtures/registry_invalid"
       catalogPath: "catalog.json"
@@ -83,7 +83,7 @@ compose:
       input:
         validateInvalid: $.validateInvalid
 
-  - call: lcod://tooling/registry_catalog.refresh@0.1.0
+  - call: lcod://tooling/registry_catalog/refresh@0.1.0
     in:
       rootPath: "./tests/fixtures/registry"
       catalogPath: "catalog.json"

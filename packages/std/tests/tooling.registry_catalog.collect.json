@@ -7,7 +7,7 @@
       "name": "collects registry lines",
       "compose": [
         {
-          "call": "lcod://tooling/registry_catalog.collect@0.1.0",
+          "call": "lcod://tooling/registry_catalog/collect@0.1.0",
           "in": {
             "rootPath": "./tests/fixtures/registry",
             "catalogPath": "catalog.json"

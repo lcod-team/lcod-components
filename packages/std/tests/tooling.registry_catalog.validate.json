@@ -8,7 +8,7 @@
       "name": "valid catalog passes with no errors",
       "compose": [
         {
-          "call": "lcod://tooling/registry_catalog.validate@0.1.0",
+          "call": "lcod://tooling/registry_catalog/validate@0.1.0",
           "in": {
             "rootPath": "./tests/fixtures/registry",
             "catalogPath": "catalog.json"
