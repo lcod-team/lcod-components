@@ -1,0 +1,80 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const root =
+            typeof state.workspaceRoot === 'string' && state.workspaceRoot.length > 0
+              ? state.workspaceRoot
+              : null;
+          if (!root) {
+            throw new Error('workspaceRoot is required');
+          }
+
+          const explicitId =
+            typeof state.sessionId === 'string' && state.sessionId.length > 0
+              ? state.sessionId
+              : null;
+          const randomSuffix = Math.random().toString(16).slice(2, 8);
+          const sessionId =
+            explicitId ?? `mcp-${Date.now().toString(36)}-${randomSuffix}`;
+
+          const joinResult = await imports.pathJoin({ base: root, segment: sessionId });
+          const workspacePath =
+            typeof joinResult?.path === 'string' ? joinResult.path : joinResult ?? `${root}/${sessionId}`;
+
+          const keepJoin = await imports.pathJoin({ base: workspacePath, segment: '.keep' });
+          const keepPath = typeof keepJoin?.path === 'string' ? keepJoin.path : keepJoin;
+          await imports.fsWriteFile({
+            path: keepPath,
+            data: '',
+            encoding: 'utf-8',
+            createParents: true
+          });
+
+          const provenanceJoin = await imports.pathJoin({
+            base: workspacePath,
+            segment: '.lcod/provenance.json'
+          });
+          const provenancePath =
+            typeof provenanceJoin?.path === 'string' ? provenanceJoin.path : provenanceJoin;
+
+          const provenance = {
+            sessions: [
+              {
+                sessionId,
+                createdAt: new Date().toISOString(),
+                componentId:
+                  typeof state.componentId === 'string' && state.componentId.length > 0
+                    ? state.componentId
+                    : undefined
+              }
+            ]
+          };
+
+          await imports.fsWriteFile({
+            path: provenancePath,
+            data: JSON.stringify(provenance, null, 2),
+            encoding: 'utf-8',
+            createParents: true
+          });
+
+          return {
+            sessionId,
+            workspaceRoot: root,
+            workspacePath,
+            provenancePath
+          };
+        }
+      input:
+        workspaceRoot: $.workspaceRoot
+        sessionId: $.sessionId
+        componentId: $.componentId
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+        fsWriteFile: lcod://axiom/fs/write-file@1
+    out:
+      sessionId: sessionId
+      workspaceRoot: workspaceRoot
+      workspacePath: workspacePath
+      provenancePath: provenancePath

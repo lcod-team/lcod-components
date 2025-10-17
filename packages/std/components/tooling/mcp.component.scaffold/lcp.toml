@@ -1,0 +1,67 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/mcp/component/scaffold@0.1.0"
+name = "scaffold"
+namespace = "tooling/mcp/component"
+version = "0.1.0"
+kind = "component"
+
+summary = "Generate a minimal LCOD component skeleton (descriptor, compose, docs) inside a workspace."
+
+[palette]
+category = "Authoring"
+icon = "mdi:application-brackets-outline"
+tags = ["mcp", "component", "scaffold"]
+
+[docs]
+readme = "docs/README.md"
+
+[[io.input]]
+name = "workspacePath"
+type = "string"
+required = true
+description = "Workspace directory created for the session (output of `tooling/mcp/session/open@0.1.0`)."
+
+[[io.input]]
+name = "componentId"
+type = "string"
+required = true
+description = "Component identifier in the form `lcod://namespace/name@version`."
+
+[[io.input]]
+name = "summary"
+type = "string"
+required = false
+description = "Optional summary stored in `lcp.toml` and README."
+
+[[io.input]]
+name = "palette"
+type = "object"
+required = false
+description = "Optional palette overrides (`category`, `icon`, `tags`)."
+
+[[io.output]]
+name = "componentPath"
+type = "string"
+description = "Root directory where the component files were generated."
+
+[[io.output]]
+name = "descriptorPath"
+type = "string"
+description = "Path to the generated `lcp.toml` descriptor."
+
+[[io.output]]
+name = "composePath"
+type = "string"
+description = "Path to the generated `compose.yaml`."
+
+[[io.output]]
+name = "readmePath"
+type = "string"
+description = "Path to `docs/README.md`."
+
+[deps]
+requires = [
+  "lcod://tooling/script@1",
+  "lcod://axiom/path/join@1",
+  "lcod://axiom/fs/write-file@1"
+]

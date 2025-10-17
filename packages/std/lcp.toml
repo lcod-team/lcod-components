@@ -110,3 +110,10 @@ path = "components/tooling/value.is_object"
 id = "lcod://tooling/value/is_string_nonempty@0.1.0"
 path = "components/tooling/value.is_string_nonempty"
 
+[[workspace.components]]
+id = "lcod://tooling/mcp/session/open@0.1.0"
+path = "components/tooling/mcp.session.open"
+
+[[workspace.components]]
+id = "lcod://tooling/mcp/component/scaffold@0.1.0"
+path = "components/tooling/mcp.component.scaffold"

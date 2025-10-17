@@ -1,0 +1,159 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const workspacePath =
+            typeof state.workspacePath === 'string' && state.workspacePath.length > 0
+              ? state.workspacePath
+              : null;
+          if (!workspacePath) {
+            throw new Error('workspacePath is required');
+          }
+
+          const id =
+            typeof state.componentId === 'string' && state.componentId.length > 0
+              ? state.componentId
+              : null;
+          if (!id || !id.startsWith('lcod://') || !id.includes('@')) {
+            throw new Error('componentId must follow lcod://namespace/name@version');
+          }
+
+          const [, rawId] = id.split('lcod://');
+          const [pathPart, version] = rawId.split('@');
+          if (!pathPart || !version) {
+            throw new Error('componentId must include namespace/name and version');
+          }
+          const segments = pathPart.split('/');
+          if (segments.length < 2) {
+            throw new Error('componentId must include namespace and name');
+          }
+          const name = segments.pop();
+          const namespace = segments.join('/');
+
+          const descriptorJoin = await imports.pathJoin({
+            base: workspacePath,
+            segment: 'lcp.toml'
+          });
+          const descriptorPath =
+            typeof descriptorJoin?.path === 'string' ? descriptorJoin.path : descriptorJoin;
+
+          const composeJoin = await imports.pathJoin({
+            base: workspacePath,
+            segment: 'compose.yaml'
+          });
+          const composePath =
+            typeof composeJoin?.path === 'string' ? composeJoin.path : composeJoin;
+
+          const readmeJoin = await imports.pathJoin({
+            base: workspacePath,
+            segment: 'docs/README.md'
+          });
+          const readmePath =
+            typeof readmeJoin?.path === 'string' ? readmeJoin.path : readmeJoin;
+
+          const summary =
+            typeof state.summary === 'string' && state.summary.length > 0
+              ? state.summary
+              : 'Describe the component behaviour and contracts.';
+
+          const palette = {
+            category:
+              typeof state.palette?.category === 'string' && state.palette.category.length > 0
+                ? state.palette.category
+                : 'Authoring',
+            icon:
+              typeof state.palette?.icon === 'string' && state.palette.icon.length > 0
+                ? state.palette.icon
+                : 'mdi:pencil-box-outline',
+            tags: Array.isArray(state.palette?.tags)
+              ? state.palette.tags.filter((tag) => typeof tag === 'string' && tag.length > 0)
+              : ['mcp', 'draft']
+          };
+
+          const descriptor = [
+            'schemaVersion = "1.0"',
+            `id = "${id}"`,
+            `name = "${name}"`,
+            `namespace = "${namespace}"`,
+            `version = "${version}"`,
+            'kind = "component"',
+            '',
+            `summary = "${summary.replace(/"/g, '\\"')}"`,
+            '',
+            '[palette]',
+            `category = "${palette.category.replace(/"/g, '\\"')}"`,
+            `icon = "${palette.icon.replace(/"/g, '\\"')}"`,
+            palette.tags.length > 0
+              ? `tags = [${palette.tags.map((tag) => `"${tag.replace(/"/g, '\\"')}"`).join(', ')}]`
+              : 'tags = []',
+            '',
+            '[docs]',
+            'readme = "docs/README.md"',
+            '',
+            '[[io.input]]',
+            'name = "input"',
+            'type = "object"',
+            'required = false',
+            'description = "TODO: describe inputs."',
+            '',
+            '[[io.output]]',
+            'name = "result"',
+            'type = "any"',
+            'description = "TODO: describe outputs."',
+            ''
+          ].join('\n');
+
+          const composeYaml = `compose: []\n`;
+
+          const readmeContent = [
+            `# ${namespace}/${name}`,
+            '',
+            summary,
+            '',
+            '## TODO',
+            '',
+            '- Describe inputs/outputs',
+            '- Flesh out implementation steps in `compose.yaml`',
+            '- Update tests under `tests/`'
+          ].join('\n');
+
+          await imports.fsWriteFile({
+            path: descriptorPath,
+            data: descriptor,
+            encoding: 'utf-8',
+            createParents: true
+          });
+          await imports.fsWriteFile({
+            path: composePath,
+            data: composeYaml,
+            encoding: 'utf-8',
+            createParents: true
+          });
+          await imports.fsWriteFile({
+            path: readmePath,
+            data: readmeContent,
+            encoding: 'utf-8',
+            createParents: true
+          });
+
+          return {
+            componentPath: workspacePath,
+            descriptorPath,
+            composePath,
+            readmePath
+          };
+        }
+      input:
+        workspacePath: $.workspacePath
+        componentId: $.componentId
+        summary: $.summary
+        palette: $.palette
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+        fsWriteFile: lcod://axiom/fs/write-file@1
+    out:
+      componentPath: componentPath
+      descriptorPath: descriptorPath
+      composePath: composePath
+      readmePath: readmePath

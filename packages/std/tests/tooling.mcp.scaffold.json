@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "id": "lcod://pkg/std/tooling.mcp.scaffold.test@0.1.0",
+  "kind": "test",
+  "tests": [
+    {
+      "name": "scaffolds a component in a fresh session workspace",
+      "compose": [
+        {
+          "call": "lcod://tooling/script@1",
+          "in": {
+            "source": "async ({ state, imports }) => {\n  const root = typeof state.componentsRoot === 'string' && state.componentsRoot.length > 0\n    ? state.componentsRoot\n    : null;\n  const warnings = [];\n  if (!root) {\n    warnings.push('tests: componentsRoot is required');\n    return { components: [], warnings };\n  }\n  const defs = [\n    { id: 'lcod://tooling/mcp/session/open@0.1.0', composePath: 'tooling/mcp.session.open/compose.yaml' },\n    { id: 'lcod://tooling/mcp/component/scaffold@0.1.0', composePath: 'tooling/mcp.component.scaffold/compose.yaml' }\n  ];\n  const components = [];\n  for (const def of defs) {\n    try {\n      const joined = await imports.pathJoin({ base: root, segment: def.composePath });\n      const resolved = typeof joined?.path === 'string' ? joined.path : joined;\n      await imports.fsReadFile({ path: resolved, encoding: 'utf-8' });\n      components.push({ id: def.id, composePath: resolved });\n    } catch (err) {\n      warnings.push(`tests: failed to resolve ${def.id}: ${err.message}`);\n    }\n  }\n  return { components, warnings };\n}",
+            "input": {
+              "componentsRoot": "./packages/std/components"
+            },
+            "imports": {
+              "pathJoin": "lcod://axiom/path/join@1",
+              "fsReadFile": "lcod://axiom/fs/read-file@1"
+            }
+          },
+          "out": {
+            "registryPrep": "$"
+          }
+        },
+        {
+          "call": "lcod://tooling/resolver/register@1",
+          "in": {
+            "components": "$.registryPrep.components"
+          },
+          "out": {
+            "registered": "$.registered"
+          }
+        },
+        {
+          "call": "lcod://tooling/mcp/session/open@0.1.0",
+          "in": {
+            "workspaceRoot": "./tests/tmp/workspaces"
+          },
+          "out": {
+            "session": "$"
+          }
+        },
+        {
+          "call": "lcod://tooling/mcp/component/scaffold@0.1.0",
+          "in": {
+            "workspacePath": "$.session.workspacePath",
+            "componentId": "lcod://demo/example@0.1.0",
+            "summary": "Demo component generated via MCP scaffold"
+          },
+          "out": {
+            "scaffold": "$"
+          }
+        },
+        {
+          "call": "lcod://axiom/fs/read-file@1",
+          "in": {
+            "path": "$.scaffold.descriptorPath",
+            "encoding": "utf-8"
+          },
+          "out": {
+            "descriptorContent": "$.data"
+          }
+        },
+        {
+          "call": "lcod://axiom/fs/read-file@1",
+          "in": {
+            "path": "$.scaffold.readmePath",
+            "encoding": "utf-8"
+          },
+          "out": {
+            "readmeContent": "$.data"
+          }
+        },
+        {
+          "call": "lcod://tooling/script@1",
+          "in": {
+            "source": "async ({ state }) => {\n  const descriptorHasSummary = typeof state.descriptor === 'string'\n    ? state.descriptor.includes('summary = \"Demo component generated via MCP scaffold\"')\n    : false;\n  const readmeHasTitle = typeof state.readme === 'string'\n    ? state.readme.startsWith('# demo/example') && state.readme.includes('Demo component generated via MCP scaffold')\n    : false;\n  return { descriptorHasSummary, readmeHasTitle };\n}",
+            "input": {
+              "descriptor": "$.descriptorContent",
+              "readme": "$.readmeContent"
+            }
+          },
+          "out": {
+            "result": "$"
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "descriptorHasSummary": true,
+          "readmeHasTitle": true
+        }
+      }
+    }
+  ]
+}
