@@ -14,3 +14,4 @@ Append a value to an array and return the new list.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `items` | array | Updated array including the appended value. |
+| `length` | number | Length of the array after appending the value. |

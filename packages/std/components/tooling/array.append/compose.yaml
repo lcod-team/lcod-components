@@ -1,17 +1,10 @@
 
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://axiom/array/push@1
     in:
-      source: |
-        async ({ state }) => {
-          const list = Array.isArray(state.items) ? state.items.slice() : [];
-          if (state.value !== undefined) {
-            list.push(state.value);
-          }
-          return { items: list };
-        }
-      input:
-        items: $.items
-        value: $.value
+      items: $.items
+      value: $.value
+      clone: $.clone
     out:
       items: items
+      length: length

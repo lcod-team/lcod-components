@@ -28,5 +28,5 @@ description = "Number of elements in the array."
 
 [deps]
 requires = [
-  "lcod://tooling/script@1"
+  "lcod://axiom/array/length@1"
 ]

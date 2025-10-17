@@ -32,7 +32,12 @@ name = "items"
 type = "array"
 description = "Updated array including the appended value."
 
+[[io.output]]
+name = "length"
+type = "number"
+description = "Length of the array after the append operation."
+
 [deps]
 requires = [
-  "lcod://tooling/script@1"
+  "lcod://axiom/array/push@1"
 ]

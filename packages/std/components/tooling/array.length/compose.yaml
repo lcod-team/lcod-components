@@ -1,10 +1,7 @@
 
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://axiom/array/length@1
     in:
-      source: |
-        async ({ state }) => ({ length: Array.isArray(state.items) ? state.items.length : 0 })
-      input:
-        items: $.items
+      items: $.items
     out:
       length: length
