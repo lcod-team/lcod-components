@@ -127,6 +127,10 @@ id = "lcod://tooling/string/ensure_trailing_newline@0.1.0"
 path = "components/tooling/string.ensure_trailing_newline"
 
 [[workspace.components]]
+id = "lcod://tooling/registry_sources/resolve@0.1.0"
+path = "components/tooling/registry_sources.resolve"
+
+[[workspace.components]]
 id = "lcod://tooling/value/is_array@0.1.0"
 path = "components/tooling/value.is_array"
 
