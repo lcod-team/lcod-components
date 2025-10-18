@@ -17,7 +17,7 @@ jobs:
 
       - name: Download run_compose
         run: |
-          curl -sSL https://github.com/lcod-team/lcod-kernel-rs/releases/download/run-compose-v0.1.1/run-compose-linux-x86_64.tar.gz -o run-compose.tar.gz
+          curl -sSL https://github.com/lcod-team/lcod-kernel-rs/releases/download/v0.1.2/run-compose-linux-x86_64.tar.gz -o run-compose.tar.gz
           tar -xzf run-compose.tar.gz
           chmod +x run-compose
 
