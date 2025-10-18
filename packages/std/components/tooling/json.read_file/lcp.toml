@@ -49,5 +49,5 @@ requires = [
   "lcod://flow/if@1",
   "lcod://axiom/path/join@1",
   "lcod://axiom/fs/read-file@1",
-  "lcod://axiom/json/parse@1"
+  "lcod://core/json/decode@0.1.0"
 ]

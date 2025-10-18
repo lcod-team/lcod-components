@@ -45,16 +45,16 @@ compose:
     out:
       fileContent: data
 
-  - call: lcod://axiom/json/parse@1
+  - call: lcod://core/json/decode@0.1.0
     in:
       text: $.fileContent
     out:
-      parsed: value
+      decoded: $
 
   - call: lcod://impl/set@1
     in:
       path: $.resolvedPath
-      value: $.parsed
+      value: $.decoded.value
     out:
       path: path
       value: value
