@@ -6,31 +6,33 @@ compose:
           const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
           const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
           const ensureArray = (value) => (Array.isArray(value) ? value : []);
-          const ensureTrailingSlash = (value) => {
-            if (!value || typeof value !== 'string') return value;
-            return value.endsWith('/') ? value : `${value}/`;
-          };
+
+          const warnings = [];
+          const registryMap = new Map();
+
+          const downloadsRoot = ensureString(state.downloadsRoot) || '.';
+          const sourcesConfig = ensureObject(state.sourcesConfig) || {};
+          const sourcesBaseDir = ensureString(state.sourcesBaseDir) || '.';
+
+          const defaults = ensureObject(sourcesConfig.defaults) || {};
+          const defaultEntrypoint = ensureObject(defaults.entrypoint) || {};
+          const basePriority = Number.isFinite(defaults.priority) ? Math.trunc(defaults.priority) : null;
 
           const joinChain = async (base, ...segments) => {
-            const result = await imports.joinChain({ base, segments });
-            return result?.path ?? base ?? '';
+            const res = await imports.joinChain({ base, segments });
+            return res?.path ?? base ?? '';
           };
 
           const dirname = async (target) => {
-            const result = await imports.dirname({ path: target });
-            return result?.dirname ?? target;
-          };
-
-          const isAbsolutePath = async (value) => {
-            if (!value) return false;
-            const res = await imports.isAbsolute({ path: value });
-            return !!res?.absolute;
+            const res = await imports.dirname({ path: target });
+            return res?.dirname ?? target;
           };
 
           const resolveAbsolute = async (base, value) => {
             if (!value) return null;
             if (value.startsWith('file://')) return value.slice('file://'.length);
-            if (await isAbsolutePath(value)) return value;
+            const absolute = await imports.isAbsolute({ path: value });
+            if (absolute?.absolute) return value;
             return await joinChain(base, value);
           };
 
@@ -44,17 +46,6 @@ compose:
             const hex = digest?.hex?.trim();
             return hex && hex.length ? hex : `${Date.now()}${Math.random().toString(16).slice(2)}`;
           };
-
-          const warnings = [];
-          const registryMap = new Map();
-
-          const downloadsRoot = ensureString(state.downloadsRoot) || '.';
-          const sourcesConfig = ensureObject(state.sourcesConfig) || {};
-          const sourcesBaseDir = ensureString(state.sourcesBaseDir) || '.';
-
-          const defaults = ensureObject(sourcesConfig.defaults) || {};
-          const defaultEntrypoint = ensureObject(defaults.entrypoint) || {};
-          const basePriority = Number.isFinite(defaults.priority) ? Math.trunc(defaults.priority) : undefined;
 
           const fetchEntrypoint = async (entrypoint, context) => {
             const kind = ensureString(entrypoint.type)?.toLowerCase() || 'https';
@@ -132,228 +123,33 @@ compose:
             return entry;
           };
 
-          const concatUrl = (base, segment) => {
-            if (!base) return null;
-            const cleanedBase = ensureTrailingSlash(base);
-            const cleanSegment = segment ? segment.replace(/^\/+/g, '') : '';
-            return cleanSegment ? `${cleanedBase}${cleanSegment}` : cleanedBase;
+          const queue = [];
+          const enqueuePointer = async (entry, inherited, baseDirOverride) => {
+            const result = await imports.normalizePointer({
+              entry,
+              inherited,
+              baseDir: baseDirOverride,
+              sourcesBaseDir,
+              defaultEntrypoint,
+              basePriority
+            });
+            if (result?.warnings?.length) warnings.push(...result.warnings);
+            if (result?.pointer) queue.push(result.pointer);
           };
 
-          const processConcreteCatalogue = async (catalogue, pointer, context) => {
-            const registryId = ensureString(catalogue.id) || pointer.id || 'registry';
-            const priority = Number.isFinite(catalogue.priority) ? Math.trunc(catalogue.priority) : pointer.priority ?? basePriority;
-            const origin = ensureObject(catalogue.origin);
-            let defaultsEntry = null;
+          const sources = ensureArray(sourcesConfig.sources);
+          for (const sourceEntry of sources) {
+            await enqueuePointer(sourceEntry, null, sourcesBaseDir);
+          }
 
-            if (origin) {
-              const originType = ensureString(origin.type)?.toLowerCase();
-              if (originType === 'http' || originType === 'https') {
-                let baseUrl = ensureString(origin.url) || null;
-                if (origin.path) baseUrl = concatUrl(baseUrl, origin.path);
-                if (baseUrl) {
-                  defaultsEntry = {
-                    id: registryId,
-                    type: 'http',
-                    url: ensureTrailingSlash(baseUrl)
-                  };
-                }
-              } else if (originType === 'file') {
-                let basePath = ensureString(origin.url);
-                if (basePath && basePath.startsWith('file://')) {
-                  basePath = basePath.slice('file://'.length);
-                }
-                if (basePath && !(await isAbsolutePath(basePath))) {
-                  basePath = await joinChain(context.baseDir, basePath);
-                }
-                if (!basePath) basePath = context.baseDir;
-                if (origin.path) basePath = await joinChain(basePath, origin.path);
-                const fileUrl = await imports.toFileUrl({ path: basePath });
-                if (fileUrl?.url) {
-                  defaultsEntry = {
-                    id: registryId,
-                    type: 'file',
-                    url: fileUrl.url
-                  };
-                }
-              } else if (originType === 'git') {
-                const repoUrl = ensureString(origin.url) ? origin.url.replace(/\.git$/i, '') : null;
-                const commit = ensureString(origin.commit) || pointer.commit || null;
-                if (repoUrl && repoUrl.startsWith('https://github.com/') && commit) {
-                  const repoPath = repoUrl.slice('https://github.com/'.length);
-                  let rawBase = `https://raw.githubusercontent.com/${repoPath}/${commit}/`;
-                  if (origin.path) rawBase = concatUrl(rawBase, origin.path);
-                  defaultsEntry = {
-                    id: registryId,
-                    type: 'http',
-                    url: ensureTrailingSlash(rawBase)
-                  };
-                } else if (!repoUrl) {
-                  warnings.push(`Catalogue ${registryId} uses unsupported git origin`);
-                }
-              }
-            }
-
-            if (!defaultsEntry && pointer.entrypoint && pointer.entrypoint.type === 'https') {
-              const fallbackUrl = ensureString(pointer.entrypoint.url);
-              if (fallbackUrl) {
-                defaultsEntry = {
-                  id: registryId,
-                  type: 'http',
-                  url: ensureTrailingSlash(fallbackUrl.replace(/[^/]+$/, ''))
-                };
-              }
-            }
-
-            const components = ensureArray(catalogue.components);
-            let produced = 0;
-            for (const component of components) {
-              const componentId = ensureString(component.id);
-              if (!componentId) {
-                warnings.push(`Catalogue ${registryId} contains a component without id`);
-                continue;
-              }
-              const versions = ensureArray(component.versions);
-              for (const version of versions) {
-                const versionName = ensureString(version.version);
-                const manifestRef = ensureString(version.manifest);
-                if (!versionName || !manifestRef) {
-                  warnings.push(`Catalogue ${registryId} entry ${componentId} is missing manifest or version`);
-                  continue;
-                }
-                const normalizedManifest = manifestRef.replace(/^\.\//, '');
-                const target = ensureRegistrySource(registryId, priority, defaultsEntry, pointer.metadata);
-                const line = {
-                  kind: 'component',
-                  id: componentId,
-                  version: versionName,
-                  manifest: normalizedManifest,
-                  registryId
-                };
-                if (ensureString(version.sha256)) line.sha256 = version.sha256;
-                if (ensureObject(version.artifact)) line.artifact = version.artifact;
-                target.lines.push(line);
-                produced += 1;
-              }
-            }
-
-            if (!produced) {
-              warnings.push(`Catalogue ${registryId} produced no component entries`);
-            }
-          };
-
-          const normalizePointer = (sourceEntry, inherited, baseDirOverride) => {
-            const entry = ensureObject(sourceEntry) || {};
-            const pointer = {
-              id: ensureString(entry.id) || ensureString(inherited?.id) || 'catalogue',
-              priority: Number.isFinite(entry.priority) ? Math.trunc(entry.priority) : inherited?.priority ?? basePriority ?? null,
-              checksum: ensureString(entry.checksum) || ensureString(inherited?.checksum) || null,
-              signature: ensureString(entry.signature) || ensureString(inherited?.signature) || null,
-              publicKey: ensureString(entry.publicKey) || ensureString(inherited?.publicKey) || null,
-              metadata: entry.metadata || inherited?.metadata || null,
-              entrypoint: {},
-              transport: entry.transport || inherited?.transport || null,
-              baseDir: baseDirOverride || inherited?.baseDir || sourcesBaseDir,
-              commit: inherited?.commit || null
-            };
-
-            const mergedEntrypoint = {
-              ...defaultEntrypoint,
-              ...(inherited?.entrypoint || {}),
-              ...(entry.entrypoint || {}),
-              type: entry.entrypoint?.type || inherited?.entrypoint?.type || entry.type || entry.kind || defaultEntrypoint.type
-            };
-
-            if (typeof entry.path === 'string' && entry.path.length > 0) {
-              mergedEntrypoint.path = entry.path;
-            }
-            if (typeof entry.url === 'string' && entry.url.length > 0) {
-              mergedEntrypoint.url = entry.url;
-            }
-            if (typeof entry.method === 'string' && entry.method.length > 0) {
-              mergedEntrypoint.method = entry.method;
-            }
-            if (entry.headers && typeof entry.headers === 'object' && !Array.isArray(entry.headers)) {
-              mergedEntrypoint.headers = entry.headers;
-            }
-            if (entry.query && typeof entry.query === 'object' && !Array.isArray(entry.query)) {
-              mergedEntrypoint.query = entry.query;
-            }
-            if (typeof entry.timeoutMs === 'number') {
-              mergedEntrypoint.timeoutMs = entry.timeoutMs;
-            }
-            if (typeof entry.followRedirects === 'boolean') {
-              mergedEntrypoint.followRedirects = entry.followRedirects;
-            }
-            if (Object.prototype.hasOwnProperty.call(entry, 'body')) {
-              mergedEntrypoint.body = entry.body;
-            }
-            if (typeof entry.bodyEncoding === 'string' && entry.bodyEncoding.length > 0) {
-              mergedEntrypoint.bodyEncoding = entry.bodyEncoding;
-            }
-            if (typeof entry.ref === 'string' && entry.ref.length > 0) {
-              mergedEntrypoint.ref = entry.ref;
-            }
-            if (typeof entry.commit === 'string' && entry.commit.length > 0) {
-              mergedEntrypoint.commit = entry.commit;
-            }
-            if (typeof entry.subpath === 'string' && entry.subpath.length > 0) {
-              mergedEntrypoint.subpath = entry.subpath;
-            }
-            const kind = ensureString(mergedEntrypoint.type)?.toLowerCase() || 'https';
-
-            if (kind === 'file') {
-              const rawPath = ensureString(mergedEntrypoint.path);
-              if (!rawPath) {
-                warnings.push(`sources entry ${pointer.id} (file) is missing path`);
-                return null;
-              }
-              pointer.entrypoint = { type: 'file', path: rawPath };
-            } else if (kind === 'http' || kind === 'https') {
-              const url = ensureString(mergedEntrypoint.url);
-              if (!url) {
-                warnings.push(`sources entry ${pointer.id} (${kind}) is missing url`);
-                return null;
-              }
-              pointer.entrypoint = {
-                type: 'https',
-                url,
-                method: mergedEntrypoint.method,
-                headers: mergedEntrypoint.headers,
-                query: mergedEntrypoint.query,
-                timeoutMs: mergedEntrypoint.timeoutMs,
-                followRedirects: mergedEntrypoint.followRedirects,
-                body: mergedEntrypoint.body,
-                bodyEncoding: mergedEntrypoint.bodyEncoding
-              };
-            } else if (kind === 'git') {
-              const url = ensureString(mergedEntrypoint.url);
-              if (!url) {
-                warnings.push(`sources entry ${pointer.id} (git) is missing url`);
-                return null;
-              }
-              pointer.entrypoint = {
-                type: 'git',
-                url,
-                ref: mergedEntrypoint.ref,
-                commit: mergedEntrypoint.commit,
-                subpath: mergedEntrypoint.subpath,
-                path: mergedEntrypoint.path
-              };
-            } else {
-              warnings.push(`sources entry ${pointer.id} declares unsupported type ${kind}`);
-              return null;
-            }
-
-            return pointer;
-          };
-
-          const processPointer = async (pointer, context) => {
+          while (queue.length) {
+            const pointer = queue.shift();
             let payload;
             try {
-              payload = await fetchEntrypoint(pointer.entrypoint, context);
+              payload = await fetchEntrypoint(pointer.entrypoint, { baseDir: pointer.baseDir });
             } catch (err) {
               warnings.push(`Failed to load catalogue for ${pointer.id}: ${err?.message || err}`);
-              return;
+              continue;
             }
 
             if (pointer.checksum) {
@@ -369,34 +165,43 @@ compose:
               parsed = JSON.parse(payload.text);
             } catch (err) {
               warnings.push(`Invalid catalogue payload for ${pointer.id}: ${err.message}`);
-              return;
+              continue;
             }
 
             const schema = ensureString(parsed.schema);
             if (schema === 'lcod-registry/catalogues@1') {
               const catalogues = ensureArray(parsed.catalogues);
               for (const entry of catalogues) {
-                const normalized = normalizePointer(entry, pointer, payload.baseDir);
-                if (!normalized) continue;
-                await processPointer(normalized, { baseDir: payload.baseDir });
+                await enqueuePointer(entry, pointer, payload.baseDir);
               }
-              return;
+              continue;
             }
 
             if (schema === 'lcod-registry/catalogue@1') {
               pointer.commit = pointer.commit || payload.commit || null;
-              await processConcreteCatalogue(parsed, pointer, payload);
-              return;
+              const processed = await imports.processCatalogue({
+                catalogue: parsed,
+                pointer,
+                basePriority,
+                baseDir: payload.baseDir
+              });
+              if (processed?.warnings?.length) warnings.push(...processed.warnings);
+              if (processed?.entry && Array.isArray(processed.entry.lines) && processed.entry.lines.length) {
+                const effectivePriority = Number.isFinite(processed.entry.priority) ? processed.entry.priority : null;
+                const target = ensureRegistrySource(
+                  processed.entry.id,
+                  effectivePriority,
+                  processed.entry.defaults,
+                  processed.entry.metadata || pointer.metadata
+                );
+                for (const line of processed.entry.lines) {
+                  target.lines.push(line);
+                }
+              }
+              continue;
             }
 
             warnings.push(`Unsupported catalogue schema ${schema || '<missing>'} for ${pointer.id}`);
-          };
-
-          const sources = ensureArray(sourcesConfig.sources);
-          for (const sourceEntry of sources) {
-            const normalized = normalizePointer(sourceEntry, null, sourcesBaseDir);
-            if (!normalized) continue;
-            await processPointer(normalized, { baseDir: sourcesBaseDir });
           }
 
           const registrySources = Array.from(registryMap.values())
@@ -409,10 +214,7 @@ compose:
               return cleaned;
             });
 
-          return {
-            registrySources,
-            warnings
-          };
+          return { registrySources, warnings };
         }
       input:
         sourcesConfig: $.sourcesConfig
@@ -425,8 +227,6 @@ compose:
         joinChain: lcod://tooling/path/join_chain@0.1.0
         dirname: lcod://tooling/path/dirname@0.1.0
         isAbsolute: lcod://tooling/path/is_absolute@0.1.0
-        toFileUrl: lcod://tooling/path/to_file_url@0.1.0
         sha256: lcod://tooling/hash/sha256_base64@0.1.0
-    out:
-      registrySources: registrySources
-      warnings: warnings
+        normalizePointer: lcod://tooling/registry_sources/normalize_pointer@0.1.0
+        processCatalogue: lcod://tooling/registry_sources/process_catalogue@0.1.0

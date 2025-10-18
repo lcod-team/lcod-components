@@ -1,0 +1,163 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }, { imports }) => {
+          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
+          const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+          const ensureArray = (value) => (Array.isArray(value) ? value : []);
+          const ensureTrailingSlash = (value) => {
+            if (!value || typeof value !== 'string') return value;
+            return value.endsWith('/') ? value : `${value}/`;
+          };
+
+          const warnings = [];
+          const catalogue = ensureObject(state.catalogue) || {};
+          const pointer = ensureObject(state.pointer) || {};
+          const basePriority = Number.isFinite(state.basePriority) ? Math.trunc(state.basePriority) : null;
+          const baseDir = ensureString(state.baseDir) || '.';
+
+          const registryId = ensureString(catalogue.id) || pointer.id || 'registry';
+          const priority = Number.isFinite(catalogue.priority) ? Math.trunc(catalogue.priority) : pointer.priority ?? basePriority;
+          const origin = ensureObject(catalogue.origin) || null;
+          let defaultsEntry = null;
+
+          const concatUrl = (base, segment) => {
+            if (!base) return null;
+            const cleanedBase = ensureTrailingSlash(base);
+            const cleanSegment = segment ? segment.replace(/^\/+/, '') : '';
+            return cleanSegment ? `${cleanedBase}${cleanSegment}` : cleanedBase;
+          };
+
+          if (origin) {
+            const originType = ensureString(origin.type)?.toLowerCase();
+            if (originType === 'http' || originType === 'https') {
+              let baseUrl = ensureString(origin.url) || null;
+              if (origin.path) baseUrl = concatUrl(baseUrl, origin.path);
+              if (baseUrl) {
+                defaultsEntry = {
+                  id: registryId,
+                  type: 'http',
+                  url: ensureTrailingSlash(baseUrl)
+                };
+              }
+            } else if (originType === 'file') {
+              let basePath = ensureString(origin.url);
+              if (basePath && basePath.startsWith('file://')) {
+                basePath = basePath.slice('file://'.length);
+              }
+              if (basePath) {
+                const absolute = await imports.isAbsolute({ path: basePath });
+                if (!absolute?.absolute) {
+                  const joined = await imports.joinChain({ base: baseDir, segments: [basePath] });
+                  basePath = joined?.path ?? basePath;
+                }
+              }
+              if (!basePath) basePath = baseDir;
+              if (origin.path) {
+                const joined = await imports.joinChain({ base: basePath, segments: [origin.path] });
+                basePath = joined?.path ?? basePath;
+              }
+              const fileUrl = await imports.toFileUrl({ path: basePath });
+              if (fileUrl?.url) {
+                defaultsEntry = {
+                  id: registryId,
+                  type: 'file',
+                  url: fileUrl.url
+                };
+              }
+            } else if (originType === 'git') {
+              const repoUrl = ensureString(origin.url) ? origin.url.replace(/\.git$/i, '') : null;
+              const commit = ensureString(origin.commit) || pointer.commit || null;
+              if (repoUrl && repoUrl.startsWith('https://github.com/') && commit) {
+                const repoPath = repoUrl.slice('https://github.com/'.length);
+                let rawBase = `https://raw.githubusercontent.com/${repoPath}/${commit}/`;
+                if (origin.path) rawBase = concatUrl(rawBase, origin.path);
+                defaultsEntry = {
+                  id: registryId,
+                  type: 'http',
+                  url: ensureTrailingSlash(rawBase)
+                };
+              } else if (!repoUrl) {
+                warnings.push(`Catalogue ${registryId} uses unsupported git origin`);
+              }
+            }
+          }
+
+          if (!defaultsEntry && pointer.entrypoint && pointer.entrypoint.type === 'https') {
+            const fallbackUrl = ensureString(pointer.entrypoint.url);
+            if (fallbackUrl) {
+              defaultsEntry = {
+                id: registryId,
+                type: 'http',
+                url: ensureTrailingSlash(fallbackUrl.replace(/[^/]+$/, ''))
+              };
+            }
+          }
+
+          const components = ensureArray(catalogue.components);
+          const lines = [];
+
+          for (const component of components) {
+            const componentId = ensureString(component.id);
+            if (!componentId) {
+              warnings.push(`Catalogue ${registryId} contains a component without id`);
+              continue;
+            }
+            const versions = ensureArray(component.versions);
+            for (const version of versions) {
+              const versionName = ensureString(version.version);
+              const manifestRef = ensureString(version.manifest);
+              if (!versionName || !manifestRef) {
+                warnings.push(`Catalogue ${registryId} entry ${componentId} is missing manifest or version`);
+                continue;
+              }
+              const normalizedManifest = manifestRef.replace(/^\.\//, '');
+              const line = {
+                kind: 'component',
+                id: componentId,
+                version: versionName,
+                manifest: normalizedManifest,
+                registryId
+              };
+              if (ensureString(version.sha256)) line.sha256 = version.sha256;
+              if (ensureObject(version.artifact)) line.artifact = version.artifact;
+              if (Number.isFinite(version.priority)) {
+                line.priority = Math.trunc(version.priority);
+              } else if (Number.isFinite(component.priority)) {
+                line.priority = Math.trunc(component.priority);
+              } else if (Number.isFinite(priority)) {
+                line.priority = priority;
+              }
+              lines.push(line);
+            }
+          }
+
+          if (!lines.length) {
+            warnings.push(`Catalogue ${registryId} produced no component entries`);
+            return { entry: null, warnings };
+          }
+
+          return {
+            entry: {
+              id: registryId,
+              priority: Number.isFinite(priority) ? priority : null,
+              defaults: defaultsEntry || null,
+              metadata: pointer.metadata || null,
+              lines
+            },
+            warnings
+          };
+        }
+      input:
+        catalogue: $.catalogue
+        pointer: $.pointer
+        basePriority: $.basePriority
+        baseDir: $.baseDir
+      imports:
+        joinChain: lcod://tooling/path/join_chain@0.1.0
+        isAbsolute: lcod://tooling/path/is_absolute@0.1.0
+        toFileUrl: lcod://tooling/path/to_file_url@0.1.0
+    out:
+      entry: entry
+      warnings: warnings

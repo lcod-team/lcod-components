@@ -52,6 +52,7 @@ requires = [
   "lcod://tooling/path/join_chain@0.1.0",
   "lcod://tooling/path/dirname@0.1.0",
   "lcod://tooling/path/is_absolute@0.1.0",
-  "lcod://tooling/path/to_file_url@0.1.0",
-  "lcod://tooling/hash/sha256_base64@0.1.0"
+  "lcod://tooling/hash/sha256_base64@0.1.0",
+  "lcod://tooling/registry_sources/normalize_pointer@0.1.0",
+  "lcod://tooling/registry_sources/process_catalogue@0.1.0"
 ]

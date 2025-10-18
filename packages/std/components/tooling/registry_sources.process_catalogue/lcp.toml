@@ -1,0 +1,58 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/registry_sources/process_catalogue@0.1.0"
+name = "process_catalogue"
+namespace = "tooling/registry_sources"
+version = "0.1.0"
+kind = "component"
+
+summary = "Analyse a resolved catalogue payload and emit inline component entries."
+
+[palette]
+category = "Registry"
+icon = "mdi:table-search"
+tags = ["registry", "catalogue"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "catalogue"
+type = "object"
+required = true
+description = "Parsed catalogue JSON."
+
+[[io.input]]
+name = "pointer"
+type = "object"
+required = true
+description = "Normalized pointer currently processed."
+
+[[io.input]]
+name = "basePriority"
+type = "integer"
+required = false
+description = "Default priority inherited from sources defaults."
+
+[[io.input]]
+name = "baseDir"
+type = "string"
+required = true
+description = "Base directory of the current payload (used for file origins)."
+
+[[io.output]]
+name = "entry"
+type = "object"
+description = "Inline registry entry (id, priority, defaults, metadata, lines)."
+
+[[io.output]]
+name = "warnings"
+type = "array"
+description = "Warnings emitted while processing the catalogue."
+
+[deps]
+requires = [
+  "lcod://tooling/script@1",
+  "lcod://tooling/path/join_chain@0.1.0",
+  "lcod://tooling/path/is_absolute@0.1.0",
+  "lcod://tooling/path/to_file_url@0.1.0"
+]
