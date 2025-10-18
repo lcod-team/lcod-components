@@ -2,36 +2,34 @@ compose:
   - call: lcod://tooling/script@1
     in:
       source: |
-        async ({ state, imports }) => {
-          const encoding = typeof state.encoding === 'string' && state.encoding.length > 0
-            ? state.encoding
-            : 'utf-8';
-          const fallback = typeof state.fallback === 'string' ? state.fallback : '';
-          const warningMessage = typeof state.warningMessage === 'string' ? state.warningMessage : null;
-          const path = typeof state.path === 'string' && state.path.length > 0 ? state.path : null;
+        async ({ state }, { imports }) => {
+          const warnings = [];
+          const isNonEmptyString = async (value) => {
+            const res = await imports.isStringNonEmpty({ value });
+            return !!res?.ok;
+          };
+          const ensureString = async (value) => (await isNonEmptyString(value)) ? String(value) : null;
 
-          if (!path) {
-            return {
-              text: fallback,
-              exists: false,
-              warning: warningMessage ?? null
-            };
+          const encodingValue = await ensureString(state.encoding);
+          const effectiveEncoding = encodingValue || 'utf-8';
+
+          const pathValue = await ensureString(state.path);
+          if (!pathValue) {
+            const fallbackText = await ensureString(state.fallback);
+            const warningMessage = await ensureString(state.warningMessage);
+            return { text: fallbackText, exists: false, warning: warningMessage };
           }
 
           try {
-            const file = await imports.fsReadFile({ path, encoding });
-            const text = typeof file?.data === 'string' ? file.data : fallback;
-            const warning = text === fallback && warningMessage ? warningMessage : null;
-            return { text, exists: true, warning };
+            const result = await imports.fsReadFile({ path: pathValue, encoding: effectiveEncoding });
+            return { text: result?.data ?? null, exists: true, warning: null };
           } catch (err) {
-            const warning = warningMessage
-              ? warningMessage
-              : `File ${path} could not be read (${err?.message || err})`;
-            return {
-              text: fallback,
-              exists: false,
-              warning
-            };
+            const fallbackText = await ensureString(state.fallback);
+            const warningMessage = await ensureString(state.warningMessage);
+            if (fallbackText != null) {
+              return { text: fallbackText, exists: false, warning: warningMessage };
+            }
+            return { text: null, exists: false, warning: warningMessage || err?.message || String(err) };
           }
         }
       input:
@@ -40,7 +38,8 @@ compose:
         fallback: $.fallback
         warningMessage: $.warningMessage
       imports:
-        fsReadFile: lcod://axiom/fs/read-file@1
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        isStringNonEmpty: lcod://tooling/value/is_string_nonempty@0.1.0
     out:
       text: text
       exists: exists
