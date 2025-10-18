@@ -1,0 +1,88 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }, { imports }) => {
+          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
+          const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+          const isAbsolutePath = (value) => /^(?:[A-Za-z]:[\\/]|\/)/.test(value || '');
+
+          const joinPaths = async (...segments) => {
+            if (!segments.length) return '';
+            let current = segments[0];
+            for (let i = 1; i < segments.length; i += 1) {
+              const segment = segments[i];
+              if (segment == null) continue;
+              const joined = await imports.pathJoin({ base: current, segment });
+              current = joined?.path ?? current;
+            }
+            return current;
+          };
+
+          const dirname = async (target) => {
+            const parent = await imports.pathJoin({ base: target, segment: '..' });
+            return parent?.path ?? target;
+          };
+
+          const warnings = [];
+
+          const projectRoot = ensureString(state.projectRoot) || '.';
+          const explicitSourcesPath = ensureString(state.sourcesPath);
+
+          let resolvedSourcesPath;
+          if (explicitSourcesPath) {
+            resolvedSourcesPath = isAbsolutePath(explicitSourcesPath)
+              ? explicitSourcesPath
+              : await joinPaths(projectRoot, explicitSourcesPath);
+          } else {
+            resolvedSourcesPath = await joinPaths(projectRoot, 'sources.json');
+          }
+
+          let sourcesText = ensureString(state.sourcesText);
+          if (!sourcesText) {
+            try {
+              const result = await imports.fsReadFile({ path: resolvedSourcesPath, encoding: 'utf-8' });
+              sourcesText = result?.data ?? null;
+            } catch (err) {
+              const fallbackSpec = ensureObject(state.defaultSourcesSpec) || {};
+              warnings.push(`sources.json missing at ${resolvedSourcesPath}; falling back to default registry catalogue. (${err?.message || err})`);
+              resolvedSourcesPath = 'builtin:default';
+              sourcesText = JSON.stringify(fallbackSpec);
+            }
+          }
+
+          let sourcesConfig = null;
+          let valid = false;
+          try {
+            sourcesConfig = JSON.parse(sourcesText);
+            valid = true;
+          } catch (err) {
+            warnings.push(`Invalid sources.json: ${err.message}`);
+          }
+
+          const sourcesBaseDir = resolvedSourcesPath === 'builtin:default'
+            ? projectRoot
+            : await dirname(resolvedSourcesPath);
+
+          return {
+            sourcesConfig,
+            sourcesPath: resolvedSourcesPath,
+            sourcesBaseDir,
+            warnings,
+            valid
+          };
+        }
+      input:
+        projectRoot: $.projectRoot
+        sourcesPath: $.sourcesPath
+        sourcesText: $.sourcesText
+        defaultSourcesSpec: $.defaultSourcesSpec
+      imports:
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        pathJoin: lcod://axiom/path/join@1
+    out:
+      sourcesConfig: sourcesConfig
+      sourcesPath: sourcesPath
+      sourcesBaseDir: sourcesBaseDir
+      warnings: warnings
+      valid: valid

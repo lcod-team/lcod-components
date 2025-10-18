@@ -1,0 +1,471 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }, { imports }) => {
+          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
+          const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+          const ensureArray = (value) => (Array.isArray(value) ? value : []);
+          const isAbsolutePath = (value) => /^(?:[A-Za-z]:[\\/]|\/)/.test(value || '');
+          const ensureTrailingSlash = (value) => {
+            if (!value || typeof value !== 'string') return value;
+            return value.endsWith('/') ? value : `${value}/`;
+          };
+          const sanitizeFilePath = (value) => {
+            if (typeof value !== 'string') return value;
+            const replaced = value.replace(/\\/g, '/');
+            return replaced.replace(/\/\.\//g, '/');
+          };
+
+          const joinPaths = async (...segments) => {
+            if (!segments.length) return '';
+            let current = segments[0];
+            for (let i = 1; i < segments.length; i += 1) {
+              const segment = segments[i];
+              if (segment == null) continue;
+              const joined = await imports.pathJoin({ base: current, segment });
+              current = joined?.path ?? current;
+            }
+            return current;
+          };
+
+          const dirname = async (target) => {
+            const parent = await imports.pathJoin({ base: target, segment: '..' });
+            return parent?.path ?? target;
+          };
+
+          const resolveAbsolute = async (base, value) => {
+            if (!value) return null;
+            if (value.startsWith('file://')) return value.slice('file://'.length);
+            if (isAbsolutePath(value)) return value;
+            return await joinPaths(base, value);
+          };
+
+          const readUtf8 = async (filePath) => {
+            const res = await imports.fsReadFile({ path: filePath, encoding: 'utf-8' });
+            return res?.data ?? null;
+          };
+
+          const computeShaHex = async (text) => {
+            if (typeof text !== 'string') return null;
+            const res = await imports.hash({ data: text, encoding: 'utf-8' });
+            return res?.hex ?? null;
+          };
+
+          const hexToBase64 = (hex) => {
+            if (!hex || typeof hex !== 'string') return null;
+            const clean = hex.trim();
+            if (!clean) return null;
+            const bytes = [];
+            for (let i = 0; i < clean.length; i += 2) {
+              const pair = clean.slice(i, i + 2);
+              bytes.push(parseInt(pair, 16));
+            }
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+            let output = '';
+            for (let i = 0; i < bytes.length; i += 3) {
+              const b1 = bytes[i];
+              const b2 = bytes[i + 1];
+              const b3 = bytes[i + 2];
+              const hasB2 = Number.isFinite(b2);
+              const hasB3 = Number.isFinite(b3);
+              const triplet = (b1 << 16) | ((hasB2 ? b2 : 0) << 8) | (hasB3 ? b3 : 0);
+              output += chars[(triplet >> 18) & 63];
+              output += chars[(triplet >> 12) & 63];
+              output += hasB2 ? chars[(triplet >> 6) & 63] : '=';
+              output += hasB3 ? chars[triplet & 63] : '=';
+            }
+            return output;
+          };
+
+          const toFileUrl = (absolutePath) => {
+            if (!absolutePath) return null;
+            const normalized = sanitizeFilePath(absolutePath);
+            return `file://${ensureTrailingSlash(normalized)}`;
+          };
+
+          const warnings = [];
+          const registryMap = new Map();
+
+          const downloadsRoot = ensureString(state.downloadsRoot) || '.';
+          const sourcesConfig = ensureObject(state.sourcesConfig) || {};
+          const sourcesBaseDir = ensureString(state.sourcesBaseDir) || '.';
+
+          const defaults = ensureObject(sourcesConfig.defaults) || {};
+          const defaultEntrypoint = ensureObject(defaults.entrypoint) || {};
+          const basePriority = Number.isFinite(defaults.priority) ? Math.trunc(defaults.priority) : undefined;
+
+          const pointerHashKey = async (payload) => {
+            const hex = await computeShaHex(JSON.stringify(payload));
+            return hex || `${Date.now()}${Math.random().toString(16).slice(2)}`;
+          };
+
+          const fetchEntrypoint = async (entrypoint, context) => {
+            const kind = ensureString(entrypoint.type)?.toLowerCase() || 'https';
+            if (kind === 'file') {
+              const rawPath = ensureString(entrypoint.path);
+              if (!rawPath) throw new Error('file entrypoint is missing path');
+              const absolutePath = await resolveAbsolute(context.baseDir, rawPath);
+              if (!absolutePath) throw new Error('Unable to resolve file path for catalogue pointer');
+              const text = await readUtf8(absolutePath);
+              const baseDir = await dirname(absolutePath);
+              return { text, baseDir, originPath: absolutePath };
+            }
+
+            if (kind === 'http' || kind === 'https') {
+              const url = ensureString(entrypoint.url);
+              if (!url) throw new Error('http(s) entrypoint is missing url');
+              const keyHex = await pointerHashKey({ url, query: entrypoint.query || null, method: entrypoint.method || null });
+              const destFile = await joinPaths(downloadsRoot, 'http', `${keyHex}.json`);
+              const downloadInput = { url, path: destFile };
+              if (entrypoint.method) downloadInput.method = entrypoint.method;
+              if (entrypoint.headers) downloadInput.headers = entrypoint.headers;
+              if (entrypoint.query) downloadInput.query = entrypoint.query;
+              if (entrypoint.timeoutMs) downloadInput.timeoutMs = entrypoint.timeoutMs;
+              if (entrypoint.followRedirects !== undefined) downloadInput.followRedirects = entrypoint.followRedirects;
+              if (entrypoint.body !== undefined) downloadInput.body = entrypoint.body;
+              if (entrypoint.bodyEncoding) downloadInput.bodyEncoding = entrypoint.bodyEncoding;
+              await imports.httpDownload(downloadInput);
+              const text = await readUtf8(destFile);
+              const baseDir = await dirname(destFile);
+              return { text, baseDir, originPath: destFile };
+            }
+
+            if (kind === 'git') {
+              const url = ensureString(entrypoint.url);
+              if (!url) throw new Error('git entrypoint is missing url');
+              const keyHex = await pointerHashKey({ url, ref: entrypoint.ref || null, commit: entrypoint.commit || null, subpath: entrypoint.subpath || null });
+              const destDir = await joinPaths(downloadsRoot, 'git', keyHex);
+              const cloneInput = { url, dest: destDir };
+              if (entrypoint.commit) cloneInput.ref = entrypoint.commit;
+              else if (entrypoint.ref) cloneInput.ref = entrypoint.ref;
+              if (entrypoint.subpath) cloneInput.subdir = entrypoint.subpath;
+              const cloneMeta = await imports.gitClone(cloneInput);
+              const pointerPath = ensureString(entrypoint.path)
+                ? await resolveAbsolute(cloneMeta.path, entrypoint.path)
+                : cloneMeta.path;
+              const statsPath = pointerPath;
+              const text = await readUtf8(statsPath);
+              const baseDir = await dirname(statsPath);
+              return { text, baseDir, originPath: statsPath, commit: cloneMeta.commit || entrypoint.commit || null };
+            }
+
+            throw new Error(`Unsupported entrypoint type ${entrypoint.type || 'unknown'}`);
+          };
+
+          const ensureRegistrySource = (registryId, priority, defaultsEntry, metadata) => {
+            const existing = registryMap.get(registryId);
+            if (existing) {
+              if (Number.isFinite(priority)) {
+                if (!Number.isFinite(existing.priority) || priority < existing.priority) {
+                  existing.priority = priority;
+                }
+              }
+              if (!existing.defaults && defaultsEntry) existing.defaults = defaultsEntry;
+              if (!existing.metadata && metadata) existing.metadata = metadata;
+              return existing;
+            }
+            const entry = {
+              id: registryId,
+              type: 'inline',
+              priority: Number.isFinite(priority) ? priority : undefined,
+              defaults: defaultsEntry || undefined,
+              metadata: metadata || undefined,
+              lines: []
+            };
+            registryMap.set(registryId, entry);
+            return entry;
+          };
+
+          const concatUrl = (base, segment) => {
+            if (!base) return null;
+            const cleanedBase = ensureTrailingSlash(base);
+            const cleanSegment = segment ? segment.replace(/^\/+/g, '') : '';
+            return cleanSegment ? `${cleanedBase}${cleanSegment}` : cleanedBase;
+          };
+
+          const processConcreteCatalogue = async (catalogue, pointer, context) => {
+            const registryId = ensureString(catalogue.id) || pointer.id || 'registry';
+            const priority = Number.isFinite(catalogue.priority) ? Math.trunc(catalogue.priority) : pointer.priority ?? basePriority;
+            const origin = ensureObject(catalogue.origin);
+            let defaultsEntry = null;
+
+            if (origin) {
+              const originType = ensureString(origin.type)?.toLowerCase();
+              if (originType === 'http' || originType === 'https') {
+                let baseUrl = ensureString(origin.url) || null;
+                if (origin.path) baseUrl = concatUrl(baseUrl, origin.path);
+                if (baseUrl) {
+                  defaultsEntry = {
+                    id: registryId,
+                    type: 'http',
+                    url: ensureTrailingSlash(baseUrl)
+                  };
+                }
+              } else if (originType === 'file') {
+                let basePath = ensureString(origin.url);
+                if (basePath && basePath.startsWith('file://')) {
+                  basePath = basePath.slice('file://'.length);
+                }
+                if (basePath && !isAbsolutePath(basePath)) {
+                  basePath = await joinPaths(context.baseDir, basePath);
+                }
+                if (!basePath) basePath = context.baseDir;
+                if (origin.path) basePath = await joinPaths(basePath, origin.path);
+                defaultsEntry = {
+                  id: registryId,
+                  type: 'file',
+                  url: toFileUrl(basePath)
+                };
+              } else if (originType === 'git') {
+                const repoUrl = ensureString(origin.url) ? origin.url.replace(/\.git$/i, '') : null;
+                const commit = ensureString(origin.commit) || pointer.commit || null;
+                if (repoUrl && repoUrl.startsWith('https://github.com/') && commit) {
+                  const repoPath = repoUrl.slice('https://github.com/'.length);
+                  let rawBase = `https://raw.githubusercontent.com/${repoPath}/${commit}/`;
+                  if (origin.path) rawBase = concatUrl(rawBase, origin.path);
+                  defaultsEntry = {
+                    id: registryId,
+                    type: 'http',
+                    url: ensureTrailingSlash(rawBase)
+                  };
+                } else if (!repoUrl) {
+                  warnings.push(`Catalogue ${registryId} uses unsupported git origin`);
+                }
+              }
+            }
+
+            if (!defaultsEntry && pointer.entrypoint && pointer.entrypoint.type === 'https') {
+              const fallbackUrl = ensureString(pointer.entrypoint.url);
+              if (fallbackUrl) {
+                defaultsEntry = {
+                  id: registryId,
+                  type: 'http',
+                  url: ensureTrailingSlash(fallbackUrl.replace(/[^/]+$/, ''))
+                };
+              }
+            }
+
+            const components = ensureArray(catalogue.components);
+            let produced = 0;
+            for (const component of components) {
+              const componentId = ensureString(component.id);
+              if (!componentId) {
+                warnings.push(`Catalogue ${registryId} contains a component without id`);
+                continue;
+              }
+              const versions = ensureArray(component.versions);
+              for (const version of versions) {
+                const versionName = ensureString(version.version);
+                const manifestRef = ensureString(version.manifest);
+                if (!versionName || !manifestRef) {
+                  warnings.push(`Catalogue ${registryId} entry ${componentId} is missing manifest or version`);
+                  continue;
+                }
+                const normalizedManifest = manifestRef.replace(/^\.\//, '');
+                const target = ensureRegistrySource(registryId, priority, defaultsEntry, pointer.metadata);
+                const line = {
+                  kind: 'component',
+                  id: componentId,
+                  version: versionName,
+                  manifest: normalizedManifest,
+                  registryId
+                };
+                if (ensureString(version.sha256)) line.sha256 = version.sha256;
+                if (ensureObject(version.artifact)) line.artifact = version.artifact;
+                target.lines.push(line);
+                produced += 1;
+              }
+            }
+
+            if (!produced) {
+              warnings.push(`Catalogue ${registryId} produced no component entries`);
+            }
+          };
+
+          const normalizePointer = (sourceEntry, inherited, baseDirOverride) => {
+            const entry = ensureObject(sourceEntry) || {};
+            const pointer = {
+              id: ensureString(entry.id) || ensureString(inherited?.id) || 'catalogue',
+              priority: Number.isFinite(entry.priority) ? Math.trunc(entry.priority) : inherited?.priority ?? basePriority ?? null,
+              checksum: ensureString(entry.checksum) || ensureString(inherited?.checksum) || null,
+              signature: ensureString(entry.signature) || ensureString(inherited?.signature) || null,
+              publicKey: ensureString(entry.publicKey) || ensureString(inherited?.publicKey) || null,
+              metadata: entry.metadata || inherited?.metadata || null,
+              entrypoint: {},
+              transport: entry.transport || inherited?.transport || null,
+              baseDir: baseDirOverride || inherited?.baseDir || sourcesBaseDir,
+              commit: inherited?.commit || null
+            };
+
+            const mergedEntrypoint = {
+              ...defaultEntrypoint,
+              ...(inherited?.entrypoint || {}),
+              ...(entry.entrypoint || {}),
+              type: entry.entrypoint?.type || inherited?.entrypoint?.type || entry.type || entry.kind || defaultEntrypoint.type
+            };
+
+            if (typeof entry.path === 'string' && entry.path.length > 0) {
+              mergedEntrypoint.path = entry.path;
+            }
+            if (typeof entry.url === 'string' && entry.url.length > 0) {
+              mergedEntrypoint.url = entry.url;
+            }
+            if (typeof entry.method === 'string' && entry.method.length > 0) {
+              mergedEntrypoint.method = entry.method;
+            }
+            if (entry.headers && typeof entry.headers === 'object' && !Array.isArray(entry.headers)) {
+              mergedEntrypoint.headers = entry.headers;
+            }
+            if (entry.query && typeof entry.query === 'object' && !Array.isArray(entry.query)) {
+              mergedEntrypoint.query = entry.query;
+            }
+            if (typeof entry.timeoutMs === 'number') {
+              mergedEntrypoint.timeoutMs = entry.timeoutMs;
+            }
+            if (typeof entry.followRedirects === 'boolean') {
+              mergedEntrypoint.followRedirects = entry.followRedirects;
+            }
+            if (Object.prototype.hasOwnProperty.call(entry, 'body')) {
+              mergedEntrypoint.body = entry.body;
+            }
+            if (typeof entry.bodyEncoding === 'string' && entry.bodyEncoding.length > 0) {
+              mergedEntrypoint.bodyEncoding = entry.bodyEncoding;
+            }
+            if (typeof entry.ref === 'string' && entry.ref.length > 0) {
+              mergedEntrypoint.ref = entry.ref;
+            }
+            if (typeof entry.commit === 'string' && entry.commit.length > 0) {
+              mergedEntrypoint.commit = entry.commit;
+            }
+            if (typeof entry.subpath === 'string' && entry.subpath.length > 0) {
+              mergedEntrypoint.subpath = entry.subpath;
+            }
+            const kind = ensureString(mergedEntrypoint.type)?.toLowerCase() || 'https';
+
+            if (kind === 'file') {
+              const rawPath = ensureString(mergedEntrypoint.path);
+              if (!rawPath) {
+                warnings.push(`sources entry ${pointer.id} (file) is missing path`);
+                return null;
+              }
+              pointer.entrypoint = { type: 'file', path: rawPath };
+            } else if (kind === 'http' || kind === 'https') {
+              const url = ensureString(mergedEntrypoint.url);
+              if (!url) {
+                warnings.push(`sources entry ${pointer.id} (${kind}) is missing url`);
+                return null;
+              }
+              pointer.entrypoint = {
+                type: 'https',
+                url,
+                method: mergedEntrypoint.method,
+                headers: mergedEntrypoint.headers,
+                query: mergedEntrypoint.query,
+                timeoutMs: mergedEntrypoint.timeoutMs,
+                followRedirects: mergedEntrypoint.followRedirects,
+                body: mergedEntrypoint.body,
+                bodyEncoding: mergedEntrypoint.bodyEncoding
+              };
+            } else if (kind === 'git') {
+              const url = ensureString(mergedEntrypoint.url);
+              if (!url) {
+                warnings.push(`sources entry ${pointer.id} (git) is missing url`);
+                return null;
+              }
+              pointer.entrypoint = {
+                type: 'git',
+                url,
+                ref: mergedEntrypoint.ref,
+                commit: mergedEntrypoint.commit,
+                subpath: mergedEntrypoint.subpath,
+                path: mergedEntrypoint.path
+              };
+            } else {
+              warnings.push(`sources entry ${pointer.id} declares unsupported type ${kind}`);
+              return null;
+            }
+
+            return pointer;
+          };
+
+          const processPointer = async (pointer, context) => {
+            let payload;
+            try {
+              payload = await fetchEntrypoint(pointer.entrypoint, context);
+            } catch (err) {
+              warnings.push(`Failed to load catalogue for ${pointer.id}: ${err?.message || err}`);
+              return;
+            }
+
+            if (pointer.checksum) {
+              const payloadHex = await computeShaHex(payload.text ?? '');
+              const payloadBase64 = hexToBase64(payloadHex || '');
+              if (pointer.checksum && payloadBase64 && pointer.checksum !== `sha256-${payloadBase64}`) {
+                warnings.push(`Checksum mismatch for ${pointer.id}: expected ${pointer.checksum}, got sha256-${payloadBase64}`);
+              }
+            }
+
+            let parsed;
+            try {
+              parsed = JSON.parse(payload.text);
+            } catch (err) {
+              warnings.push(`Invalid catalogue payload for ${pointer.id}: ${err.message}`);
+              return;
+            }
+
+            const schema = ensureString(parsed.schema);
+            if (schema === 'lcod-registry/catalogues@1') {
+              const catalogues = ensureArray(parsed.catalogues);
+              for (const entry of catalogues) {
+                const normalized = normalizePointer(entry, pointer, payload.baseDir);
+                if (!normalized) continue;
+                await processPointer(normalized, { baseDir: payload.baseDir });
+              }
+              return;
+            }
+
+            if (schema === 'lcod-registry/catalogue@1') {
+              pointer.commit = pointer.commit || payload.commit || null;
+              await processConcreteCatalogue(parsed, pointer, payload);
+              return;
+            }
+
+            warnings.push(`Unsupported catalogue schema ${schema || '<missing>'} for ${pointer.id}`);
+          };
+
+          const sources = ensureArray(sourcesConfig.sources);
+          for (const sourceEntry of sources) {
+            const normalized = normalizePointer(sourceEntry, null, sourcesBaseDir);
+            if (!normalized) continue;
+            await processPointer(normalized, { baseDir: sourcesBaseDir });
+          }
+
+          const registrySources = Array.from(registryMap.values())
+            .filter((entry) => entry.lines.length > 0)
+            .map((entry) => {
+              const cleaned = { id: entry.id, type: entry.type, lines: entry.lines };
+              if (Number.isFinite(entry.priority)) cleaned.priority = entry.priority;
+              if (entry.defaults) cleaned.defaults = entry.defaults;
+              if (entry.metadata) cleaned.metadata = entry.metadata;
+              return cleaned;
+            });
+
+          return {
+            registrySources,
+            warnings
+          };
+        }
+      input:
+        sourcesConfig: $.sourcesConfig
+        sourcesBaseDir: $.sourcesBaseDir
+        downloadsRoot: $.downloadsRoot
+      imports:
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        gitClone: lcod://contract/core/git/clone@1
+        hash: lcod://contract/core/hash/sha256@1
+        httpDownload: lcod://axiom/http/download@1
+        pathJoin: lcod://axiom/path/join@1
+    out:
+      registrySources: registrySources
+      warnings: warnings

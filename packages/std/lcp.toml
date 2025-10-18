@@ -127,6 +127,18 @@ id = "lcod://tooling/string/ensure_trailing_newline@0.1.0"
 path = "components/tooling/string.ensure_trailing_newline"
 
 [[workspace.components]]
+id = "lcod://tooling/registry_sources/prepare_env@0.1.0"
+path = "components/tooling/registry_sources.prepare_env"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_sources/load_config@0.1.0"
+path = "components/tooling/registry_sources.load_config"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_sources/collect_entries@0.1.0"
+path = "components/tooling/registry_sources.collect_entries"
+
+[[workspace.components]]
 id = "lcod://tooling/registry_sources/resolve@0.1.0"
 path = "components/tooling/registry_sources.resolve"
 

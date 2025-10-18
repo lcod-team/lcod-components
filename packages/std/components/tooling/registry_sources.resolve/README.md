@@ -1,11 +1,9 @@
 # lcod://tooling/registry_sources/resolve@0.1.0
 
 Resolve registry catalogue pointers defined in a `sources.json` specification.
-This component reads remote/local catalogues, validates schemas, and returns the
-inline registry source entries consumed by the resolver pipeline.
-
-> ⚠️ This helper currently relies on an embedded script while we upstream the
-> low-level helpers (path utilities, checksum logic) into dedicated primitives.
+This component orchestrates dedicated helpers to read remote/local catalogues,
+validate schemas, and return the inline registry source entries consumed by the
+resolver pipeline.
 
 ## Inputs
 

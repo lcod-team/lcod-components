@@ -88,10 +88,10 @@ description = "Parsed sources specification."
 
 [deps]
 requires = [
-  "lcod://tooling/script@1",
-  "lcod://axiom/path/join@1",
-  "lcod://contract/core/fs/read-file@1",
-  "lcod://contract/core/hash/sha256@1",
-  "lcod://axiom/http/download@1",
-  "lcod://contract/core/git/clone@1"
+  "lcod://tooling/registry_sources/prepare_env@0.1.0",
+  "lcod://tooling/registry_sources/load_config@0.1.0",
+  "lcod://tooling/registry_sources/collect_entries@0.1.0",
+  "lcod://tooling/array/append@0.1.0",
+  "lcod://flow/if@1",
+  "lcod://impl/set@1"
 ]

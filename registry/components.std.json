@@ -124,6 +124,18 @@
     "composePath": "packages/std/components/tooling/registry_catalog.write_outputs/compose.yaml"
   },
   {
+    "id": "lcod://tooling/registry_sources/collect_entries@0.1.0",
+    "composePath": "packages/std/components/tooling/registry_sources.collect_entries/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry_sources/load_config@0.1.0",
+    "composePath": "packages/std/components/tooling/registry_sources.load_config/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry_sources/prepare_env@0.1.0",
+    "composePath": "packages/std/components/tooling/registry_sources.prepare_env/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/registry_sources/resolve@0.1.0",
     "composePath": "packages/std/components/tooling/registry_sources.resolve/compose.yaml"
   },
