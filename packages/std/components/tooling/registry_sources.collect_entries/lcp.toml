@@ -54,5 +54,5 @@ requires = [
   "lcod://tooling/path/is_absolute@0.1.0",
   "lcod://tooling/hash/sha256_base64@0.1.0",
   "lcod://tooling/registry_sources/normalize_pointer@0.1.0",
-  "lcod://tooling/registry_sources/process_catalogue@0.1.0"
+  "lcod://tooling/registry_sources/process_pointer@0.1.0"
 ]

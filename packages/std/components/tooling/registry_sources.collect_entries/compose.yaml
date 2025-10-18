@@ -18,85 +18,19 @@ compose:
           const defaultEntrypoint = ensureObject(defaults.entrypoint) || {};
           const basePriority = Number.isFinite(defaults.priority) ? Math.trunc(defaults.priority) : null;
 
-          const joinChain = async (base, ...segments) => {
-            const res = await imports.joinChain({ base, segments });
-            return res?.path ?? base ?? '';
-          };
-
-          const dirname = async (target) => {
-            const res = await imports.dirname({ path: target });
-            return res?.dirname ?? target;
-          };
-
-          const resolveAbsolute = async (base, value) => {
-            if (!value) return null;
-            if (value.startsWith('file://')) return value.slice('file://'.length);
-            const absolute = await imports.isAbsolute({ path: value });
-            if (absolute?.absolute) return value;
-            return await joinChain(base, value);
-          };
-
-          const readUtf8 = async (filePath) => {
-            const res = await imports.fsReadFile({ path: filePath, encoding: 'utf-8' });
-            return res?.data ?? null;
-          };
-
-          const pointerHashKey = async (payload) => {
-            const digest = await imports.sha256({ data: JSON.stringify(payload) });
-            const hex = digest?.hex?.trim();
-            return hex && hex.length ? hex : `${Date.now()}${Math.random().toString(16).slice(2)}`;
-          };
-
-          const fetchEntrypoint = async (entrypoint, context) => {
-            const kind = ensureString(entrypoint.type)?.toLowerCase() || 'https';
-            if (kind === 'file') {
-              const rawPath = ensureString(entrypoint.path);
-              if (!rawPath) throw new Error('file entrypoint is missing path');
-              const absolutePath = await resolveAbsolute(context.baseDir, rawPath);
-              if (!absolutePath) throw new Error('Unable to resolve file path for catalogue pointer');
-              const text = await readUtf8(absolutePath);
-              const baseDir = await dirname(absolutePath);
-              return { text, baseDir, originPath: absolutePath };
+          const enqueuePointers = async (entries, inherited, baseDirOverride) => {
+            for (const entry of entries) {
+              const normalized = await imports.normalizePointer({
+                entry,
+                inherited,
+                baseDir: baseDirOverride,
+                sourcesBaseDir,
+                defaultEntrypoint,
+                basePriority
+              });
+              if (normalized?.warnings?.length) warnings.push(...normalized.warnings);
+              if (normalized?.pointer) queue.push(normalized.pointer);
             }
-
-            if (kind === 'http' || kind === 'https') {
-              const url = ensureString(entrypoint.url);
-              if (!url) throw new Error('http(s) entrypoint is missing url');
-              const keyHex = await pointerHashKey({ url, query: entrypoint.query || null, method: entrypoint.method || null });
-              const destFile = await joinChain(downloadsRoot, 'http', `${keyHex}.json`);
-              const downloadInput = { url, path: destFile };
-              if (entrypoint.method) downloadInput.method = entrypoint.method;
-              if (entrypoint.headers) downloadInput.headers = entrypoint.headers;
-              if (entrypoint.query) downloadInput.query = entrypoint.query;
-              if (entrypoint.timeoutMs) downloadInput.timeoutMs = entrypoint.timeoutMs;
-              if (entrypoint.followRedirects !== undefined) downloadInput.followRedirects = entrypoint.followRedirects;
-              if (entrypoint.body !== undefined) downloadInput.body = entrypoint.body;
-              if (entrypoint.bodyEncoding) downloadInput.bodyEncoding = entrypoint.bodyEncoding;
-              await imports.httpDownload(downloadInput);
-              const text = await readUtf8(destFile);
-              const baseDir = await dirname(destFile);
-              return { text, baseDir, originPath: destFile };
-            }
-
-            if (kind === 'git') {
-              const url = ensureString(entrypoint.url);
-              if (!url) throw new Error('git entrypoint is missing url');
-              const keyHex = await pointerHashKey({ url, ref: entrypoint.ref || null, commit: entrypoint.commit || null, subpath: entrypoint.subpath || null });
-              const destDir = await joinChain(downloadsRoot, 'git', keyHex);
-              const cloneInput = { url, dest: destDir };
-              if (entrypoint.commit) cloneInput.ref = entrypoint.commit;
-              else if (entrypoint.ref) cloneInput.ref = entrypoint.ref;
-              if (entrypoint.subpath) cloneInput.subdir = entrypoint.subpath;
-              const cloneMeta = await imports.gitClone(cloneInput);
-              const pointerPath = ensureString(entrypoint.path)
-                ? await resolveAbsolute(cloneMeta.path, entrypoint.path)
-                : cloneMeta.path;
-              const text = await readUtf8(pointerPath);
-              const baseDir = await dirname(pointerPath);
-              return { text, baseDir, originPath: pointerPath, commit: cloneMeta.commit || entrypoint.commit || null };
-            }
-
-            throw new Error(`Unsupported entrypoint type ${entrypoint.type || 'unknown'}`);
           };
 
           const ensureRegistrySource = (registryId, priority, defaultsEntry, metadata) => {
@@ -124,84 +58,37 @@ compose:
           };
 
           const queue = [];
-          const enqueuePointer = async (entry, inherited, baseDirOverride) => {
-            const result = await imports.normalizePointer({
-              entry,
-              inherited,
-              baseDir: baseDirOverride,
-              sourcesBaseDir,
-              defaultEntrypoint,
-              basePriority
-            });
-            if (result?.warnings?.length) warnings.push(...result.warnings);
-            if (result?.pointer) queue.push(result.pointer);
-          };
-
           const sources = ensureArray(sourcesConfig.sources);
-          for (const sourceEntry of sources) {
-            await enqueuePointer(sourceEntry, null, sourcesBaseDir);
-          }
+          await enqueuePointers(sources, null, sourcesBaseDir);
 
           while (queue.length) {
             const pointer = queue.shift();
-            let payload;
-            try {
-              payload = await fetchEntrypoint(pointer.entrypoint, { baseDir: pointer.baseDir });
-            } catch (err) {
-              warnings.push(`Failed to load catalogue for ${pointer.id}: ${err?.message || err}`);
-              continue;
+            const processed = await imports.processPointer({
+              pointer,
+              downloadsRoot,
+              defaultEntrypoint,
+              basePriority
+            });
+            if (processed?.warnings?.length) warnings.push(...processed.warnings);
+
+            const children = ensureArray(processed?.children);
+            if (children.length) {
+              await enqueuePointers(children, pointer, pointer.baseDir);
             }
 
-            if (pointer.checksum) {
-              const digest = await imports.sha256({ data: payload.text ?? '' });
-              const payloadBase64 = digest?.base64 ? `sha256-${digest.base64}` : null;
-              if (pointer.checksum && payloadBase64 && pointer.checksum !== payloadBase64) {
-                warnings.push(`Checksum mismatch for ${pointer.id}: expected ${pointer.checksum}, got ${payloadBase64}`);
+            const entry = ensureObject(processed?.entry);
+            if (entry && Array.isArray(entry.lines) && entry.lines.length) {
+              const effectivePriority = Number.isFinite(entry.priority) ? entry.priority : null;
+              const target = ensureRegistrySource(
+                entry.id,
+                effectivePriority,
+                entry.defaults,
+                entry.metadata || pointer.metadata
+              );
+              for (const line of entry.lines) {
+                target.lines.push(line);
               }
             }
-
-            let parsed;
-            try {
-              parsed = JSON.parse(payload.text);
-            } catch (err) {
-              warnings.push(`Invalid catalogue payload for ${pointer.id}: ${err.message}`);
-              continue;
-            }
-
-            const schema = ensureString(parsed.schema);
-            if (schema === 'lcod-registry/catalogues@1') {
-              const catalogues = ensureArray(parsed.catalogues);
-              for (const entry of catalogues) {
-                await enqueuePointer(entry, pointer, payload.baseDir);
-              }
-              continue;
-            }
-
-            if (schema === 'lcod-registry/catalogue@1') {
-              pointer.commit = pointer.commit || payload.commit || null;
-              const processed = await imports.processCatalogue({
-                catalogue: parsed,
-                pointer,
-                basePriority,
-                baseDir: payload.baseDir
-              });
-              if (processed?.warnings?.length) warnings.push(...processed.warnings);
-              if (processed?.entry && Array.isArray(processed.entry.lines) && processed.entry.lines.length) {
-                const effectivePriority = Number.isFinite(processed.entry.priority) ? processed.entry.priority : null;
-                const target = ensureRegistrySource(
-                  processed.entry.id,
-                  effectivePriority,
-                  processed.entry.defaults,
-                  processed.entry.metadata || pointer.metadata
-                );
-                for (const line of processed.entry.lines) {
-                  target.lines.push(line);
-                }
-              }
-              continue;
-            }
-
-            warnings.push(`Unsupported catalogue schema ${schema || '<missing>'} for ${pointer.id}`);
           }
 
           const registrySources = Array.from(registryMap.values())
@@ -221,12 +108,8 @@ compose:
         sourcesBaseDir: $.sourcesBaseDir
         downloadsRoot: $.downloadsRoot
       imports:
-        fsReadFile: lcod://contract/core/fs/read-file@1
-        gitClone: lcod://contract/core/git/clone@1
-        httpDownload: lcod://axiom/http/download@1
-        joinChain: lcod://tooling/path/join_chain@0.1.0
-        dirname: lcod://tooling/path/dirname@0.1.0
-        isAbsolute: lcod://tooling/path/is_absolute@0.1.0
-        sha256: lcod://tooling/hash/sha256_base64@0.1.0
         normalizePointer: lcod://tooling/registry_sources/normalize_pointer@0.1.0
-        processCatalogue: lcod://tooling/registry_sources/process_catalogue@0.1.0
+        processPointer: lcod://tooling/registry_sources/process_pointer@0.1.0
+    out:
+      registrySources: registrySources
+      warnings: warnings

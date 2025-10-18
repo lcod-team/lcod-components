@@ -1,0 +1,174 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }, { imports }) => {
+          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
+          const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+          const ensureArray = (value) => (Array.isArray(value) ? value : []);
+
+          const warnings = [];
+          const pointer = ensureObject(state.pointer) || {};
+          const downloadsRoot = ensureString(state.downloadsRoot) || '.';
+          const defaultEntrypoint = ensureObject(state.defaultEntrypoint) || {};
+          const basePriority = Number.isFinite(state.basePriority) ? Math.trunc(state.basePriority) : null;
+
+          const joinChain = async (base, ...segments) => {
+            const res = await imports.joinChain({ base, segments });
+            return res?.path ?? base ?? '';
+          };
+
+          const dirname = async (value) => {
+            const res = await imports.dirname({ path: value });
+            return res?.dirname ?? value;
+          };
+
+          const resolveAbsolute = async (base, value) => {
+            if (!value) return null;
+            if (value.startsWith('file://')) return value.slice('file://'.length);
+            const absolute = await imports.isAbsolute({ path: value });
+            if (absolute?.absolute) return value;
+            return await joinChain(base, value);
+          };
+
+          const pointerHashKey = async (payload) => {
+            const digest = await imports.sha256({ data: JSON.stringify(payload) });
+            const hex = digest?.hex?.trim();
+            return hex && hex.length ? hex : `${Date.now()}${Math.random().toString(16).slice(2)}`;
+          };
+
+          const readUtf8 = async (filePath) => {
+            const res = await imports.fsReadFile({ path: filePath, encoding: 'utf-8' });
+            return res?.data ?? null;
+          };
+
+          const fetchEntrypoint = async () => {
+            const entrypoint = ensureObject(pointer.entrypoint) || {};
+            const kind = ensureString(entrypoint.type)?.toLowerCase() || 'https';
+            if (kind === 'file') {
+              const rawPath = ensureString(entrypoint.path);
+              if (!rawPath) throw new Error('file entrypoint is missing path');
+              const absolutePath = await resolveAbsolute(pointer.baseDir || '.', rawPath);
+              if (!absolutePath) throw new Error('Unable to resolve file path for catalogue pointer');
+              const text = await readUtf8(absolutePath);
+              const baseDir = await dirname(absolutePath);
+              return { text, baseDir, originPath: absolutePath };
+            }
+
+            if (kind === 'http' || kind === 'https') {
+              const url = ensureString(entrypoint.url);
+              if (!url) throw new Error('http(s) entrypoint is missing url');
+              const keyHex = await pointerHashKey({ url, query: entrypoint.query || null, method: entrypoint.method || null });
+              const destFile = await joinChain(downloadsRoot, 'http', `${keyHex}.json`);
+              const downloadInput = { url, path: destFile };
+              if (entrypoint.method) downloadInput.method = entrypoint.method;
+              if (entrypoint.headers) downloadInput.headers = entrypoint.headers;
+              if (entrypoint.query) downloadInput.query = entrypoint.query;
+              if (entrypoint.timeoutMs) downloadInput.timeoutMs = entrypoint.timeoutMs;
+              if (entrypoint.followRedirects !== undefined) downloadInput.followRedirects = entrypoint.followRedirects;
+              if (entrypoint.body !== undefined) downloadInput.body = entrypoint.body;
+              if (entrypoint.bodyEncoding) downloadInput.bodyEncoding = entrypoint.bodyEncoding;
+              await imports.httpDownload(downloadInput);
+              const text = await readUtf8(destFile);
+              const baseDir = await dirname(destFile);
+              return { text, baseDir, originPath: destFile };
+            }
+
+            if (kind === 'git') {
+              const url = ensureString(entrypoint.url);
+              if (!url) throw new Error('git entrypoint is missing url');
+              const keyHex = await pointerHashKey({ url, ref: entrypoint.ref || null, commit: entrypoint.commit || null, subpath: entrypoint.subpath || null });
+              const destDir = await joinChain(downloadsRoot, 'git', keyHex);
+              const cloneInput = { url, dest: destDir };
+              if (entrypoint.commit) cloneInput.ref = entrypoint.commit;
+              else if (entrypoint.ref) cloneInput.ref = entrypoint.ref;
+              if (entrypoint.subpath) cloneInput.subdir = entrypoint.subpath;
+              const cloneMeta = await imports.gitClone(cloneInput);
+              const pointerPath = ensureString(entrypoint.path)
+                ? await resolveAbsolute(cloneMeta.path, entrypoint.path)
+                : cloneMeta.path;
+              const text = await readUtf8(pointerPath);
+              const baseDir = await dirname(pointerPath);
+              return { text, baseDir, originPath: pointerPath, commit: cloneMeta.commit || entrypoint.commit || null };
+            }
+
+            throw new Error(`Unsupported entrypoint type ${entrypoint.type || 'unknown'}`);
+          };
+
+          let payload;
+          try {
+            payload = await fetchEntrypoint();
+          } catch (err) {
+            warnings.push(`Failed to load catalogue for ${pointer.id || 'catalogue'}: ${err?.message || err}`);
+            return { entry: null, children: [], warnings };
+          }
+
+          if (pointer.checksum) {
+            const digest = await imports.sha256({ data: payload.text ?? '' });
+            const payloadBase64 = digest?.base64 ? `sha256-${digest.base64}` : null;
+            if (pointer.checksum && payloadBase64 && pointer.checksum !== payloadBase64) {
+              warnings.push(`Checksum mismatch for ${pointer.id || 'catalogue'}: expected ${pointer.checksum}, got ${payloadBase64}`);
+            }
+          }
+
+          let parsed;
+          try {
+            parsed = JSON.parse(payload.text);
+          } catch (err) {
+            warnings.push(`Invalid catalogue payload for ${pointer.id || 'catalogue'}: ${err.message}`);
+            return { entry: null, children: [], warnings };
+          }
+
+          const schema = ensureString(parsed.schema);
+          const children = [];
+          let entry = null;
+
+          if (schema === 'lcod-registry/catalogues@1') {
+            const catalogues = ensureArray(parsed.catalogues);
+            for (const childEntry of catalogues) {
+              const normalized = await imports.normalizePointer({
+                entry: childEntry,
+                inherited: pointer,
+                baseDir: payload.baseDir,
+                sourcesBaseDir: payload.baseDir || pointer.baseDir || '.',
+                defaultEntrypoint,
+                basePriority
+              });
+              if (normalized?.warnings?.length) warnings.push(...normalized.warnings);
+              if (normalized?.pointer) children.push(normalized.pointer);
+            }
+          } else if (schema === 'lcod-registry/catalogue@1') {
+            const processed = await imports.processCatalogue({
+              catalogue: parsed,
+              pointer: pointer,
+              basePriority,
+              baseDir: payload.baseDir
+            });
+            if (processed?.warnings?.length) warnings.push(...processed.warnings);
+            entry = processed?.entry || null;
+          } else {
+            warnings.push(`Unsupported catalogue schema ${schema || '<missing>'} for ${pointer.id || 'catalogue'}`);
+          }
+
+          return { entry, children, warnings, commit: payload.commit || pointer.commit || null };
+        }
+      input:
+        pointer: $.pointer
+        downloadsRoot: $.downloadsRoot
+        defaultEntrypoint: $.defaultEntrypoint
+        basePriority: $.basePriority
+      imports:
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        gitClone: lcod://contract/core/git/clone@1
+        httpDownload: lcod://axiom/http/download@1
+        joinChain: lcod://tooling/path/join_chain@0.1.0
+        dirname: lcod://tooling/path/dirname@0.1.0
+        isAbsolute: lcod://tooling/path/is_absolute@0.1.0
+        sha256: lcod://tooling/hash/sha256_base64@0.1.0
+        normalizePointer: lcod://tooling/registry_sources/normalize_pointer@0.1.0
+        processCatalogue: lcod://tooling/registry_sources/process_catalogue@0.1.0
+    out:
+      entry: entry
+      children: children
+      warnings: warnings
+      commit: commit
