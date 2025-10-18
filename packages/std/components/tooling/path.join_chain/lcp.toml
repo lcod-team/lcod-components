@@ -1,0 +1,39 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/path/join_chain@0.1.0"
+name = "join_chain"
+namespace = "tooling/path"
+version = "0.1.0"
+kind = "component"
+
+summary = "Join a base path with a sequence of segments using path axioms."
+
+[palette]
+category = "Filesystem"
+icon = "mdi:vector-polyline"
+tags = ["path", "join"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "base"
+type = "string"
+required = false
+description = "Base path (defaults to empty string)."
+
+[[io.input]]
+name = "segments"
+type = "array"
+required = false
+description = "Ordered list of segments to append. Nullish entries are ignored."
+
+[[io.output]]
+name = "path"
+type = "string"
+description = "Resulting joined path."
+
+[deps]
+requires = [
+  "lcod://tooling/script@1",
+  "lcod://axiom/path/join@1"
+]

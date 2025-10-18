@@ -1,0 +1,15 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const value = typeof state.path === 'string' ? state.path : '';
+          if (!value.length) return { url: null };
+          const normalized = value.replace(/\\/g, '/').replace(/\/\.\//g, '/');
+          const ensured = normalized.endsWith('/') ? normalized : `${normalized}/`;
+          return { url: `file://${ensured}` };
+        }
+      input:
+        path: $.path
+    out:
+      url: url

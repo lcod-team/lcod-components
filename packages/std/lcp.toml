@@ -127,6 +127,26 @@ id = "lcod://tooling/string/ensure_trailing_newline@0.1.0"
 path = "components/tooling/string.ensure_trailing_newline"
 
 [[workspace.components]]
+id = "lcod://tooling/path/join_chain@0.1.0"
+path = "components/tooling/path.join_chain"
+
+[[workspace.components]]
+id = "lcod://tooling/path/dirname@0.1.0"
+path = "components/tooling/path.dirname"
+
+[[workspace.components]]
+id = "lcod://tooling/path/is_absolute@0.1.0"
+path = "components/tooling/path.is_absolute"
+
+[[workspace.components]]
+id = "lcod://tooling/path/to_file_url@0.1.0"
+path = "components/tooling/path.to_file_url"
+
+[[workspace.components]]
+id = "lcod://tooling/hash/sha256_base64@0.1.0"
+path = "components/tooling/hash.sha256_base64"
+
+[[workspace.components]]
 id = "lcod://tooling/registry_sources/prepare_env@0.1.0"
 path = "components/tooling/registry_sources.prepare_env"
 

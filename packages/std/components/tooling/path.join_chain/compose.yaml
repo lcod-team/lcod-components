@@ -1,0 +1,24 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }, { imports }) => {
+          const ensureArray = (value) => (Array.isArray(value) ? value : []);
+          let current = typeof state.base === 'string' && state.base.length ? state.base : '';
+          const segments = ensureArray(state.segments);
+          for (const segment of segments) {
+            if (segment == null) continue;
+            const segmentStr = String(segment);
+            if (!segmentStr.length) continue;
+            const joined = await imports.pathJoin({ base: current, segment: segmentStr });
+            current = joined?.path ?? current;
+          }
+          return { path: current };
+        }
+      input:
+        base: $.base
+        segments: $.segments
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+    out:
+      path: path

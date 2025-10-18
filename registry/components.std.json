@@ -52,6 +52,10 @@
     "composePath": "packages/std/components/tooling/fs.write_if_changed/compose.yaml"
   },
   {
+    "id": "lcod://tooling/hash/sha256_base64@0.1.0",
+    "composePath": "packages/std/components/tooling/hash.sha256_base64/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/json/decode_object@0.1.0",
     "composePath": "packages/std/components/tooling/json.decode_object/compose.yaml"
   },
@@ -74,6 +78,22 @@
   {
     "id": "lcod://tooling/mcp/session/open@0.1.0",
     "composePath": "packages/std/components/tooling/mcp.session.open/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/path/dirname@0.1.0",
+    "composePath": "packages/std/components/tooling/path.dirname/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/path/is_absolute@0.1.0",
+    "composePath": "packages/std/components/tooling/path.is_absolute/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/path/join_chain@0.1.0",
+    "composePath": "packages/std/components/tooling/path.join_chain/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/path/to_file_url@0.1.0",
+    "composePath": "packages/std/components/tooling/path.to_file_url/compose.yaml"
   },
   {
     "id": "lcod://tooling/registry_catalog/collect@0.1.0",

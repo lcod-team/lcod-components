@@ -1,0 +1,8 @@
+compose:
+  - call: lcod://tooling/path/join_chain@0.1.0
+    in:
+      base: $.path
+      segments:
+        - ".."
+    out:
+      path: dirname

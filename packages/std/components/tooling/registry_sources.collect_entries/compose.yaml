@@ -6,39 +6,32 @@ compose:
           const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
           const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
           const ensureArray = (value) => (Array.isArray(value) ? value : []);
-          const isAbsolutePath = (value) => /^(?:[A-Za-z]:[\\/]|\/)/.test(value || '');
           const ensureTrailingSlash = (value) => {
             if (!value || typeof value !== 'string') return value;
             return value.endsWith('/') ? value : `${value}/`;
           };
-          const sanitizeFilePath = (value) => {
-            if (typeof value !== 'string') return value;
-            const replaced = value.replace(/\\/g, '/');
-            return replaced.replace(/\/\.\//g, '/');
-          };
 
-          const joinPaths = async (...segments) => {
-            if (!segments.length) return '';
-            let current = segments[0];
-            for (let i = 1; i < segments.length; i += 1) {
-              const segment = segments[i];
-              if (segment == null) continue;
-              const joined = await imports.pathJoin({ base: current, segment });
-              current = joined?.path ?? current;
-            }
-            return current;
+          const joinChain = async (base, ...segments) => {
+            const result = await imports.joinChain({ base, segments });
+            return result?.path ?? base ?? '';
           };
 
           const dirname = async (target) => {
-            const parent = await imports.pathJoin({ base: target, segment: '..' });
-            return parent?.path ?? target;
+            const result = await imports.dirname({ path: target });
+            return result?.dirname ?? target;
+          };
+
+          const isAbsolutePath = async (value) => {
+            if (!value) return false;
+            const res = await imports.isAbsolute({ path: value });
+            return !!res?.absolute;
           };
 
           const resolveAbsolute = async (base, value) => {
             if (!value) return null;
             if (value.startsWith('file://')) return value.slice('file://'.length);
-            if (isAbsolutePath(value)) return value;
-            return await joinPaths(base, value);
+            if (await isAbsolutePath(value)) return value;
+            return await joinChain(base, value);
           };
 
           const readUtf8 = async (filePath) => {
@@ -46,42 +39,10 @@ compose:
             return res?.data ?? null;
           };
 
-          const computeShaHex = async (text) => {
-            if (typeof text !== 'string') return null;
-            const res = await imports.hash({ data: text, encoding: 'utf-8' });
-            return res?.hex ?? null;
-          };
-
-          const hexToBase64 = (hex) => {
-            if (!hex || typeof hex !== 'string') return null;
-            const clean = hex.trim();
-            if (!clean) return null;
-            const bytes = [];
-            for (let i = 0; i < clean.length; i += 2) {
-              const pair = clean.slice(i, i + 2);
-              bytes.push(parseInt(pair, 16));
-            }
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-            let output = '';
-            for (let i = 0; i < bytes.length; i += 3) {
-              const b1 = bytes[i];
-              const b2 = bytes[i + 1];
-              const b3 = bytes[i + 2];
-              const hasB2 = Number.isFinite(b2);
-              const hasB3 = Number.isFinite(b3);
-              const triplet = (b1 << 16) | ((hasB2 ? b2 : 0) << 8) | (hasB3 ? b3 : 0);
-              output += chars[(triplet >> 18) & 63];
-              output += chars[(triplet >> 12) & 63];
-              output += hasB2 ? chars[(triplet >> 6) & 63] : '=';
-              output += hasB3 ? chars[triplet & 63] : '=';
-            }
-            return output;
-          };
-
-          const toFileUrl = (absolutePath) => {
-            if (!absolutePath) return null;
-            const normalized = sanitizeFilePath(absolutePath);
-            return `file://${ensureTrailingSlash(normalized)}`;
+          const pointerHashKey = async (payload) => {
+            const digest = await imports.sha256({ data: JSON.stringify(payload) });
+            const hex = digest?.hex?.trim();
+            return hex && hex.length ? hex : `${Date.now()}${Math.random().toString(16).slice(2)}`;
           };
 
           const warnings = [];
@@ -94,11 +55,6 @@ compose:
           const defaults = ensureObject(sourcesConfig.defaults) || {};
           const defaultEntrypoint = ensureObject(defaults.entrypoint) || {};
           const basePriority = Number.isFinite(defaults.priority) ? Math.trunc(defaults.priority) : undefined;
-
-          const pointerHashKey = async (payload) => {
-            const hex = await computeShaHex(JSON.stringify(payload));
-            return hex || `${Date.now()}${Math.random().toString(16).slice(2)}`;
-          };
 
           const fetchEntrypoint = async (entrypoint, context) => {
             const kind = ensureString(entrypoint.type)?.toLowerCase() || 'https';
@@ -116,7 +72,7 @@ compose:
               const url = ensureString(entrypoint.url);
               if (!url) throw new Error('http(s) entrypoint is missing url');
               const keyHex = await pointerHashKey({ url, query: entrypoint.query || null, method: entrypoint.method || null });
-              const destFile = await joinPaths(downloadsRoot, 'http', `${keyHex}.json`);
+              const destFile = await joinChain(downloadsRoot, 'http', `${keyHex}.json`);
               const downloadInput = { url, path: destFile };
               if (entrypoint.method) downloadInput.method = entrypoint.method;
               if (entrypoint.headers) downloadInput.headers = entrypoint.headers;
@@ -135,7 +91,7 @@ compose:
               const url = ensureString(entrypoint.url);
               if (!url) throw new Error('git entrypoint is missing url');
               const keyHex = await pointerHashKey({ url, ref: entrypoint.ref || null, commit: entrypoint.commit || null, subpath: entrypoint.subpath || null });
-              const destDir = await joinPaths(downloadsRoot, 'git', keyHex);
+              const destDir = await joinChain(downloadsRoot, 'git', keyHex);
               const cloneInput = { url, dest: destDir };
               if (entrypoint.commit) cloneInput.ref = entrypoint.commit;
               else if (entrypoint.ref) cloneInput.ref = entrypoint.ref;
@@ -144,10 +100,9 @@ compose:
               const pointerPath = ensureString(entrypoint.path)
                 ? await resolveAbsolute(cloneMeta.path, entrypoint.path)
                 : cloneMeta.path;
-              const statsPath = pointerPath;
-              const text = await readUtf8(statsPath);
-              const baseDir = await dirname(statsPath);
-              return { text, baseDir, originPath: statsPath, commit: cloneMeta.commit || entrypoint.commit || null };
+              const text = await readUtf8(pointerPath);
+              const baseDir = await dirname(pointerPath);
+              return { text, baseDir, originPath: pointerPath, commit: cloneMeta.commit || entrypoint.commit || null };
             }
 
             throw new Error(`Unsupported entrypoint type ${entrypoint.type || 'unknown'}`);
@@ -207,16 +162,19 @@ compose:
                 if (basePath && basePath.startsWith('file://')) {
                   basePath = basePath.slice('file://'.length);
                 }
-                if (basePath && !isAbsolutePath(basePath)) {
-                  basePath = await joinPaths(context.baseDir, basePath);
+                if (basePath && !(await isAbsolutePath(basePath))) {
+                  basePath = await joinChain(context.baseDir, basePath);
                 }
                 if (!basePath) basePath = context.baseDir;
-                if (origin.path) basePath = await joinPaths(basePath, origin.path);
-                defaultsEntry = {
-                  id: registryId,
-                  type: 'file',
-                  url: toFileUrl(basePath)
-                };
+                if (origin.path) basePath = await joinChain(basePath, origin.path);
+                const fileUrl = await imports.toFileUrl({ path: basePath });
+                if (fileUrl?.url) {
+                  defaultsEntry = {
+                    id: registryId,
+                    type: 'file',
+                    url: fileUrl.url
+                  };
+                }
               } else if (originType === 'git') {
                 const repoUrl = ensureString(origin.url) ? origin.url.replace(/\.git$/i, '') : null;
                 const commit = ensureString(origin.commit) || pointer.commit || null;
@@ -399,10 +357,10 @@ compose:
             }
 
             if (pointer.checksum) {
-              const payloadHex = await computeShaHex(payload.text ?? '');
-              const payloadBase64 = hexToBase64(payloadHex || '');
-              if (pointer.checksum && payloadBase64 && pointer.checksum !== `sha256-${payloadBase64}`) {
-                warnings.push(`Checksum mismatch for ${pointer.id}: expected ${pointer.checksum}, got sha256-${payloadBase64}`);
+              const digest = await imports.sha256({ data: payload.text ?? '' });
+              const payloadBase64 = digest?.base64 ? `sha256-${digest.base64}` : null;
+              if (pointer.checksum && payloadBase64 && pointer.checksum !== payloadBase64) {
+                warnings.push(`Checksum mismatch for ${pointer.id}: expected ${pointer.checksum}, got ${payloadBase64}`);
               }
             }
 
@@ -463,9 +421,12 @@ compose:
       imports:
         fsReadFile: lcod://contract/core/fs/read-file@1
         gitClone: lcod://contract/core/git/clone@1
-        hash: lcod://contract/core/hash/sha256@1
         httpDownload: lcod://axiom/http/download@1
-        pathJoin: lcod://axiom/path/join@1
+        joinChain: lcod://tooling/path/join_chain@0.1.0
+        dirname: lcod://tooling/path/dirname@0.1.0
+        isAbsolute: lcod://tooling/path/is_absolute@0.1.0
+        toFileUrl: lcod://tooling/path/to_file_url@0.1.0
+        sha256: lcod://tooling/hash/sha256_base64@0.1.0
     out:
       registrySources: registrySources
       warnings: warnings
