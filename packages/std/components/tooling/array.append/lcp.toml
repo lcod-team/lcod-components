@@ -5,7 +5,7 @@ namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
 
-summary = "Append a value to an array and return the new list."
+summary = "Append values to an array using the core/array/append primitive."
 
 [palette]
 category = "Array"
@@ -22,10 +22,16 @@ required = false
 description = "Source array (defaults to an empty list)."
 
 [[io.input]]
+name = "values"
+type = "array"
+required = false
+description = "Additional items appended before `value`."
+
+[[io.input]]
 name = "value"
 type = "any"
 required = false
-description = "Value appended when provided."
+description = "Single value appended when provided."
 
 [[io.output]]
 name = "items"
@@ -39,5 +45,8 @@ description = "Length of the array after the append operation."
 
 [deps]
 requires = [
-  "lcod://axiom/array/push@1"
+  "lcod://tooling/value/is_array@0.1.0",
+  "lcod://flow/if@1",
+  "lcod://impl/set@1",
+  "lcod://core/array/append@0.1.0"
 ]

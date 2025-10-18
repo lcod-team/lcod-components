@@ -5,7 +5,7 @@ namespace = "tooling/json"
 version = "0.1.0"
 kind = "component"
 
-summary = "Serialize a value into JSON text."
+summary = "Serialize a value into JSON text using core/json/encode and append an optional newline."
 
 [palette]
 category = "JSON"
@@ -25,7 +25,19 @@ description = "Value to serialize."
 name = "indent"
 type = "number"
 required = false
-description = "Number of spaces used for indentation."
+description = "Number of spaces used for indentation (0-10)."
+
+[[io.input]]
+name = "sortKeys"
+type = "boolean"
+required = false
+description = "Sort object keys alphabetically."
+
+[[io.input]]
+name = "asciiOnly"
+type = "boolean"
+required = false
+description = "Escape non-ASCII characters."
 
 [[io.input]]
 name = "trailingNewline"
@@ -36,9 +48,12 @@ description = "Append a newline when true."
 [[io.output]]
 name = "json"
 type = "string"
-description = "Serialized JSON string."
+description = "Serialized JSON string (newline appended when requested)."
 
 [deps]
 requires = [
-  "lcod://tooling/script@1"
+  "lcod://core/json/encode@0.1.0",
+  "lcod://flow/if@1",
+  "lcod://core/string/format@0.1.0",
+  "lcod://impl/set@1"
 ]

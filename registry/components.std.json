@@ -1,5 +1,25 @@
 [
   {
+    "id": "lcod://core/array/append@0.1.0",
+    "composePath": "packages/std/components/core/array.append/compose.yaml"
+  },
+  {
+    "id": "lcod://core/json/decode@0.1.0",
+    "composePath": "packages/std/components/core/json.decode/compose.yaml"
+  },
+  {
+    "id": "lcod://core/json/encode@0.1.0",
+    "composePath": "packages/std/components/core/json.encode/compose.yaml"
+  },
+  {
+    "id": "lcod://core/object/merge@0.1.0",
+    "composePath": "packages/std/components/core/object.merge/compose.yaml"
+  },
+  {
+    "id": "lcod://core/string/format@0.1.0",
+    "composePath": "packages/std/components/core/string.format/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/array/append@0.1.0",
     "composePath": "packages/std/components/tooling/array.append/compose.yaml"
   },
@@ -38,6 +58,14 @@
   {
     "id": "lcod://tooling/jsonl/from_objects@0.1.0",
     "composePath": "packages/std/components/tooling/jsonl.from_objects/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/mcp/component/scaffold@0.1.0",
+    "composePath": "packages/std/components/tooling/mcp.component.scaffold/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/mcp/session/open@0.1.0",
+    "composePath": "packages/std/components/tooling/mcp.session.open/compose.yaml"
   },
   {
     "id": "lcod://tooling/registry_catalog/collect@0.1.0",

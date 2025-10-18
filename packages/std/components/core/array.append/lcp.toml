@@ -1,0 +1,49 @@
+schemaVersion = "1.0"
+id = "lcod://core/array/append@0.1.0"
+name = "append"
+namespace = "core/array"
+version = "0.1.0"
+kind = "component"
+
+summary = "Expose core/array/append@1 as a reusable component."
+
+[palette]
+category = "Array"
+icon = "mdi:playlist-plus"
+tags = ["array", "append", "core"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "array"
+type = "array"
+required = true
+description = "Base array kept immutable by the contract."
+
+[[io.input]]
+name = "items"
+type = "array"
+required = false
+description = "Items concatenated to the base array."
+
+[[io.input]]
+name = "item"
+type = "any"
+required = false
+description = "Single item appended after `items` when provided."
+
+[[io.output]]
+name = "value"
+type = "array"
+description = "Resulting array containing the appended entries."
+
+[[io.output]]
+name = "length"
+type = "number"
+description = "Length of the resulting array."
+
+[deps]
+requires = [
+  "lcod://contract/core/array/append@1"
+]

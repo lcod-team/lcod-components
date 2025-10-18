@@ -1,0 +1,11 @@
+compose:
+  - call: lcod://contract/core/string/format@1
+    in:
+      template: $.template
+      values: $.values
+      fallback: $.fallback
+      missingPolicy: $.missingPolicy
+    out:
+      value: value
+      missing: missing
+      error: error

@@ -1,0 +1,60 @@
+schemaVersion = "1.0"
+id = "lcod://core/json/encode@0.1.0"
+name = "encode"
+namespace = "core/json"
+version = "0.1.0"
+kind = "component"
+
+summary = "Expose core/json/encode@1 as an LCOD component."
+
+[palette]
+category = "JSON"
+icon = "mdi:code-json"
+tags = ["json", "encode", "core"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "value"
+type = "any"
+required = true
+description = "Data to encode as JSON."
+
+[[io.input]]
+name = "space"
+type = "number"
+required = false
+description = "Indentation width (0-10)."
+
+[[io.input]]
+name = "sortKeys"
+type = "boolean"
+required = false
+description = "Sort object keys alphabetically."
+
+[[io.input]]
+name = "asciiOnly"
+type = "boolean"
+required = false
+description = "Escape non-ASCII characters."
+
+[[io.output]]
+name = "text"
+type = "string"
+description = "JSON representation."
+
+[[io.output]]
+name = "bytes"
+type = "number"
+description = "Number of UTF-8 bytes emitted."
+
+[[io.output]]
+name = "error"
+type = "object"
+description = "Structured error when encoding fails."
+
+[deps]
+requires = [
+  "lcod://contract/core/json/encode@1"
+]

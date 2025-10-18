@@ -1,0 +1,9 @@
+compose:
+  - call: lcod://contract/core/array/append@1
+    in:
+      array: $.array
+      items: $.items
+      item: $.item
+    out:
+      value: value
+      length: length

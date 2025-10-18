@@ -1,0 +1,163 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://impl/set@1
+          in:
+            left:
+              a: 1
+              nested:
+                flag: true
+              arr:
+                - 1
+                - 2
+            right:
+              b: 2
+              nested:
+                flag: false
+                extra: "x"
+              arr:
+                - 3
+              label: "y"
+            baseArray:
+              - "alpha"
+            appendValues:
+              - "beta"
+            appendItem: "gamma"
+            formatTemplate: "Hello {user.name}"
+            formatValues:
+              user:
+                name: "Ada"
+          out:
+            left: left
+            right: right
+            baseArray: baseArray
+            appendValues: appendValues
+            appendItem: appendItem
+            formatTemplate: formatTemplate
+            formatValues: formatValues
+
+        - call: lcod://core/object/merge@0.1.0
+          in:
+            left: $.left
+            right: $.right
+            deep: true
+            arrayStrategy: concat
+          out:
+            merged: $
+
+        - call: lcod://core/string/format@0.1.0
+          in:
+            template: $.formatTemplate
+            values: $.formatValues
+          out:
+            formatted: $
+
+        - call: lcod://core/array/append@0.1.0
+          in:
+            array: $.baseArray
+            items: $.appendValues
+            item: $.appendItem
+          out:
+            appended: $
+
+        - call: lcod://impl/set@1
+          in:
+            payload:
+              message: $.formatted.value
+              items: $.appended.value
+              merged: $.merged.value
+          out:
+            payload: payload
+
+        - call: lcod://core/json/encode@0.1.0
+          in:
+            value: $.payload
+          out:
+            encoded: $
+
+        - call: lcod://core/json/decode@0.1.0
+          in:
+            text: $.encoded.text
+          out:
+            decoded: $
+
+        - call: lcod://tooling/json/stringify@0.1.0
+          in:
+            value: $.payload
+            indent: 2
+            trailingNewline: true
+          out:
+            stringified:
+              json: json
+
+      expected:
+        merged:
+          value:
+            a: 1
+            nested:
+              flag: false
+              extra: "x"
+            arr:
+              - 1
+              - 2
+              - 3
+            b: 2
+            label: "y"
+          conflicts:
+            - "arr"
+            - "b"
+            - "label"
+            - "nested"
+        appended:
+          value:
+            - "alpha"
+            - "beta"
+            - "gamma"
+          length: 3
+        formatted:
+          value: "Hello Ada"
+        encoded:
+          text: "{\"message\":\"Hello Ada\",\"items\":[\"alpha\",\"beta\",\"gamma\"],\"merged\":{\"a\":1,\"nested\":{\"flag\":false,\"extra\":\"x\"},\"arr\":[1,2,3],\"b\":2,\"label\":\"y\"}}"
+        decoded:
+          value:
+            message: "Hello Ada"
+            items:
+              - "alpha"
+              - "beta"
+              - "gamma"
+            merged:
+              a: 1
+              nested:
+                flag: false
+                extra: "x"
+              arr:
+                - 1
+                - 2
+                - 3
+              b: 2
+              label: "y"
+        stringified:
+          json: |
+            {
+              "message": "Hello Ada",
+              "items": [
+                "alpha",
+                "beta",
+                "gamma"
+              ],
+              "merged": {
+                "a": 1,
+                "nested": {
+                  "flag": false,
+                  "extra": "x"
+                },
+                "arr": [
+                  1,
+                  2,
+                  3
+                ],
+                "b": 2,
+                "label": "y"
+              }
+            }

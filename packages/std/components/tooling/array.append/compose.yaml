@@ -1,10 +1,42 @@
 
 compose:
-  - call: lcod://axiom/array/push@1
+  - call: lcod://tooling/value/is_array@0.1.0
     in:
-      items: $.items
-      value: $.value
-      clone: $.clone
+      value: $.items
+    out:
+      hasInputArray: ok
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.hasInputArray
+    children:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            baseArray: $.items
+          out:
+            baseArray: baseArray
+      else:
+        - call: lcod://impl/set@1
+          in:
+            baseArray: []
+          out:
+            baseArray: baseArray
+    out:
+      baseArray: baseArray
+
+  - call: lcod://core/array/append@0.1.0
+    in:
+      array: $.baseArray
+      items: $.values
+      item: $.value
+    out:
+      appendResult: $
+
+  - call: lcod://impl/set@1
+    in:
+      items: $.appendResult.value
+      length: $.appendResult.length
     out:
       items: items
       length: length

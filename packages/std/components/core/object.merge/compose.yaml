@@ -1,0 +1,10 @@
+compose:
+  - call: lcod://contract/core/object/merge@1
+    in:
+      left: $.left
+      right: $.right
+      deep: $.deep
+      arrayStrategy: $.arrayStrategy
+    out:
+      value: value
+      conflicts: conflicts

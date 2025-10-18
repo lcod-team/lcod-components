@@ -7,6 +7,26 @@ kind = "workspace-package"
 
 [workspace]
 [[workspace.components]]
+id = "lcod://core/array/append@0.1.0"
+path = "components/core/array.append"
+
+[[workspace.components]]
+id = "lcod://core/json/decode@0.1.0"
+path = "components/core/json.decode"
+
+[[workspace.components]]
+id = "lcod://core/json/encode@0.1.0"
+path = "components/core/json.encode"
+
+[[workspace.components]]
+id = "lcod://core/object/merge@0.1.0"
+path = "components/core/object.merge"
+
+[[workspace.components]]
+id = "lcod://core/string/format@0.1.0"
+path = "components/core/string.format"
+
+[[workspace.components]]
 id = "lcod://tooling/array/append@0.1.0"
 path = "components/tooling/array.append"
 

@@ -1,20 +1,39 @@
 
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://core/json/encode@0.1.0
     in:
-      source: |
-        async ({ state }) => {
-          const indent = Number.isFinite(state.indent) ? state.indent : undefined;
-          const newline = state.trailingNewline === true;
-          const text = JSON.stringify(state.value, null, indent);
-          return {
-            json: newline ? `${text}
-` : text
-          };
-        }
-      input:
-        value: $.value
-        indent: $.indent
-        trailingNewline: $.trailingNewline
+      value: $.value
+      space: $.indent
+      sortKeys: $.sortKeys
+      asciiOnly: $.asciiOnly
+    out:
+      encoded: $
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.trailingNewline
+    children:
+      then:
+        - call: lcod://core/string/format@0.1.0
+          in:
+            template: "{text}{newline}"
+            values:
+              text: $.encoded.text
+              newline: "\n"
+          out:
+            formatted: $
+      else:
+        - call: lcod://impl/set@1
+          in:
+            formatted:
+              value: $.encoded.text
+          out:
+            formatted: formatted
+    out:
+      formatted: formatted
+
+  - call: lcod://impl/set@1
+    in:
+      json: $.formatted.value
     out:
       json: json

@@ -1,0 +1,11 @@
+compose:
+  - call: lcod://contract/core/json/encode@1
+    in:
+      value: $.value
+      space: $.space
+      sortKeys: $.sortKeys
+      asciiOnly: $.asciiOnly
+    out:
+      text: text
+      bytes: bytes
+      error: error
