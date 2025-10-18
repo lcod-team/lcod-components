@@ -44,10 +44,6 @@
     "composePath": "packages/std/components/tooling/array.pluck/compose.yaml"
   },
   {
-    "id": "lcod://tooling/array/shift@0.1.0",
-    "composePath": "packages/std/components/tooling/array.shift/compose.yaml"
-  },
-  {
     "id": "lcod://tooling/fs/read_optional@0.1.0",
     "composePath": "packages/std/components/tooling/fs.read_optional/compose.yaml"
   },
@@ -148,32 +144,16 @@
     "composePath": "packages/std/components/tooling/registry_catalog.write_outputs/compose.yaml"
   },
   {
-    "id": "lcod://tooling/registry_sources/build_inline_entry@0.1.0",
-    "composePath": "packages/std/components/tooling/registry_sources.build_inline_entry/compose.yaml"
-  },
-  {
     "id": "lcod://tooling/registry_sources/collect_entries@0.1.0",
     "composePath": "packages/std/components/tooling/registry_sources.collect_entries/compose.yaml"
-  },
-  {
-    "id": "lcod://tooling/registry_sources/collect_queue@0.1.0",
-    "composePath": "packages/std/components/tooling/registry_sources.collect_queue/compose.yaml"
   },
   {
     "id": "lcod://tooling/registry_sources/load_config@0.1.0",
     "composePath": "packages/std/components/tooling/registry_sources.load_config/compose.yaml"
   },
   {
-    "id": "lcod://tooling/registry_sources/merge_inline_entries@0.1.0",
-    "composePath": "packages/std/components/tooling/registry_sources.merge_inline_entries/compose.yaml"
-  },
-  {
     "id": "lcod://tooling/registry_sources/normalize_pointer@0.1.0",
     "composePath": "packages/std/components/tooling/registry_sources.normalize_pointer/compose.yaml"
-  },
-  {
-    "id": "lcod://tooling/registry_sources/partition_normalized@0.1.0",
-    "composePath": "packages/std/components/tooling/registry_sources.partition_normalized/compose.yaml"
   },
   {
     "id": "lcod://tooling/registry_sources/prepare_env@0.1.0",
