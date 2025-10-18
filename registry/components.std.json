@@ -28,14 +28,6 @@
     "composePath": "packages/std/components/tooling/array.compact/compose.yaml"
   },
   {
-    "id": "lcod://tooling/array/concat@0.1.0",
-    "composePath": "packages/std/components/tooling/array.concat/compose.yaml"
-  },
-  {
-    "id": "lcod://tooling/array/filter_objects@0.1.0",
-    "composePath": "packages/std/components/tooling/array.filter_objects/compose.yaml"
-  },
-  {
     "id": "lcod://tooling/array/find_duplicates@0.1.0",
     "composePath": "packages/std/components/tooling/array.find_duplicates/compose.yaml"
   },

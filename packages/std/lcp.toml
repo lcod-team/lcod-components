@@ -31,16 +31,8 @@ id = "lcod://tooling/array/append@0.1.0"
 path = "components/tooling/array.append"
 
 [[workspace.components]]
-id = "lcod://tooling/array/concat@0.1.0"
-path = "components/tooling/array.concat"
-
-[[workspace.components]]
 id = "lcod://tooling/array/shift@0.1.0"
 path = "components/tooling/array.shift"
-
-[[workspace.components]]
-id = "lcod://tooling/array/filter_objects@0.1.0"
-path = "components/tooling/array.filter_objects"
 
 [[workspace.components]]
 id = "lcod://tooling/array/compact@0.1.0"
