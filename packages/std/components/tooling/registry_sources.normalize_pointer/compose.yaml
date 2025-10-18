@@ -2,31 +2,37 @@ compose:
   - call: lcod://tooling/script@1
     in:
       source: |
-        async ({ state }) => {
-          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
+        async ({ state }, { imports }) => {
           const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
           const warnings = [];
+
+          const isNonEmptyString = async (value) => {
+            const res = await imports.isStringNonEmpty({ value });
+            return !!res?.ok;
+          };
+          const ensureString = async (value) => (await isNonEmptyString(value)) ? String(value) : null;
 
           const entry = ensureObject(state.entry) || {};
           const inherited = ensureObject(state.inherited) || null;
           const defaultEntrypoint = ensureObject(state.defaultEntrypoint) || {};
           const basePriority = Number.isFinite(state.basePriority) ? Math.trunc(state.basePriority) : null;
 
-          const baseDirOverride = ensureString(state.baseDir);
-          const sourcesBaseDir = ensureString(state.sourcesBaseDir) || '.';
-          const baseDir = baseDirOverride || ensureString(inherited?.baseDir) || sourcesBaseDir;
+          const baseDirOverride = await ensureString(state.baseDir);
+          const sourcesBaseDir = (await ensureString(state.sourcesBaseDir)) || '.';
+          const inheritedBaseDir = inherited ? await ensureString(inherited.baseDir) : null;
+          const baseDir = baseDirOverride || inheritedBaseDir || sourcesBaseDir;
 
           const pointer = {
-            id: ensureString(entry.id) || ensureString(inherited?.id) || 'catalogue',
+            id: (await ensureString(entry.id)) || (await ensureString(inherited?.id)) || 'catalogue',
             priority: Number.isFinite(entry.priority) ? Math.trunc(entry.priority) : inherited?.priority ?? basePriority ?? null,
-            checksum: ensureString(entry.checksum) || ensureString(inherited?.checksum) || null,
-            signature: ensureString(entry.signature) || ensureString(inherited?.signature) || null,
-            publicKey: ensureString(entry.publicKey) || ensureString(inherited?.publicKey) || null,
+            checksum: (await ensureString(entry.checksum)) || (await ensureString(inherited?.checksum)) || null,
+            signature: (await ensureString(entry.signature)) || (await ensureString(inherited?.signature)) || null,
+            publicKey: (await ensureString(entry.publicKey)) || (await ensureString(inherited?.publicKey)) || null,
             metadata: entry.metadata || inherited?.metadata || null,
             entrypoint: {},
             transport: entry.transport || inherited?.transport || null,
             baseDir,
-            commit: ensureString(inherited?.commit) || null
+            commit: (await ensureString(inherited?.commit)) || null
           };
 
           const mergedEntrypoint = {
@@ -36,54 +42,31 @@ compose:
             type: entry.entrypoint?.type || inherited?.entrypoint?.type || entry.type || entry.kind || defaultEntrypoint.type
           };
 
-          if (typeof entry.path === 'string' && entry.path.length > 0) {
-            mergedEntrypoint.path = entry.path;
-          }
-          if (typeof entry.url === 'string' && entry.url.length > 0) {
-            mergedEntrypoint.url = entry.url;
-          }
-          if (typeof entry.method === 'string' && entry.method.length > 0) {
-            mergedEntrypoint.method = entry.method;
-          }
-          if (entry.headers && typeof entry.headers === 'object' && !Array.isArray(entry.headers)) {
-            mergedEntrypoint.headers = entry.headers;
-          }
-          if (entry.query && typeof entry.query === 'object' && !Array.isArray(entry.query)) {
-            mergedEntrypoint.query = entry.query;
-          }
-          if (typeof entry.timeoutMs === 'number') {
-            mergedEntrypoint.timeoutMs = entry.timeoutMs;
-          }
-          if (typeof entry.followRedirects === 'boolean') {
-            mergedEntrypoint.followRedirects = entry.followRedirects;
-          }
-          if (Object.prototype.hasOwnProperty.call(entry, 'body')) {
-            mergedEntrypoint.body = entry.body;
-          }
-          if (typeof entry.bodyEncoding === 'string' && entry.bodyEncoding.length > 0) {
-            mergedEntrypoint.bodyEncoding = entry.bodyEncoding;
-          }
-          if (typeof entry.ref === 'string' && entry.ref.length > 0) {
-            mergedEntrypoint.ref = entry.ref;
-          }
-          if (typeof entry.commit === 'string' && entry.commit.length > 0) {
-            mergedEntrypoint.commit = entry.commit;
-          }
-          if (typeof entry.subpath === 'string' && entry.subpath.length > 0) {
-            mergedEntrypoint.subpath = entry.subpath;
-          }
+          if (await isNonEmptyString(entry.path)) mergedEntrypoint.path = entry.path;
+          if (await isNonEmptyString(entry.url)) mergedEntrypoint.url = entry.url;
+          if (await isNonEmptyString(entry.method)) mergedEntrypoint.method = entry.method;
+          if (entry.headers && typeof entry.headers === 'object' && !Array.isArray(entry.headers)) mergedEntrypoint.headers = entry.headers;
+          if (entry.query && typeof entry.query === 'object' && !Array.isArray(entry.query)) mergedEntrypoint.query = entry.query;
+          if (typeof entry.timeoutMs === 'number') mergedEntrypoint.timeoutMs = entry.timeoutMs;
+          if (typeof entry.followRedirects === 'boolean') mergedEntrypoint.followRedirects = entry.followRedirects;
+          if (Object.prototype.hasOwnProperty.call(entry, 'body')) mergedEntrypoint.body = entry.body;
+          if (await isNonEmptyString(entry.bodyEncoding)) mergedEntrypoint.bodyEncoding = entry.bodyEncoding;
+          if (await isNonEmptyString(entry.ref)) mergedEntrypoint.ref = entry.ref;
+          if (await isNonEmptyString(entry.commit)) mergedEntrypoint.commit = entry.commit;
+          if (await isNonEmptyString(entry.subpath)) mergedEntrypoint.subpath = entry.subpath;
 
-          const kind = ensureString(mergedEntrypoint.type)?.toLowerCase() || 'https';
+          const kindRaw = await ensureString(mergedEntrypoint.type);
+          const kind = kindRaw ? kindRaw.toLowerCase() : 'https';
 
           if (kind === 'file') {
-            const rawPath = ensureString(mergedEntrypoint.path);
+            const rawPath = await ensureString(mergedEntrypoint.path);
             if (!rawPath) {
               warnings.push(`sources entry ${pointer.id} (file) is missing path`);
               return { pointer: null, warnings };
             }
             pointer.entrypoint = { type: 'file', path: rawPath };
           } else if (kind === 'http' || kind === 'https') {
-            const url = ensureString(mergedEntrypoint.url);
+            const url = await ensureString(mergedEntrypoint.url);
             if (!url) {
               warnings.push(`sources entry ${pointer.id} (${kind}) is missing url`);
               return { pointer: null, warnings };
@@ -100,7 +83,7 @@ compose:
               bodyEncoding: mergedEntrypoint.bodyEncoding
             };
           } else if (kind === 'git') {
-            const url = ensureString(mergedEntrypoint.url);
+            const url = await ensureString(mergedEntrypoint.url);
             if (!url) {
               warnings.push(`sources entry ${pointer.id} (git) is missing url`);
               return { pointer: null, warnings };
@@ -120,7 +103,7 @@ compose:
 
           if (pointer.entrypoint.type === 'git' && pointer.entrypoint.commit) {
             pointer.commit = pointer.entrypoint.commit;
-          } else if (!pointer.commit && typeof entry.commit === 'string' && entry.commit.length > 0) {
+          } else if (!pointer.commit && await isNonEmptyString(entry.commit)) {
             pointer.commit = entry.commit;
           }
 
@@ -133,6 +116,8 @@ compose:
         sourcesBaseDir: $.sourcesBaseDir
         defaultEntrypoint: $.defaultEntrypoint
         basePriority: $.basePriority
+      imports:
+        isStringNonEmpty: lcod://tooling/value/is_string_nonempty@0.1.0
     out:
       pointer: pointer
       warnings: warnings

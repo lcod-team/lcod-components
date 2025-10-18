@@ -3,13 +3,18 @@ compose:
     in:
       source: |
         async ({ state }, { imports }) => {
-          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
           const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
           const ensureArray = (value) => (Array.isArray(value) ? value : []);
-
           const warnings = [];
+
+          const isNonEmptyString = async (value) => {
+            const res = await imports.isStringNonEmpty({ value });
+            return !!res?.ok;
+          };
+          const ensureString = async (value) => (await isNonEmptyString(value)) ? String(value) : null;
+
           const pointer = ensureObject(state.pointer) || {};
-          const downloadsRoot = ensureString(state.downloadsRoot) || '.';
+          const downloadsRoot = (await ensureString(state.downloadsRoot)) || '.';
           const defaultEntrypoint = ensureObject(state.defaultEntrypoint) || {};
           const basePriority = Number.isFinite(state.basePriority) ? Math.trunc(state.basePriority) : null;
 
@@ -44,9 +49,11 @@ compose:
 
           const fetchEntrypoint = async () => {
             const entrypoint = ensureObject(pointer.entrypoint) || {};
-            const kind = ensureString(entrypoint.type)?.toLowerCase() || 'https';
+            const kindRaw = await ensureString(entrypoint.type);
+            const kind = kindRaw ? kindRaw.toLowerCase() : 'https';
+
             if (kind === 'file') {
-              const rawPath = ensureString(entrypoint.path);
+              const rawPath = await ensureString(entrypoint.path);
               if (!rawPath) throw new Error('file entrypoint is missing path');
               const absolutePath = await resolveAbsolute(pointer.baseDir || '.', rawPath);
               if (!absolutePath) throw new Error('Unable to resolve file path for catalogue pointer');
@@ -56,18 +63,20 @@ compose:
             }
 
             if (kind === 'http' || kind === 'https') {
-              const url = ensureString(entrypoint.url);
+              const url = await ensureString(entrypoint.url);
               if (!url) throw new Error('http(s) entrypoint is missing url');
               const keyHex = await pointerHashKey({ url, query: entrypoint.query || null, method: entrypoint.method || null });
               const destFile = await joinChain(downloadsRoot, 'http', `${keyHex}.json`);
               const downloadInput = { url, path: destFile };
-              if (entrypoint.method) downloadInput.method = entrypoint.method;
-              if (entrypoint.headers) downloadInput.headers = entrypoint.headers;
-              if (entrypoint.query) downloadInput.query = entrypoint.query;
-              if (entrypoint.timeoutMs) downloadInput.timeoutMs = entrypoint.timeoutMs;
-              if (entrypoint.followRedirects !== undefined) downloadInput.followRedirects = entrypoint.followRedirects;
-              if (entrypoint.body !== undefined) downloadInput.body = entrypoint.body;
-              if (entrypoint.bodyEncoding) downloadInput.bodyEncoding = entrypoint.bodyEncoding;
+              const methodValue = await ensureString(entrypoint.method);
+              if (methodValue) downloadInput.method = methodValue;
+              if (entrypoint.headers && typeof entrypoint.headers === 'object' && !Array.isArray(entrypoint.headers)) downloadInput.headers = entrypoint.headers;
+              if (entrypoint.query && typeof entrypoint.query === 'object' && !Array.isArray(entrypoint.query)) downloadInput.query = entrypoint.query;
+              if (typeof entrypoint.timeoutMs === 'number') downloadInput.timeoutMs = entrypoint.timeoutMs;
+              if (typeof entrypoint.followRedirects === 'boolean') downloadInput.followRedirects = entrypoint.followRedirects;
+              if (Object.prototype.hasOwnProperty.call(entrypoint, 'body')) downloadInput.body = entrypoint.body;
+              const bodyEncoding = await ensureString(entrypoint.bodyEncoding);
+              if (bodyEncoding) downloadInput.bodyEncoding = bodyEncoding;
               await imports.httpDownload(downloadInput);
               const text = await readUtf8(destFile);
               const baseDir = await dirname(destFile);
@@ -75,24 +84,26 @@ compose:
             }
 
             if (kind === 'git') {
-              const url = ensureString(entrypoint.url);
+              const url = await ensureString(entrypoint.url);
               if (!url) throw new Error('git entrypoint is missing url');
               const keyHex = await pointerHashKey({ url, ref: entrypoint.ref || null, commit: entrypoint.commit || null, subpath: entrypoint.subpath || null });
               const destDir = await joinChain(downloadsRoot, 'git', keyHex);
               const cloneInput = { url, dest: destDir };
-              if (entrypoint.commit) cloneInput.ref = entrypoint.commit;
-              else if (entrypoint.ref) cloneInput.ref = entrypoint.ref;
-              if (entrypoint.subpath) cloneInput.subdir = entrypoint.subpath;
+              const commitValue = await ensureString(entrypoint.commit);
+              const refValue = await ensureString(entrypoint.ref);
+              const subpathValue = await ensureString(entrypoint.subpath);
+              if (commitValue) cloneInput.ref = commitValue;
+              else if (refValue) cloneInput.ref = refValue;
+              if (subpathValue) cloneInput.subdir = subpathValue;
               const cloneMeta = await imports.gitClone(cloneInput);
-              const pointerPath = ensureString(entrypoint.path)
-                ? await resolveAbsolute(cloneMeta.path, entrypoint.path)
-                : cloneMeta.path;
+              const pathValue = await ensureString(entrypoint.path);
+              const pointerPath = pathValue ? await resolveAbsolute(cloneMeta.path, pathValue) : cloneMeta.path;
               const text = await readUtf8(pointerPath);
               const baseDir = await dirname(pointerPath);
-              return { text, baseDir, originPath: pointerPath, commit: cloneMeta.commit || entrypoint.commit || null };
+              return { text, baseDir, originPath: pointerPath, commit: cloneMeta.commit || commitValue || null };
             }
 
-            throw new Error(`Unsupported entrypoint type ${entrypoint.type || 'unknown'}`);
+            throw new Error(`Unsupported catalogue schema ${entrypoint.type || 'unknown'}`);
           };
 
           let payload;
@@ -119,7 +130,7 @@ compose:
             return { entry: null, children: [], warnings };
           }
 
-          const schema = ensureString(parsed.schema);
+          const schema = await ensureString(parsed.schema);
           const children = [];
           let entry = null;
 
@@ -150,7 +161,8 @@ compose:
             warnings.push(`Unsupported catalogue schema ${schema || '<missing>'} for ${pointer.id || 'catalogue'}`);
           }
 
-          return { entry, children, warnings, commit: payload.commit || pointer.commit || null };
+          const resolvedCommit = payload.commit || pointer.commit || null;
+          return { entry, children, warnings, commit: resolvedCommit };
         }
       input:
         pointer: $.pointer
@@ -167,6 +179,7 @@ compose:
         sha256: lcod://tooling/hash/sha256_base64@0.1.0
         normalizePointer: lcod://tooling/registry_sources/normalize_pointer@0.1.0
         processCatalogue: lcod://tooling/registry_sources/process_catalogue@0.1.0
+        isStringNonEmpty: lcod://tooling/value/is_string_nonempty@0.1.0
     out:
       entry: entry
       children: children

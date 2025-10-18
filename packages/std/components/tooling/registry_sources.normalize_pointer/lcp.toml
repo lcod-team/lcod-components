@@ -63,5 +63,6 @@ description = "Warnings produced during normalization."
 
 [deps]
 requires = [
-  "lcod://tooling/script@1"
+  "lcod://tooling/script@1",
+  "lcod://tooling/value/is_string_nonempty@0.1.0"
 ]
