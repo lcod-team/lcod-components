@@ -1,115 +1,119 @@
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://tooling/value/default_object@0.1.0
     in:
-      source: |
-        async ({ state }, { imports }) => {
-          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
-          const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
-          const ensureArray = (value) => (Array.isArray(value) ? value : []);
+      value: $.sourcesConfig
+    out:
+      sourcesConfig: resolved
 
-          const warnings = [];
-          const registryMap = new Map();
+  - call: lcod://impl/set@1
+    in:
+      defaultsCandidate: $.sourcesConfig.defaults
+      sourcesCandidate: $.sourcesConfig.sources
+      basePriority: $.sourcesConfig.defaults.priority
+    out:
+      defaultsCandidate: defaultsCandidate
+      sourcesCandidate: sourcesCandidate
+      basePriority: basePriority
 
-          const downloadsRoot = ensureString(state.downloadsRoot) || '.';
-          const sourcesConfig = ensureObject(state.sourcesConfig) || {};
-          const sourcesBaseDir = ensureString(state.sourcesBaseDir) || '.';
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.defaultsCandidate
+    out:
+      defaults: resolved
 
-          const defaults = ensureObject(sourcesConfig.defaults) || {};
-          const defaultEntrypoint = ensureObject(defaults.entrypoint) || {};
-          const basePriority = Number.isFinite(defaults.priority) ? Math.trunc(defaults.priority) : null;
+  - call: lcod://impl/set@1
+    in:
+      defaultEntrypointCandidate: $.defaults.entrypoint
+      basePriority: $.defaults.priority
+    out:
+      defaultEntrypointCandidate: defaultEntrypointCandidate
+      basePriority: basePriority
 
-          const enqueuePointers = async (entries, inherited, baseDirOverride) => {
-            for (const entry of entries) {
-              const normalized = await imports.normalizePointer({
-                entry,
-                inherited,
-                baseDir: baseDirOverride,
-                sourcesBaseDir,
-                defaultEntrypoint,
-                basePriority
-              });
-              if (normalized?.warnings?.length) warnings.push(...normalized.warnings);
-              if (normalized?.pointer) queue.push(normalized.pointer);
-            }
-          };
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.defaultEntrypointCandidate
+    out:
+      defaultEntrypoint: resolved
 
-          const ensureRegistrySource = (registryId, priority, defaultsEntry, metadata) => {
-            const existing = registryMap.get(registryId);
-            if (existing) {
-              if (Number.isFinite(priority)) {
-                if (!Number.isFinite(existing.priority) || priority < existing.priority) {
-                  existing.priority = priority;
-                }
-              }
-              if (!existing.defaults && defaultsEntry) existing.defaults = defaultsEntry;
-              if (!existing.metadata && metadata) existing.metadata = metadata;
-              return existing;
-            }
-            const entry = {
-              id: registryId,
-              type: 'inline',
-              priority: Number.isFinite(priority) ? priority : undefined,
-              defaults: defaultsEntry || undefined,
-              metadata: metadata || undefined,
-              lines: []
-            };
-            registryMap.set(registryId, entry);
-            return entry;
-          };
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value: $.sourcesCandidate
+    out:
+      sourcesList: resolved
 
-          const queue = [];
-          const sources = ensureArray(sourcesConfig.sources);
-          await enqueuePointers(sources, null, sourcesBaseDir);
+  - call: lcod://flow/foreach@1
+    in:
+      list: $.sourcesList
+    children:
+      body:
+        - call: lcod://tooling/registry_sources/normalize_pointer@0.1.0
+          in:
+            entry: $slot.item
+            baseDir: $.sourcesBaseDir
+            sourcesBaseDir: $.sourcesBaseDir
+            defaultEntrypoint: $.defaultEntrypoint
+            basePriority: $.basePriority
+          out:
+            pointer: pointer
+            warnings: warnings
+        - call: lcod://impl/set@1
+          in:
+            normalized:
+              pointer: $.pointer
+              warnings: $.warnings
+          out:
+            normalized: normalized
+    collectPath: $.normalized
+    out:
+      rootNormalized: results
 
-          while (queue.length) {
-            const pointer = queue.shift();
-            const processed = await imports.processPointer({
-              pointer,
-              downloadsRoot,
-              defaultEntrypoint,
-              basePriority
-            });
-            if (processed?.warnings?.length) warnings.push(...processed.warnings);
+  - call: lcod://tooling/registry_sources/partition_normalized@0.1.0
+    in:
+      entries: $.rootNormalized
+    out:
+      rootPointers: pointers
+      rootWarnings: warnings
 
-            const children = ensureArray(processed?.children);
-            if (children.length) {
-              await enqueuePointers(children, pointer, pointer.baseDir);
-            }
+  - call: lcod://tooling/registry_sources/collect_queue@0.1.0
+    in:
+      queue: $.rootPointers
+      downloadsRoot: $.downloadsRoot
+      sourcesBaseDir: $.sourcesBaseDir
+      defaultEntrypoint: $.defaultEntrypoint
+      basePriority: $.basePriority
+    out:
+      contributions: contributions
+      queueWarnings: warnings
 
-            const entry = ensureObject(processed?.entry);
-            if (entry && Array.isArray(entry.lines) && entry.lines.length) {
-              const effectivePriority = Number.isFinite(entry.priority) ? entry.priority : null;
-              const target = ensureRegistrySource(
-                entry.id,
-                effectivePriority,
-                entry.defaults,
-                entry.metadata || pointer.metadata
-              );
-              for (const line of entry.lines) {
-                target.lines.push(line);
-              }
-            }
-          }
+  - call: lcod://tooling/registry_sources/merge_inline_entries@0.1.0
+    in:
+      entries: $.contributions
+    out:
+      registrySources: registrySources
 
-          const registrySources = Array.from(registryMap.values())
-            .filter((entry) => entry.lines.length > 0)
-            .map((entry) => {
-              const cleaned = { id: entry.id, type: entry.type, lines: entry.lines };
-              if (Number.isFinite(entry.priority)) cleaned.priority = entry.priority;
-              if (entry.defaults) cleaned.defaults = entry.defaults;
-              if (entry.metadata) cleaned.metadata = entry.metadata;
-              return cleaned;
-            });
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value: $.rootWarnings
+    out:
+      rootWarnings: resolved
 
-          return { registrySources, warnings };
-        }
-      input:
-        sourcesConfig: $.sourcesConfig
-        sourcesBaseDir: $.sourcesBaseDir
-        downloadsRoot: $.downloadsRoot
-      imports:
-        normalizePointer: lcod://tooling/registry_sources/normalize_pointer@0.1.0
-        processPointer: lcod://tooling/registry_sources/process_pointer@0.1.0
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value: $.queueWarnings
+    out:
+      queueWarnings: resolved
+
+  - call: lcod://tooling/array.append@0.1.0
+    in:
+      items: $.rootWarnings
+      values: $.queueWarnings
+    out:
+      warnings: items
+
+  - call: lcod://impl/set@1
+    in:
+      registrySources: $.registrySources
+      warnings: $.warnings
     out:
       registrySources: registrySources
       warnings: warnings

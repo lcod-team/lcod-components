@@ -1,0 +1,69 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const ensureObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : null);
+          const ensureArray = (value) => (Array.isArray(value) ? value : []);
+          const ensureString = (value) => (typeof value === 'string' && value.length ? value : null);
+
+          const entries = ensureArray(state.entries);
+          const map = new Map();
+
+          for (const raw of entries) {
+            const entry = ensureObject(raw);
+            if (!entry) continue;
+            const id = ensureString(entry.id);
+            const lines = ensureArray(entry.lines);
+            if (!id || !lines.length) continue;
+
+            let target = map.get(id);
+            if (!target) {
+              target = { id, type: 'inline', lines: [] };
+              map.set(id, target);
+            }
+
+            if (Number.isFinite(entry.priority)) {
+              const normalized = Math.trunc(entry.priority);
+              if (!Number.isFinite(target.priority) || normalized < target.priority) {
+                target.priority = normalized;
+              }
+            }
+
+            const defaults = ensureObject(entry.defaults);
+            if (defaults && !target.defaults) {
+              target.defaults = defaults;
+            }
+
+            const metadata = ensureObject(entry.metadata);
+            if (metadata && !target.metadata) {
+              target.metadata = metadata;
+            }
+
+            for (const line of lines) {
+              target.lines.push(line);
+            }
+          }
+
+          const registrySources = [];
+          for (const entry of map.values()) {
+            if (!entry.lines.length) continue;
+            const output = {
+              id: entry.id,
+              type: entry.type,
+              lines: entry.lines
+            };
+            if (Number.isFinite(entry.priority)) {
+              output.priority = entry.priority;
+            }
+            if (entry.defaults) output.defaults = entry.defaults;
+            if (entry.metadata) output.metadata = entry.metadata;
+            registrySources.push(output);
+          }
+
+          return { registrySources };
+        }
+      input:
+        entries: $.entries
+    out:
+      registrySources: registrySources

@@ -45,14 +45,13 @@ description = "Warnings emitted while fetching and parsing catalogues."
 
 [deps]
 requires = [
-  "lcod://tooling/script@1",
-  "lcod://contract/core/fs/read-file@1",
-  "lcod://contract/core/git/clone@1",
-  "lcod://axiom/http/download@1",
-  "lcod://tooling/path/join_chain@0.1.0",
-  "lcod://tooling/path/dirname@0.1.0",
-  "lcod://tooling/path/is_absolute@0.1.0",
-  "lcod://tooling/hash/sha256_base64@0.1.0",
+  "lcod://flow/if@1",
+  "lcod://flow/foreach@1",
+  "lcod://tooling/array/append@0.1.0",
+  "lcod://tooling/value/default_array@0.1.0",
+  "lcod://tooling/value/default_object@0.1.0",
+  "lcod://tooling/registry_sources/collect_queue@0.1.0",
+  "lcod://tooling/registry_sources/merge_inline_entries@0.1.0",
   "lcod://tooling/registry_sources/normalize_pointer@0.1.0",
-  "lcod://tooling/registry_sources/process_pointer@0.1.0"
+  "lcod://impl/set@1"
 ]

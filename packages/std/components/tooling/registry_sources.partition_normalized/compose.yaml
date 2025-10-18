@@ -1,0 +1,32 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const pointers = [];
+          const warnings = [];
+          const entries = Array.isArray(state.entries) ? state.entries : [];
+          for (const entry of entries) {
+            if (entry && typeof entry === 'object') {
+              if (entry.pointer) {
+                pointers.push(entry.pointer);
+              }
+              const bucket = entry.warnings;
+              if (Array.isArray(bucket)) {
+                for (const warning of bucket) {
+                  if (typeof warning === 'string' && warning.length) {
+                    warnings.push(warning);
+                  }
+                }
+              } else if (typeof bucket === 'string' && bucket.length) {
+                warnings.push(bucket);
+              }
+            }
+          }
+          return { pointers, warnings };
+        }
+      input:
+        entries: $.entries
+    out:
+      pointers: pointers
+      warnings: warnings
