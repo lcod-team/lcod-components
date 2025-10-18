@@ -1,0 +1,21 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/registry_sources/merge_inline_entries@0.1.0"
+name = "merge_inline_entries"
+namespace = "tooling/registry_sources"
+version = "0.1.0"
+kind = "component"
+
+summary = "Merge inline registry source contributions by id."
+
+[[io.input]]
+name = "entries"
+type = "array"
+description = "Inline contributions emitted while traversing catalogue pointers."
+
+[[io.output]]
+name = "registrySources"
+type = "array"
+description = "Merged inline sources ready for the resolver."
+
+[deps]
+requires = ["lcod://tooling/script@1"]

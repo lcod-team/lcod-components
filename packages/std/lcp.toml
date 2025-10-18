@@ -31,6 +31,10 @@ id = "lcod://tooling/array/append@0.1.0"
 path = "components/tooling/array.append"
 
 [[workspace.components]]
+id = "lcod://tooling/array/shift@0.1.0"
+path = "components/tooling/array.shift"
+
+[[workspace.components]]
 id = "lcod://tooling/array/compact@0.1.0"
 path = "components/tooling/array.compact"
 
@@ -159,8 +163,24 @@ id = "lcod://tooling/registry_sources/collect_entries@0.1.0"
 path = "components/tooling/registry_sources.collect_entries"
 
 [[workspace.components]]
+id = "lcod://tooling/registry_sources/collect_queue@0.1.0"
+path = "components/tooling/registry_sources.collect_queue"
+
+[[workspace.components]]
 id = "lcod://tooling/registry_sources/normalize_pointer@0.1.0"
 path = "components/tooling/registry_sources.normalize_pointer"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_sources/build_inline_entry@0.1.0"
+path = "components/tooling/registry_sources.build_inline_entry"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_sources/partition_normalized@0.1.0"
+path = "components/tooling/registry_sources.partition_normalized"
+
+[[workspace.components]]
+id = "lcod://tooling/registry_sources/merge_inline_entries@0.1.0"
+path = "components/tooling/registry_sources.merge_inline_entries"
 
 [[workspace.components]]
 id = "lcod://tooling/registry_sources/process_catalogue@0.1.0"
