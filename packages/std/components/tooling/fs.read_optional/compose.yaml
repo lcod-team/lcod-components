@@ -1,0 +1,47 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const encoding = typeof state.encoding === 'string' && state.encoding.length > 0
+            ? state.encoding
+            : 'utf-8';
+          const fallback = typeof state.fallback === 'string' ? state.fallback : '';
+          const warningMessage = typeof state.warningMessage === 'string' ? state.warningMessage : null;
+          const path = typeof state.path === 'string' && state.path.length > 0 ? state.path : null;
+
+          if (!path) {
+            return {
+              text: fallback,
+              exists: false,
+              warning: warningMessage ?? null
+            };
+          }
+
+          try {
+            const file = await imports.fsReadFile({ path, encoding });
+            const text = typeof file?.data === 'string' ? file.data : fallback;
+            const warning = text === fallback && warningMessage ? warningMessage : null;
+            return { text, exists: true, warning };
+          } catch (err) {
+            const warning = warningMessage
+              ? warningMessage
+              : `File ${path} could not be read (${err?.message || err})`;
+            return {
+              text: fallback,
+              exists: false,
+              warning
+            };
+          }
+        }
+      input:
+        path: $.path
+        encoding: $.encoding
+        fallback: $.fallback
+        warningMessage: $.warningMessage
+      imports:
+        fsReadFile: lcod://axiom/fs/read-file@1
+    out:
+      text: text
+      exists: exists
+      warning: warning

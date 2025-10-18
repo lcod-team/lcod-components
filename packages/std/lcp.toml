@@ -59,12 +59,20 @@ id = "lcod://tooling/json/read_file@0.1.0"
 path = "components/tooling/json.read_file"
 
 [[workspace.components]]
+id = "lcod://tooling/json/decode_object@0.1.0"
+path = "components/tooling/json.decode_object"
+
+[[workspace.components]]
 id = "lcod://tooling/json/stringify@0.1.0"
 path = "components/tooling/json.stringify"
 
 [[workspace.components]]
 id = "lcod://tooling/jsonl/from_objects@0.1.0"
 path = "components/tooling/jsonl.from_objects"
+
+[[workspace.components]]
+id = "lcod://tooling/fs/read_optional@0.1.0"
+path = "components/tooling/fs.read_optional"
 
 [[workspace.components]]
 id = "lcod://tooling/registry_catalog/collect@0.1.0"
@@ -129,6 +137,14 @@ path = "components/tooling/value.is_object"
 [[workspace.components]]
 id = "lcod://tooling/value/is_string_nonempty@0.1.0"
 path = "components/tooling/value.is_string_nonempty"
+
+[[workspace.components]]
+id = "lcod://tooling/value/default_object@0.1.0"
+path = "components/tooling/value.default_object"
+
+[[workspace.components]]
+id = "lcod://tooling/value/default_array@0.1.0"
+path = "components/tooling/value.default_array"
 
 [[workspace.components]]
 id = "lcod://tooling/mcp/session/open@0.1.0"

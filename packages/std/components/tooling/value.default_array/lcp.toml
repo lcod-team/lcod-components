@@ -1,0 +1,40 @@
+schemaVersion = "1.0"
+id = "lcod://tooling/value/default_array@0.1.0"
+name = "default_array"
+namespace = "tooling/value"
+version = "0.1.0"
+kind = "component"
+
+summary = "Return the value when it is an array, otherwise fallback to a default array."
+
+[palette]
+category = "Utility"
+icon = "mdi:format-list-bulleted"
+tags = ["value", "array"]
+
+[docs]
+readme = "README.md"
+
+[[io.input]]
+name = "value"
+type = "any"
+required = false
+description = "Candidate list to normalize."
+
+[[io.input]]
+name = "fallback"
+type = "array"
+required = false
+description = "Fallback array returned when the candidate is not an array."
+
+[[io.output]]
+name = "value"
+type = "array"
+description = "Normalized array."
+
+[deps]
+requires = [
+  "lcod://tooling/value/is_array@0.1.0",
+  "lcod://flow/if@1",
+  "lcod://impl/set@1"
+]

@@ -44,8 +44,16 @@
     "composePath": "packages/std/components/tooling/array.pluck/compose.yaml"
   },
   {
+    "id": "lcod://tooling/fs/read_optional@0.1.0",
+    "composePath": "packages/std/components/tooling/fs.read_optional/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/fs/write_if_changed@0.1.0",
     "composePath": "packages/std/components/tooling/fs.write_if_changed/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/json/decode_object@0.1.0",
+    "composePath": "packages/std/components/tooling/json.decode_object/compose.yaml"
   },
   {
     "id": "lcod://tooling/json/read_file@0.1.0",
@@ -118,6 +126,14 @@
   {
     "id": "lcod://tooling/string/ensure_trailing_newline@0.1.0",
     "composePath": "packages/std/components/tooling/string.ensure_trailing_newline/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/value/default_array@0.1.0",
+    "composePath": "packages/std/components/tooling/value.default_array/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/value/default_object@0.1.0",
+    "composePath": "packages/std/components/tooling/value.default_object/compose.yaml"
   },
   {
     "id": "lcod://tooling/value/is_array@0.1.0",
