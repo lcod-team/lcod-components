@@ -12,12 +12,14 @@ parses the JSON payload, and reports warnings for recoverable issues.
   (absolute or relative to the project root).
 - `sourcesText` *(string, optional)* — Raw JSON text when already available.
 - `defaultSourcesSpec` *(object, optional)* — Default specification returned
-  when no file is found.
+  when no file is found. When omitted, the component falls back to the official
+  LCOD registry (`https://raw.githubusercontent.com/lcod-team/lcod-registry/main/catalogues.json`).
 
 ## Outputs
 
-- `sourcesConfig` *(object|null)* — Parsed configuration object (null when the
-  JSON payload is invalid).
+- `sourcesConfig` *(object)* — Parsed configuration object. When the file is
+  missing or empty, the default LCOD registry catalogue is injected so tooling
+  can continue.
 - `sourcesPath` *(string)* — Effective path label (`builtin:default` when the
   fallback spec is used).
 - `sourcesBaseDir` *(string)* — Directory used to resolve relative catalogue

@@ -25,6 +25,19 @@ compose:
           };
 
           const warnings = [];
+          const builtinDefault = {
+            schema: 'lcod-resolver/sources@1',
+            sources: [
+              {
+                id: 'lcod-registry',
+                priority: 50,
+                entrypoint: {
+                  type: 'https',
+                  url: 'https://raw.githubusercontent.com/lcod-team/lcod-registry/main/catalogues.json'
+                }
+              }
+            ]
+          };
 
           const projectRoot = ensureString(state.projectRoot) || '.';
           const explicitSourcesPath = ensureString(state.sourcesPath);
@@ -39,15 +52,18 @@ compose:
           }
 
           let sourcesText = ensureString(state.sourcesText);
+          let defaultSpec = ensureObject(state.defaultSourcesSpec);
+          if (!defaultSpec || Object.keys(defaultSpec).length === 0) {
+            defaultSpec = builtinDefault;
+          }
           if (!sourcesText) {
             try {
               const result = await imports.fsReadFile({ path: resolvedSourcesPath, encoding: 'utf-8' });
               sourcesText = result?.data ?? null;
             } catch (err) {
-              const fallbackSpec = ensureObject(state.defaultSourcesSpec) || {};
-              warnings.push(`sources.json missing at ${resolvedSourcesPath}; falling back to default registry catalogue. (${err?.message || err})`);
+              warnings.push(`sources.json missing at ${resolvedSourcesPath}; falling back to default registry catalogue (lcod-registry). (${err?.message || err})`);
               resolvedSourcesPath = 'builtin:default';
-              sourcesText = JSON.stringify(fallbackSpec);
+              sourcesText = JSON.stringify(defaultSpec);
             }
           }
 
@@ -58,6 +74,26 @@ compose:
             valid = true;
           } catch (err) {
             warnings.push(`Invalid sources.json: ${err.message}`);
+            sourcesConfig = JSON.parse(JSON.stringify(defaultSpec));
+            valid = true;
+            resolvedSourcesPath = 'builtin:default';
+          }
+
+          const ensureSourcesArray = (config) => {
+            if (!config || typeof config !== 'object') return JSON.parse(JSON.stringify(defaultSpec));
+            const next = { ...config };
+            if (!Array.isArray(next.sources) || next.sources.length === 0) {
+              next.sources = JSON.parse(JSON.stringify(defaultSpec.sources));
+              if (typeof next.schema !== 'string' || !next.schema.length) {
+                next.schema = defaultSpec.schema;
+              }
+              warnings.push('sources.json has no sources entries; using default lcod-registry catalogue.');
+            }
+            return next;
+          };
+
+          if (valid) {
+            sourcesConfig = ensureSourcesArray(sourcesConfig);
           }
 
           const sourcesBaseDir = resolvedSourcesPath === 'builtin:default'
