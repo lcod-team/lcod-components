@@ -8,7 +8,7 @@ This repository is organised as an LCOD workspace (`workspace.lcp.toml`) with ve
 
 - Replace ad-hoc scripts (especially registry refresh scripts) with declarative LCOD components.
 - Provide a curated catalogue that other projects can depend on (registry CI, IDE demos, tests).
-- Wrap the standard library primitives (`core/object`, `core/array`, `core/string`, `core/json`) so other composes can consume them without custom scripting.
+- Wrap the standard library primitives (`core/object`, `core/array`, `core/string`, `core/json`) so other composes can consume them without custom scripting. The canonical definitions now live in `lcod-spec` (see `tooling/**` and `core/**`) so kernels can bootstrap deterministically; this workspace keeps optional mirrors/extensions for catalogue publication when needed.
 - Keep components small, documented and covered by tests where possible.
 - See `docs/COMPONENT_CONVENTIONS.md` for the expected component metadata (summary, palette hints, inputs/outputs).
 
