@@ -1,0 +1,41 @@
+name: Sync Registry Pointer
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  notify-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect components manifest change
+        id: manifest
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
+            BEFORE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+          fi
+
+          if git diff --name-only "$BEFORE" "${{ github.sha }}" | grep -q '^registry/components.std.json$'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger registry sync workflow
+        if: steps.manifest.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.LCOD_REGISTRY_SYNC_TOKEN != '' && secrets.LCOD_REGISTRY_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Dispatching registry sync for commit ${{ github.sha }}"
+          gh api repos/lcod-team/lcod-registry/dispatches \
+            -F event_type=registry-sync-request \
+            -F client_payload[components_commit]="${{ github.sha }}"
