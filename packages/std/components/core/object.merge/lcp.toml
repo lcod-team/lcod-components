@@ -1,55 +1,64 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://core/object/merge@0.1.0"
-name = "merge"
-namespace = "core/object"
 version = "0.1.0"
 kind = "component"
-
 summary = "Expose core/object/merge@1 (shallow or deep merge) as a component."
 
 [palette]
 category = "Object"
 icon = "mdi:merge"
-tags = ["object", "merge", "core"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "left"
-type = "object"
-required = true
-description = "Base object."
-
-[[io.input]]
-name = "right"
-type = "object"
-required = true
-description = "Object whose properties overwrite the base object."
-
-[[io.input]]
-name = "deep"
-type = "boolean"
-required = false
-description = "Enable deep merge of nested objects."
-
-[[io.input]]
-name = "arrayStrategy"
-type = "string"
-required = false
-description = "When deep merge is enabled, choose `replace` (default) or `concat` for arrays."
-
-[[io.output]]
-name = "value"
-type = "object"
-description = "Merged object."
-
-[[io.output]]
-name = "conflicts"
-type = "array"
-description = "Keys overwritten during the merge (top-level only)."
+tags = [ "object", "merge", "core" ]
 
 [deps]
-requires = [
-  "lcod://contract/core/object/merge@1"
-]
+requires = [ "lcod://contract/core/object/merge@1" ]
+
+[inputs.left]
+summary = "Base object."
+required = true
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.right]
+summary = "Object whose properties overwrite the base object."
+required = true
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.deep]
+summary = "Enable deep merge of nested objects."
+required = false
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[inputs.arrayStrategy]
+summary = "When deep merge is enabled, choose `replace` (default) or `concat` for arrays."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.value]
+summary = "Merged object."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.conflicts]
+summary = "Keys overwritten during the merge (top-level only)."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = """
+Wrapper over the `core/object/merge@1` contract that merges two objects while
+keeping the inputs immutable."""

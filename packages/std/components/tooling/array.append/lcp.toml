@@ -1,47 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/array/append@0.1.0"
-name = "append"
-namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-
 summary = "Append values to an array using the core/array/append primitive."
 
 [palette]
 category = "Array"
 icon = "mdi:plus-box-outline"
-tags = ["array", "mutation"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "items"
-type = "array"
-required = false
-description = "Source array (defaults to an empty list)."
-
-[[io.input]]
-name = "values"
-type = "array"
-required = false
-description = "Additional items appended before `value`."
-
-[[io.input]]
-name = "value"
-type = "any"
-required = false
-description = "Single value appended when provided."
-
-[[io.output]]
-name = "items"
-type = "array"
-description = "Updated array including the appended value."
-
-[[io.output]]
-name = "length"
-type = "number"
-description = "Length of the array after the append operation."
+tags = [ "array", "mutation" ]
 
 [deps]
 requires = [
@@ -50,3 +16,43 @@ requires = [
   "lcod://impl/set@1",
   "lcod://core/array/append@0.1.0"
 ]
+
+[inputs.items]
+summary = "Source array (defaults to an empty list)."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[inputs.values]
+summary = "Additional items appended before `value`."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[inputs.value]
+summary = "Single value appended when provided."
+required = false
+schema = "{}"
+
+[outputs.items]
+summary = "Updated array including the appended value."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.length]
+summary = "Length of the array after the append operation."
+schema = """
+{
+  "type": "number"
+}"""
+
+[documentation]
+body = """
+Append values to an array without mutating the original list. Relies on the
+standard `core/array/append@1` primitive."""

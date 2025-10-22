@@ -1,32 +1,31 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/jsonl/from_objects@0.1.0"
-name = "from_objects"
-namespace = "tooling/jsonl"
 version = "0.1.0"
 kind = "component"
-
 summary = "Convert an array of objects into JSON Lines text."
 
 [palette]
 category = "JSON"
 icon = "mdi:format-list-bulleted"
-tags = ["jsonl", "serialization"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "items"
-type = "array"
-required = false
-description = "Array of serialisable entries."
-
-[[io.output]]
-name = "text"
-type = "string"
-description = "JSON Lines string ending with a newline."
+tags = [ "jsonl", "serialization" ]
 
 [deps]
-requires = [
-  "lcod://tooling/script@1"
-]
+requires = [ "lcod://tooling/script@1" ]
+
+[inputs.items]
+summary = "Array of serialisable entries."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.text]
+summary = "JSON Lines string ending with a newline."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = "Convert an array of objects into JSON Lines text."

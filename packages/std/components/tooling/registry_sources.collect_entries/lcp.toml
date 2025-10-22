@@ -1,47 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_sources/collect_entries@0.1.0"
-name = "collect_entries"
-namespace = "tooling/registry_sources"
 version = "0.1.0"
 kind = "component"
-
 summary = "Fetch registry catalogues from the sources configuration and emit inline registry source entries."
 
 [palette]
 category = "Registry"
 icon = "mdi:cloud-download"
-tags = ["registry", "catalogue", "sources"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "sourcesConfig"
-type = "object"
-required = true
-description = "Parsed sources specification."
-
-[[io.input]]
-name = "sourcesBaseDir"
-type = "string"
-required = true
-description = "Base directory used to resolve relative catalogue paths."
-
-[[io.input]]
-name = "downloadsRoot"
-type = "string"
-required = true
-description = "Directory dedicated to downloaded catalogues."
-
-[[io.output]]
-name = "registrySources"
-type = "array"
-description = "Inline registry source entries derived from the catalogues."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Warnings emitted while fetching and parsing catalogues."
+tags = [ "registry", "catalogue", "sources" ]
 
 [deps]
 requires = [
@@ -55,3 +21,48 @@ requires = [
   "lcod://tooling/registry_sources/normalize_pointer@0.1.0",
   "lcod://impl/set@1"
 ]
+
+[inputs.sourcesConfig]
+summary = "Parsed sources specification."
+required = true
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.sourcesBaseDir]
+summary = "Base directory used to resolve relative catalogue paths."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.downloadsRoot]
+summary = "Directory dedicated to downloaded catalogues."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.registrySources]
+summary = "Inline registry source entries derived from the catalogues."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.warnings]
+summary = "Warnings emitted while fetching and parsing catalogues."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = """
+Materialise the inline registry sources defined by a `sources.json`
+configuration. The component iterates over catalogue pointers, downloads or
+reads their payloads (HTTP, Git or local files), validates the schema, and
+emits inline source entries that can be consumed directly by the resolver."""

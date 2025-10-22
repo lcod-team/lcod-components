@@ -1,41 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_catalog/validate_package@0.1.0"
-name = "validate_package"
-namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-
 summary = "Validate a single package entry and its manifests."
 
 [palette]
 category = "Registry/Internal"
 icon = "mdi:package-search"
-tags = ["catalog", "validation"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "rootPath"
-type = "string"
-required = false
-description = "Base directory used to resolve manifest and versions files."
-
-[[io.input]]
-name = "packageEntry"
-type = "object"
-required = true
-description = "Package definition extracted from catalog.json."
-
-[[io.output]]
-name = "packageErrors"
-type = "array"
-description = "Validation issues for the package."
-
-[[io.output]]
-name = "packageId"
-type = "string"
-description = "Canonical package identifier (when resolved)."
+tags = [ "catalog", "validation" ]
 
 [deps]
 requires = [
@@ -43,3 +15,36 @@ requires = [
   "lcod://axiom/path/join@1",
   "lcod://axiom/fs/read-file@1"
 ]
+
+[inputs.rootPath]
+summary = "Base directory used to resolve manifest and versions files."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.packageEntry]
+summary = "Package definition extracted from catalog.json."
+required = true
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.packageErrors]
+summary = "Validation issues for the package."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.packageId]
+summary = "Canonical package identifier (when resolved)."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = "Validate a single package entry and its manifests."

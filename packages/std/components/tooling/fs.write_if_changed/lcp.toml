@@ -1,42 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/fs/write_if_changed@0.1.0"
-name = "write_if_changed"
-namespace = "tooling/fs"
 version = "0.1.0"
 kind = "component"
-
 summary = "Write a file only when the content differs."
 
 [palette]
 category = "Filesystem"
 icon = "mdi:file-replace"
-tags = ["fs", "io"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "path"
-type = "string"
-required = true
-description = "Destination file path."
-
-[[io.input]]
-name = "content"
-type = "string"
-required = false
-description = "Content written to the file (coerced to string)."
-
-[[io.input]]
-name = "encoding"
-type = "string"
-required = false
-description = "Encoding used when reading existing content (defaults to utf-8)."
-
-[[io.output]]
-name = "changed"
-type = "boolean"
-description = "True when the file was rewritten."
+tags = [ "fs", "io" ]
 
 [deps]
 requires = [
@@ -44,3 +15,37 @@ requires = [
   "lcod://axiom/fs/read-file@1",
   "lcod://axiom/fs/write-file@1"
 ]
+
+[inputs.path]
+summary = "Destination file path."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.content]
+summary = "Content written to the file (coerced to string)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.encoding]
+summary = "Encoding used when reading existing content (defaults to utf-8)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.changed]
+summary = "True when the file was rewritten."
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[documentation]
+body = "Write a file only when the content differs."

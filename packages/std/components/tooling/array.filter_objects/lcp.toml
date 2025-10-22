@@ -1,21 +1,8 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/array/filter_objects@0.1.0"
-name = "array.filter_objects"
-namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-
 summary = "Filter an array to keep only plain objects."
-
-[[io.input]]
-name = "items"
-type = "array"
-description = "Array potentially containing objects."
-
-[[io.output]]
-name = "items"
-type = "array"
-description = "Filtered array containing only non-null objects."
 
 [deps]
 requires = [
@@ -26,3 +13,18 @@ requires = [
   "lcod://tooling/array/compact@0.1.0",
   "lcod://impl/set@1"
 ]
+
+[inputs.items]
+summary = "Array potentially containing objects."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.items]
+summary = "Filtered array containing only non-null objects."
+schema = """
+{
+  "type": "array"
+}"""

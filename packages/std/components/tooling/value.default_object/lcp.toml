@@ -1,36 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/value/default_object@0.1.0"
-name = "default_object"
-namespace = "tooling/value"
 version = "0.1.0"
 kind = "component"
-
 summary = "Return the value when it is an object, otherwise fallback to a default."
 
 [palette]
 category = "Utility"
 icon = "mdi:code-braces-box"
-tags = ["value", "object"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "value"
-type = "any"
-required = false
-description = "Candidate value to normalize."
-
-[[io.input]]
-name = "fallback"
-type = "object"
-required = false
-description = "Fallback object returned when the candidate is not an object."
-
-[[io.output]]
-name = "value"
-type = "object"
-description = "Normalized object."
+tags = [ "value", "object" ]
 
 [deps]
 requires = [
@@ -38,3 +15,28 @@ requires = [
   "lcod://flow/if@1",
   "lcod://impl/set@1"
 ]
+
+[inputs.value]
+summary = "Candidate value to normalize."
+required = false
+schema = "{}"
+
+[inputs.fallback]
+summary = "Fallback object returned when the candidate is not an object."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.value]
+summary = "Normalized object."
+schema = """
+{
+  "type": "object"
+}"""
+
+[documentation]
+body = """
+Return the provided value when it is a non-null object; otherwise fall back to
+the supplied default (or an empty object)."""

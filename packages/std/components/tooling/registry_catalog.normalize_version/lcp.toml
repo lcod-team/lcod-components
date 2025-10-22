@@ -1,65 +1,76 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_catalog/normalize_version@0.1.0"
-name = "normalize_version"
-namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-
 summary = "Normalise a single package version entry."
 
 [palette]
 category = "Registry/Internal"
 icon = "mdi:tag-outline"
-tags = ["catalog", "normalize"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "packageId"
-type = "string"
-required = false
-description = "Parent package identifier."
-
-[[io.input]]
-name = "registryId"
-type = "string"
-required = false
-description = "Registry identifier applied to the version."
-
-[[io.input]]
-name = "packagePriority"
-type = "number"
-required = false
-description = "Default priority declared at package level."
-
-[[io.input]]
-name = "entry"
-type = "object"
-required = true
-description = "Version entry to normalise."
-
-[[io.output]]
-name = "ok"
-type = "boolean"
-description = "True when the version entry is valid."
-
-[[io.output]]
-name = "line"
-type = "object"
-description = "Component line for the JSONL output."
-
-[[io.output]]
-name = "detail"
-type = "object"
-description = "Simplified version details used by diagnostics."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Issues detected for the version entry."
+tags = [ "catalog", "normalize" ]
 
 [deps]
-requires = [
-  "lcod://tooling/script@1"
-]
+requires = [ "lcod://tooling/script@1" ]
+
+[inputs.packageId]
+summary = "Parent package identifier."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.registryId]
+summary = "Registry identifier applied to the version."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.packagePriority]
+summary = "Default priority declared at package level."
+required = false
+schema = """
+{
+  "type": "number"
+}"""
+
+[inputs.entry]
+summary = "Version entry to normalise."
+required = true
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.ok]
+summary = "True when the version entry is valid."
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[outputs.line]
+summary = "Component line for the JSONL output."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.detail]
+summary = "Simplified version details used by diagnostics."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.warnings]
+summary = "Issues detected for the version entry."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = "Normalise a single package version entry."

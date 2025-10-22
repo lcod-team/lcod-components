@@ -1,46 +1,8 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_sources/collect_queue@0.1.0"
-name = "collect_queue"
-namespace = "tooling/registry_sources"
 version = "0.1.0"
 kind = "component"
-
 summary = "Traverse the catalogue pointer queue breadth-first and emit inline contributions."
-
-[[io.input]]
-name = "queue"
-type = "array"
-description = "Normalized pointers waiting to be processed."
-
-[[io.input]]
-name = "downloadsRoot"
-type = "string"
-description = "Directory used for downloaded catalogues."
-
-[[io.input]]
-name = "sourcesBaseDir"
-type = "string"
-description = "Root directory for relative catalogue pointers."
-
-[[io.input]]
-name = "defaultEntrypoint"
-type = "object"
-description = "Entrypoint defaults inherited by child pointers."
-
-[[io.input]]
-name = "basePriority"
-type = "any"
-description = "Base priority that should be forwarded to pointer helpers."
-
-[[io.output]]
-name = "contributions"
-type = "array"
-description = "Inline contributions collected from processed catalogues."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Warnings collected while processing the queue."
 
 [deps]
 requires = [
@@ -55,3 +17,54 @@ requires = [
   "lcod://tooling/registry_sources/build_inline_entry@0.1.0",
   "lcod://impl/set@1"
 ]
+
+[inputs.queue]
+summary = "Normalized pointers waiting to be processed."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[inputs.downloadsRoot]
+summary = "Directory used for downloaded catalogues."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.sourcesBaseDir]
+summary = "Root directory for relative catalogue pointers."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.defaultEntrypoint]
+summary = "Entrypoint defaults inherited by child pointers."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.basePriority]
+summary = "Base priority that should be forwarded to pointer helpers."
+required = false
+schema = "{}"
+
+[outputs.contributions]
+summary = "Inline contributions collected from processed catalogues."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.warnings]
+summary = "Warnings collected while processing the queue."
+schema = """
+{
+  "type": "array"
+}"""

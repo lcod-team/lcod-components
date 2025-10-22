@@ -1,68 +1,84 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_sources/normalize_pointer@0.1.0"
-name = "normalize_pointer"
-namespace = "tooling/registry_sources"
 version = "0.1.0"
 kind = "component"
-
 summary = "Merge pointer defaults and entry overrides to produce a normalized catalogue pointer."
 
 [palette]
 category = "Registry"
 icon = "mdi:map-marker-path"
-tags = ["registry", "sources"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "entry"
-type = "object"
-required = false
-description = "Raw pointer entry from sources.json."
-
-[[io.input]]
-name = "inherited"
-type = "object"
-required = false
-description = "Pointer inherited from parent catalogue."
-
-[[io.input]]
-name = "baseDir"
-type = "string"
-required = false
-description = "Base directory used to resolve relative entry paths."
-
-[[io.input]]
-name = "sourcesBaseDir"
-type = "string"
-required = true
-description = "Default base directory for top-level sources."
-
-[[io.input]]
-name = "defaultEntrypoint"
-type = "object"
-required = false
-description = "Entrypoint defaults taken from sources.defaults.entrypoint."
-
-[[io.input]]
-name = "basePriority"
-type = "integer"
-required = false
-description = "Default priority inherited from sources.defaults.priority."
-
-[[io.output]]
-name = "pointer"
-type = "object"
-description = "Normalized pointer (null when entry is invalid)."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Warnings produced during normalization."
+tags = [ "registry", "sources" ]
 
 [deps]
 requires = [
   "lcod://tooling/script@1",
   "lcod://tooling/value/is_string_nonempty@0.1.0"
 ]
+
+[inputs.entry]
+summary = "Raw pointer entry from sources.json."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.inherited]
+summary = "Pointer inherited from parent catalogue."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.baseDir]
+summary = "Base directory used to resolve relative entry paths."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.sourcesBaseDir]
+summary = "Default base directory for top-level sources."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.defaultEntrypoint]
+summary = "Entrypoint defaults taken from sources.defaults.entrypoint."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.basePriority]
+summary = "Default priority inherited from sources.defaults.priority."
+required = false
+schema = """
+{
+  "type": "integer"
+}"""
+
+[outputs.pointer]
+summary = "Normalized pointer (null when entry is invalid)."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.warnings]
+summary = "Warnings produced during normalization."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = """
+Merge the defaults defined in sources.json (priority, entrypoint overrides) with a pointer entry to produce a normalized catalogue pointer.
+
+The component applies inheritance rules, resolves the base directory, and validates that required properties are present. Invalid entries return null together with warning messages."""

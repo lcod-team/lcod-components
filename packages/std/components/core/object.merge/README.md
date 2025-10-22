@@ -1,20 +1,25 @@
+<!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
 # lcod://core/object/merge@0.1.0
 
-Wrapper over the `core/object/merge@1` contract that merges two objects while
-keeping the inputs immutable.
+Expose core/object/merge@1 (shallow or deep merge) as a component.
 
 ## Inputs
 
 | Name | Type | Required | Description |
-| ---- | ---- | -------- | ----------- |
+| --- | --- | --- | --- |
 | `left` | object | Yes | Base object. |
-| `right` | object | Yes | Object whose values overwrite the base object. |
-| `deep` | boolean | No | When `true`, merge nested objects recursively. |
-| `arrayStrategy` | string | No | Array merge mode when `deep` is true (`replace` or `concat`). |
+| `right` | object | Yes | Object whose properties overwrite the base object. |
+| `deep` | boolean | No | Enable deep merge of nested objects. |
+| `arrayStrategy` | string | No | When deep merge is enabled, choose `replace` (default) or `concat` for arrays. |
 
 ## Outputs
 
 | Name | Type | Description |
-| ---- | ---- | ----------- |
-| `value` | object | Resulting merged object. |
-| `conflicts` | array | Optional list of top-level keys overwritten during the merge. |
+| --- | --- | --- |
+| `value` | object | Merged object. |
+| `conflicts` | array | Keys overwritten during the merge (top-level only). |
+
+## Notes
+
+Wrapper over the `core/object/merge@1` contract that merges two objects while
+keeping the inputs immutable.

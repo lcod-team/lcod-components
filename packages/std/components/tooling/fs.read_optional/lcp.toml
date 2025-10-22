@@ -1,61 +1,71 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/fs/read_optional@0.1.0"
-name = "read_optional"
-namespace = "tooling/fs"
 version = "0.1.0"
 kind = "component"
-
 summary = "Read a text file when available, otherwise return fallback text and an optional warning."
 
 [palette]
 category = "Filesystem"
 icon = "mdi:file-document"
-tags = ["filesystem", "read"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "path"
-type = "string"
-required = false
-description = "File path to read."
-
-[[io.input]]
-name = "encoding"
-type = "string"
-required = false
-description = "File encoding (defaults to utf-8)."
-
-[[io.input]]
-name = "fallback"
-type = "string"
-required = false
-description = "Fallback text returned when the file cannot be read."
-
-[[io.input]]
-name = "warningMessage"
-type = "string"
-required = false
-description = "Warning emitted when the fallback is used."
-
-[[io.output]]
-name = "text"
-type = "string"
-description = "File contents or fallback text."
-
-[[io.output]]
-name = "exists"
-type = "boolean"
-description = "True when the file was read successfully."
-
-[[io.output]]
-name = "warning"
-type = "string"
-description = "Warning emitted when the fallback was returned (null otherwise)."
+tags = [ "filesystem", "read" ]
 
 [deps]
-requires = [
-  "lcod://tooling/script@1",
-  "lcod://axiom/fs/read-file@1"
-]
+requires = [ "lcod://tooling/script@1", "lcod://axiom/fs/read-file@1" ]
+
+[inputs.path]
+summary = "File path to read."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.encoding]
+summary = "File encoding (defaults to utf-8)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.fallback]
+summary = "Fallback text returned when the file cannot be read."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.warningMessage]
+summary = "Warning emitted when the fallback is used."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.text]
+summary = "File contents or fallback text."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.exists]
+summary = "True when the file was read successfully."
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[outputs.warning]
+summary = "Warning emitted when the fallback was returned (null otherwise)."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = """
+Attempt to read a text file and fall back to a default string when the file is
+missing or cannot be read. Optionally emits a warning message."""

@@ -1,26 +1,30 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_sources/partition_normalized@0.1.0"
-name = "partition_normalized"
-namespace = "tooling/registry_sources"
 version = "0.1.0"
 kind = "component"
-
 summary = "Split normalized pointer tuples into a pointer list and accumulated warnings."
 
-[[io.input]]
-name = "entries"
-type = "array"
-description = "Tuples generated while normalizing catalogue pointers."
-
-[[io.output]]
-name = "pointers"
-type = "array"
-description = "Valid normalized pointers ready to be enqueued."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Flattened warnings emitted during normalization."
-
 [deps]
-requires = ["lcod://tooling/script@1"]
+requires = [ "lcod://tooling/script@1" ]
+
+[inputs.entries]
+summary = "Tuples generated while normalizing catalogue pointers."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.pointers]
+summary = "Valid normalized pointers ready to be enqueued."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.warnings]
+summary = "Flattened warnings emitted during normalization."
+schema = """
+{
+  "type": "array"
+}"""

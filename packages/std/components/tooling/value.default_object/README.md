@@ -1,17 +1,22 @@
+<!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
 # lcod://tooling/value/default_object@0.1.0
 
-Return the provided value when it is a non-null object; otherwise fall back to
-the supplied default (or an empty object).
+Return the value when it is an object, otherwise fallback to a default.
 
 ## Inputs
 
 | Name | Type | Required | Description |
-| ---- | ---- | -------- | ----------- |
+| --- | --- | --- | --- |
 | `value` | any | No | Candidate value to normalize. |
-| `fallback` | object | No | Object returned when `value` is not an object (defaults to `{}`). |
+| `fallback` | object | No | Fallback object returned when the candidate is not an object. |
 
 ## Outputs
 
 | Name | Type | Description |
-| ---- | ---- | ----------- |
-| `value` | object | Normalized object (either the original value, fallback, or `{}`). |
+| --- | --- | --- |
+| `value` | object | Normalized object. |
+
+## Notes
+
+Return the provided value when it is a non-null object; otherwise fall back to
+the supplied default (or an empty object).

@@ -1,48 +1,52 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://core/json/decode@0.1.0"
-name = "decode"
-namespace = "core/json"
 version = "0.1.0"
 kind = "component"
-
 summary = "Expose core/json/decode@1 as an LCOD component."
 
 [palette]
 category = "JSON"
 icon = "mdi:code-json"
-tags = ["json", "decode", "core"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "text"
-type = "string"
-required = true
-description = "JSON source text."
-
-[[io.input]]
-name = "allowComments"
-type = "boolean"
-required = false
-description = "Allow JavaScript-style comments in the input."
-
-[[io.output]]
-name = "value"
-type = "any"
-description = "Parsed JSON value."
-
-[[io.output]]
-name = "bytes"
-type = "number"
-description = "Number of bytes consumed."
-
-[[io.output]]
-name = "error"
-type = "object"
-description = "Structured error when parsing fails."
+tags = [ "json", "decode", "core" ]
 
 [deps]
-requires = [
-  "lcod://contract/core/json/decode@1"
-]
+requires = [ "lcod://contract/core/json/decode@1" ]
+
+[inputs.text]
+summary = "JSON source text."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.allowComments]
+summary = "Allow JavaScript-style comments in the input."
+required = false
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[outputs.value]
+summary = "Parsed JSON value."
+schema = "{}"
+
+[outputs.bytes]
+summary = "Number of bytes consumed."
+schema = """
+{
+  "type": "number"
+}"""
+
+[outputs.error]
+summary = "Structured error when parsing fails."
+schema = """
+{
+  "type": "object"
+}"""
+
+[documentation]
+body = """
+Wrapper for the `core/json/decode@1` contract that parses JSON strings into data
+structures."""

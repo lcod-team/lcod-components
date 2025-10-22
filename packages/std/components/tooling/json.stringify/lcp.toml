@@ -1,54 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/json/stringify@0.1.0"
-name = "stringify"
-namespace = "tooling/json"
 version = "0.1.0"
 kind = "component"
-
 summary = "Serialize a value into JSON text using core/json/encode and append an optional newline."
 
 [palette]
 category = "JSON"
 icon = "mdi:code-json"
-tags = ["json", "serialization"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "value"
-type = "any"
-required = true
-description = "Value to serialize."
-
-[[io.input]]
-name = "indent"
-type = "number"
-required = false
-description = "Number of spaces used for indentation (0-10)."
-
-[[io.input]]
-name = "sortKeys"
-type = "boolean"
-required = false
-description = "Sort object keys alphabetically."
-
-[[io.input]]
-name = "asciiOnly"
-type = "boolean"
-required = false
-description = "Escape non-ASCII characters."
-
-[[io.input]]
-name = "trailingNewline"
-type = "boolean"
-required = false
-description = "Append a newline when true."
-
-[[io.output]]
-name = "json"
-type = "string"
-description = "Serialized JSON string (newline appended when requested)."
+tags = [ "json", "serialization" ]
 
 [deps]
 requires = [
@@ -57,3 +16,50 @@ requires = [
   "lcod://core/string/format@0.1.0",
   "lcod://impl/set@1"
 ]
+
+[inputs.value]
+summary = "Value to serialize."
+required = true
+schema = "{}"
+
+[inputs.indent]
+summary = "Number of spaces used for indentation (0-10)."
+required = false
+schema = """
+{
+  "type": "number"
+}"""
+
+[inputs.sortKeys]
+summary = "Sort object keys alphabetically."
+required = false
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[inputs.asciiOnly]
+summary = "Escape non-ASCII characters."
+required = false
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[inputs.trailingNewline]
+summary = "Append a newline when true."
+required = false
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[outputs.json]
+summary = "Serialized JSON string (newline appended when requested)."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = "Serialize a value into JSON text using the standard JSON encode primitive."

@@ -4,9 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "export:components": "node scripts/export-components.mjs"
+    "export:components": "node scripts/export-components.mjs",
+    "build:components": "node scripts/build-component-artifacts.mjs",
+    "migrate:lcp": "node scripts/migrate-lcp-v2.mjs"
   },
   "dependencies": {
-    "@iarna/toml": "^3.0.0"
+    "@iarna/toml": "^3.0.0",
+    "yaml": "^2.5.0"
   }
 }

@@ -1,55 +1,65 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_sources/prepare_env@0.1.0"
-name = "prepare_env"
-namespace = "tooling/registry_sources"
 version = "0.1.0"
 kind = "component"
-
 summary = "Resolve project, cache and downloads directories used by registry source resolution."
 
 [palette]
 category = "Registry"
 icon = "mdi:folder-cog"
-tags = ["registry", "paths"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "projectPath"
-type = "string"
-required = false
-description = "Optional project root path (relative paths are resolved from cwd)."
-
-[[io.input]]
-name = "cacheDir"
-type = "string"
-required = false
-description = "Optional cache directory (defaults to `<project>/.lcod/cache`)."
-
-[[io.input]]
-name = "cwd"
-type = "string"
-required = false
-description = "Explicit working directory used when projectPath is relative."
-
-[[io.output]]
-name = "projectRoot"
-type = "string"
-description = "Resolved project root directory."
-
-[[io.output]]
-name = "cacheDir"
-type = "string"
-description = "Resolved cache directory path."
-
-[[io.output]]
-name = "downloadsRoot"
-type = "string"
-description = "Directory dedicated to downloaded catalogues."
+tags = [ "registry", "paths" ]
 
 [deps]
-requires = [
-  "lcod://tooling/script@1",
-  "lcod://axiom/path/join@1"
-]
+requires = [ "lcod://tooling/script@1", "lcod://axiom/path/join@1" ]
+
+[inputs.projectPath]
+summary = "Optional project root path (relative paths are resolved from cwd)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.cacheDir]
+summary = "Optional cache directory (defaults to `<project>/.lcod/cache`)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.cwd]
+summary = "Explicit working directory used when projectPath is relative."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.projectRoot]
+summary = "Resolved project root directory."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.cacheDir]
+summary = "Resolved cache directory path."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.downloadsRoot]
+summary = "Directory dedicated to downloaded catalogues."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = """
+Resolve the working directories required by the registry sources pipeline. The
+component normalises the project root (falling back to the provided `cwd`),
+derives the cache folder, and returns the dedicated downloads directory used to
+store fetched catalogues."""

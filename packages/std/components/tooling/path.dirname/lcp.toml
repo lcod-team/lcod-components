@@ -1,32 +1,33 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/path/dirname@0.1.0"
-name = "dirname"
-namespace = "tooling/path"
 version = "0.1.0"
 kind = "component"
-
 summary = "Return the parent directory of a given path."
 
 [palette]
 category = "Filesystem"
 icon = "mdi:folder-arrow-left"
-tags = ["path", "dirname"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "path"
-type = "string"
-required = true
-description = "Target path."
-
-[[io.output]]
-name = "dirname"
-type = "string"
-description = "Parent directory."
+tags = [ "path", "dirname" ]
 
 [deps]
-requires = [
-  "lcod://tooling/path/join_chain@0.1.0"
-]
+requires = [ "lcod://tooling/path/join_chain@0.1.0" ]
+
+[inputs.path]
+summary = "Target path."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.dirname]
+summary = "Parent directory."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = """
+Return the parent directory of a given path. This is a lightweight wrapper
+around `tooling/path/join_chain` that appends `..` to the provided path."""

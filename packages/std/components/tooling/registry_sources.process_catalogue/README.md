@@ -1,15 +1,24 @@
+<!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
 # lcod://tooling/registry_sources/process_catalogue@0.1.0
 
-Transform a parsed registry catalogue into inline component entries. The component infers defaults from the catalogue origin, applies priority rules, and returns the lines to inject into the accumulator used by the resolver.
+Analyse a resolved catalogue payload and emit inline component entries.
 
 ## Inputs
 
-- `catalogue` *(object, required)* — Parsed catalogue object (schema `lcod-registry/catalogue@1`).
-- `pointer` *(object, required)* — Normalized pointer currently processed.
-- `basePriority` *(integer, optional)* — Default priority inherited from top-level sources.
-- `baseDir` *(string, required)* — Base directory for resolving local origins.
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `catalogue` | object | Yes | Parsed catalogue JSON. |
+| `pointer` | object | Yes | Normalized pointer currently processed. |
+| `basePriority` | integer | No | Default priority inherited from sources defaults. |
+| `baseDir` | string | Yes | Base directory of the current payload (used for file origins). |
 
 ## Outputs
 
-- `entry` *(object|null)* — Inline registry entry with `{ id, priority, defaults, metadata, lines }` or `null` when nothing was produced.
-- `warnings` *(array)* — Warnings emitted during processing.
+| Name | Type | Description |
+| --- | --- | --- |
+| `entry` | object | Inline registry entry (id, priority, defaults, metadata, lines). |
+| `warnings` | array | Warnings emitted while processing the catalogue. |
+
+## Notes
+
+Transform a parsed registry catalogue into inline component entries. The component infers defaults from the catalogue origin, applies priority rules, and returns the lines to inject into the accumulator used by the resolver.

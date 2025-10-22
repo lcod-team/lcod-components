@@ -1,57 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/mcp/session/open@0.1.0"
-name = "open"
-namespace = "tooling/mcp/session"
 version = "0.1.0"
 kind = "component"
-
 summary = "Create or reuse a workspace folder for MCP authoring sessions."
 
 [palette]
 category = "Authoring"
 icon = "mdi:folder-open"
-tags = ["mcp", "workspace", "authoring"]
-
-[docs]
-readme = "docs/README.md"
-
-[[io.input]]
-name = "workspaceRoot"
-type = "string"
-required = true
-description = "Absolute or relative path where session workspaces should be created."
-
-[[io.input]]
-name = "sessionId"
-type = "string"
-required = false
-description = "Optional session identifier; when omitted a new identifier is generated."
-
-[[io.input]]
-name = "componentId"
-type = "string"
-required = false
-description = "Optional component ID linked to the session (stored in provenance metadata)."
-
-[[io.output]]
-name = "sessionId"
-type = "string"
-description = "Identifier assigned to the session workspace."
-
-[[io.output]]
-name = "workspaceRoot"
-type = "string"
-description = "Base directory that contains the session workspaces."
-
-[[io.output]]
-name = "workspacePath"
-type = "string"
-description = "Absolute path to the session workspace."
-
-[[io.output]]
-name = "provenancePath"
-type = "string"
-description = "Path to the generated provenance file for this session."
+tags = [ "mcp", "workspace", "authoring" ]
 
 [deps]
 requires = [
@@ -59,3 +15,55 @@ requires = [
   "lcod://axiom/path/join@1",
   "lcod://axiom/fs/write-file@1"
 ]
+
+[inputs.workspaceRoot]
+summary = "Absolute or relative path where session workspaces should be created."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.sessionId]
+summary = "Optional session identifier; when omitted a new identifier is generated."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.componentId]
+summary = "Optional component ID linked to the session (stored in provenance metadata)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.sessionId]
+summary = "Identifier assigned to the session workspace."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.workspaceRoot]
+summary = "Base directory that contains the session workspaces."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.workspacePath]
+summary = "Absolute path to the session workspace."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.provenancePath]
+summary = "Path to the generated provenance file for this session."
+schema = """
+{
+  "type": "string"
+}"""

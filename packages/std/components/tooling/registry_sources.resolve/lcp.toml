@@ -1,90 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_sources/resolve@0.1.0"
-name = "resolve"
-namespace = "tooling/registry_sources"
 version = "0.1.0"
 kind = "component"
-
 summary = "Load registry catalogues defined in sources.json and produce inline registry sources."
 
 [palette]
 category = "Registry"
 icon = "mdi:source-branch"
-tags = ["registry", "catalogue"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "projectPath"
-type = "string"
-required = false
-description = "Project root used to resolve relative pointers."
-
-[[io.input]]
-name = "cacheDir"
-type = "string"
-required = false
-description = "Cache directory root (defaults to project/.lcod/cache)."
-
-[[io.input]]
-name = "sourcesPath"
-type = "string"
-required = false
-description = "Explicit path to sources.json."
-
-[[io.input]]
-name = "sourcesText"
-type = "string"
-required = false
-description = "When provided, skip reading from disk and reuse the given JSON payload."
-
-[[io.input]]
-name = "defaultSourcesSpec"
-type = "object"
-required = false
-description = "Default sources specification used when the file is missing."
-
-[[io.input]]
-name = "cwd"
-type = "string"
-required = false
-description = "Working directory fallback when projectPath is not provided."
-
-[[io.output]]
-name = "registrySources"
-type = "array"
-description = "Inline registry source entries consumed by the resolver."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Warning messages collected during resolution."
-
-[[io.output]]
-name = "sourcesPath"
-type = "string"
-description = "Final location or label of the sources specification."
-
-[[io.output]]
-name = "projectRoot"
-type = "string"
-description = "Resolved project root."
-
-[[io.output]]
-name = "cacheDir"
-type = "string"
-description = "Resolved cache directory root."
-
-[[io.output]]
-name = "downloadsRoot"
-type = "string"
-description = "Directory used to store downloaded catalogues."
-
-[[io.output]]
-name = "sourcesConfig"
-type = "object"
-description = "Parsed sources specification."
+tags = [ "registry", "catalogue" ]
 
 [deps]
 requires = [
@@ -95,3 +18,107 @@ requires = [
   "lcod://flow/if@1",
   "lcod://impl/set@1"
 ]
+
+[inputs.projectPath]
+summary = "Project root used to resolve relative pointers."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.cacheDir]
+summary = "Cache directory root (defaults to project/.lcod/cache)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.sourcesPath]
+summary = "Explicit path to sources.json."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.sourcesText]
+summary = "When provided, skip reading from disk and reuse the given JSON payload."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.defaultSourcesSpec]
+summary = "Default sources specification used when the file is missing."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.cwd]
+summary = "Working directory fallback when projectPath is not provided."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.registrySources]
+summary = "Inline registry source entries consumed by the resolver."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.warnings]
+summary = "Warning messages collected during resolution."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.sourcesPath]
+summary = "Final location or label of the sources specification."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.projectRoot]
+summary = "Resolved project root."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.cacheDir]
+summary = "Resolved cache directory root."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.downloadsRoot]
+summary = "Directory used to store downloaded catalogues."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.sourcesConfig]
+summary = "Parsed sources specification."
+schema = """
+{
+  "type": "object"
+}"""
+
+[documentation]
+body = """
+Resolve registry catalogue pointers defined in a `sources.json` specification.
+This component orchestrates dedicated helpers to read remote/local catalogues,
+validate schemas, and return the inline registry source entries consumed by the
+resolver pipeline."""

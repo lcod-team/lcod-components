@@ -1,32 +1,31 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/array/length@0.1.0"
-name = "length"
-namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-
 summary = "Return the number of items in an array."
 
 [palette]
 category = "Array"
 icon = "mdi:numeric"
-tags = ["array", "metrics"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "items"
-type = "array"
-required = false
-description = "Array to measure (non-arrays yield length 0)."
-
-[[io.output]]
-name = "length"
-type = "number"
-description = "Number of elements in the array."
+tags = [ "array", "metrics" ]
 
 [deps]
-requires = [
-  "lcod://axiom/array/length@1"
-]
+requires = [ "lcod://axiom/array/length@1" ]
+
+[inputs.items]
+summary = "Array to measure (non-arrays yield length 0)."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.length]
+summary = "Number of elements in the array."
+schema = """
+{
+  "type": "number"
+}"""
+
+[documentation]
+body = "Return the number of items in an array."

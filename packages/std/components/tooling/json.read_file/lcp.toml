@@ -1,47 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/json/read_file@0.1.0"
-name = "read_file"
-namespace = "tooling/json"
 version = "0.1.0"
 kind = "component"
-
 summary = "Read and parse a JSON file from disk."
 
 [palette]
 category = "JSON"
 icon = "mdi:file-json"
-tags = ["json", "io"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "basePath"
-type = "string"
-required = false
-description = "Base directory joined with the JSON path."
-
-[[io.input]]
-name = "path"
-type = "string"
-required = true
-description = "Path to the JSON file."
-
-[[io.input]]
-name = "encoding"
-type = "string"
-required = false
-description = "File encoding (defaults to utf-8)."
-
-[[io.output]]
-name = "path"
-type = "string"
-description = "Resolved absolute path."
-
-[[io.output]]
-name = "value"
-type = "any"
-description = "Parsed JSON value."
+tags = [ "json", "io" ]
 
 [deps]
 requires = [
@@ -51,3 +17,41 @@ requires = [
   "lcod://axiom/fs/read-file@1",
   "lcod://core/json/decode@0.1.0"
 ]
+
+[inputs.basePath]
+summary = "Base directory joined with the JSON path."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.path]
+summary = "Path to the JSON file."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.encoding]
+summary = "File encoding (defaults to utf-8)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.path]
+summary = "Resolved absolute path."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.value]
+summary = "Parsed JSON value."
+schema = "{}"
+
+[documentation]
+body = "Read and parse a JSON file from disk."

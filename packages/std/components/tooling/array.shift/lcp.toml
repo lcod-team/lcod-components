@@ -1,26 +1,27 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/array/shift@0.1.0"
-name = "array.shift"
-namespace = "tooling/array"
 version = "0.1.0"
 kind = "component"
-
 summary = "Extract the first element of an array and return the remaining items."
 
-[[io.input]]
-name = "items"
-type = "array"
-description = "Array to shift from; non-arrays are treated as empty."
-
-[[io.output]]
-name = "head"
-type = "any"
-description = "First element of the array, or null when the array is empty."
-
-[[io.output]]
-name = "rest"
-type = "array"
-description = "Remaining items after removing the first element."
-
 [deps]
-requires = ["lcod://tooling/script@1"]
+requires = [ "lcod://tooling/script@1" ]
+
+[inputs.items]
+summary = "Array to shift from; non-arrays are treated as empty."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.head]
+summary = "First element of the array, or null when the array is empty."
+schema = "{}"
+
+[outputs.rest]
+summary = "Remaining items after removing the first element."
+schema = """
+{
+  "type": "array"
+}"""

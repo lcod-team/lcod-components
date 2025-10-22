@@ -1,51 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_catalog/collect@0.1.0"
-name = "collect"
-namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-
 summary = "Collect registry metadata into JSONL and JSON descriptors."
 
 [palette]
 category = "Registry"
 icon = "mdi:database-cog-outline"
-tags = ["catalog", "registry"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "rootPath"
-type = "string"
-required = false
-description = "Base directory used to resolve relative catalog and versions files."
-
-[[io.input]]
-name = "catalogPath"
-type = "string"
-required = false
-description = "Path to catalog.json relative to rootPath."
-
-[[io.output]]
-name = "packagesJsonl"
-type = "string"
-description = "JSON Lines document describing registries and components."
-
-[[io.output]]
-name = "registryJson"
-type = "object"
-description = "Registry descriptor ready to be written to registry.json."
-
-[[io.output]]
-name = "packages"
-type = "array"
-description = "Per-package diagnostics (versions metadata)."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Non-fatal issues encountered during collection."
+tags = [ "catalog", "registry" ]
 
 [deps]
 requires = [
@@ -64,3 +26,50 @@ requires = [
   "lcod://tooling/array/flatten@0.1.0",
   "lcod://tooling/jsonl/from_objects@0.1.0"
 ]
+
+[inputs.rootPath]
+summary = "Base directory used to resolve relative catalog and versions files."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.catalogPath]
+summary = "Path to catalog.json relative to rootPath."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.packagesJsonl]
+summary = "JSON Lines document describing registries and components."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.registryJson]
+summary = "Registry descriptor ready to be written to registry.json."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.packages]
+summary = "Per-package diagnostics (versions metadata)."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.warnings]
+summary = "Non-fatal issues encountered during collection."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = "Collect registry metadata into JSONL and JSON descriptors."

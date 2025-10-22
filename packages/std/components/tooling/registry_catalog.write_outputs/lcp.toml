@@ -1,54 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_catalog/write_outputs@0.1.0"
-name = "write_outputs"
-namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-
 summary = "Persist registry artefacts when their content changes."
 
 [palette]
 category = "Registry"
 icon = "mdi:database-export"
-tags = ["catalog", "io"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "rootPath"
-type = "string"
-required = false
-description = "Directory where artefacts are written."
-
-[[io.input]]
-name = "packagesJsonl"
-type = "string"
-required = true
-description = "JSON Lines catalogue content to write."
-
-[[io.input]]
-name = "registryJson"
-type = "object"
-required = true
-description = "Registry descriptor serialised with indentation."
-
-[[io.input]]
-name = "packagesFilename"
-type = "string"
-required = false
-description = "Override for the JSONL filename."
-
-[[io.input]]
-name = "registryFilename"
-type = "string"
-required = false
-description = "Override for the JSON filename."
-
-[[io.output]]
-name = "updates"
-type = "object"
-description = "Flags indicating which files were rewritten."
+tags = [ "catalog", "io" ]
 
 [deps]
 requires = [
@@ -59,3 +18,53 @@ requires = [
   "lcod://tooling/string/ensure_trailing_newline@0.1.0",
   "lcod://tooling/fs/write_if_changed@0.1.0"
 ]
+
+[inputs.rootPath]
+summary = "Directory where artefacts are written."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.packagesJsonl]
+summary = "JSON Lines catalogue content to write."
+required = true
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.registryJson]
+summary = "Registry descriptor serialised with indentation."
+required = true
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.packagesFilename]
+summary = "Override for the JSONL filename."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.registryFilename]
+summary = "Override for the JSON filename."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.updates]
+summary = "Flags indicating which files were rewritten."
+schema = """
+{
+  "type": "object"
+}"""
+
+[documentation]
+body = "Persist registry artefacts when their content changes."

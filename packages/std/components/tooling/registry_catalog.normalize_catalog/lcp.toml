@@ -1,52 +1,59 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_catalog/normalize_catalog@0.1.0"
-name = "normalize_catalog"
-namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-
 summary = "Normalise the top-level catalog document."
 
 [palette]
 category = "Registry/Internal"
 icon = "mdi:notebook-check-outline"
-tags = ["catalog", "normalize"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "catalog"
-type = "object"
-required = false
-description = "Catalog document to normalise."
-
-[[io.output]]
-name = "registries"
-type = "array"
-description = "Filtered registry entries."
-
-[[io.output]]
-name = "packages"
-type = "array"
-description = "Filtered package entries."
-
-[[io.output]]
-name = "namespaces"
-type = "object"
-description = "Namespace configuration."
-
-[[io.output]]
-name = "schema"
-type = "string"
-description = "Catalog schema identifier."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Issues detected during normalisation."
+tags = [ "catalog", "normalize" ]
 
 [deps]
-requires = [
-  "lcod://tooling/script@1"
-]
+requires = [ "lcod://tooling/script@1" ]
+
+[inputs.catalog]
+summary = "Catalog document to normalise."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.registries]
+summary = "Filtered registry entries."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.packages]
+summary = "Filtered package entries."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.namespaces]
+summary = "Namespace configuration."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.schema]
+summary = "Catalog schema identifier."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.warnings]
+summary = "Issues detected during normalisation."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = "Normalise the top-level catalog document."

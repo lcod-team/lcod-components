@@ -1,61 +1,13 @@
-schemaVersion = "1.0"
+schemaVersion = "2.0"
 id = "lcod://tooling/registry_catalog/refresh@0.1.0"
-name = "refresh"
-namespace = "tooling/registry_catalog"
 version = "0.1.0"
 kind = "component"
-
 summary = "Collect and validate registry data, ready to publish artefacts."
 
 [palette]
 category = "Registry"
 icon = "mdi:database-refresh"
-tags = ["catalog", "pipeline"]
-
-[docs]
-readme = "README.md"
-
-[[io.input]]
-name = "rootPath"
-type = "string"
-required = false
-description = "Base directory used to resolve catalogue files."
-
-[[io.input]]
-name = "catalogPath"
-type = "string"
-required = false
-description = "Path to catalog.json relative to rootPath."
-
-[[io.output]]
-name = "packagesJsonl"
-type = "string"
-description = "JSON Lines catalogue emitted by the collect step."
-
-[[io.output]]
-name = "registryJson"
-type = "object"
-description = "Registry descriptor ready to be written to registry.json."
-
-[[io.output]]
-name = "packages"
-type = "array"
-description = "Collect step diagnostics (per package)."
-
-[[io.output]]
-name = "warnings"
-type = "array"
-description = "Non-fatal issues reported during collection."
-
-[[io.output]]
-name = "errors"
-type = "array"
-description = "Validation errors (empty array means success)."
-
-[[io.output]]
-name = "validation"
-type = "array"
-description = "Per-package validation diagnostics."
+tags = [ "catalog", "pipeline" ]
 
 [deps]
 requires = [
@@ -65,3 +17,64 @@ requires = [
   "lcod://tooling/registry_catalog/collect@0.1.0",
   "lcod://tooling/registry_catalog/validate@0.1.0"
 ]
+
+[inputs.rootPath]
+summary = "Base directory used to resolve catalogue files."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.catalogPath]
+summary = "Path to catalog.json relative to rootPath."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.packagesJsonl]
+summary = "JSON Lines catalogue emitted by the collect step."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.registryJson]
+summary = "Registry descriptor ready to be written to registry.json."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.packages]
+summary = "Collect step diagnostics (per package)."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.warnings]
+summary = "Non-fatal issues reported during collection."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.errors]
+summary = "Validation errors (empty array means success)."
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.validation]
+summary = "Per-package validation diagnostics."
+schema = """
+{
+  "type": "array"
+}"""
+
+[documentation]
+body = "Collect and validate registry data, ready to publish artefacts."
