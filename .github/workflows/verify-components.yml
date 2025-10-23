@@ -58,14 +58,17 @@ jobs:
           cp target/release/lcod_run ${{ github.workspace }}/lcod-run
           chmod +x ${{ github.workspace }}/lcod-run
 
+      - name: Prepare state
+        run: echo '{"projectPath":"'"${{ github.workspace }}/packages/std"'"}' > state.json
+
       - name: Run metadata verification
-        run: ./lcod-run --project packages/std --compose tests/components.verify.metadata.yaml
+        run: ./lcod-run --compose tests/components.verify.metadata.yaml
 
       - name: Run registry component tests
-        run: ./lcod-run --project packages/std --compose tests/components.registry.yaml
+        run: ./lcod-run --compose tests/components.registry.yaml --input state.json
 
       - name: Run component unit tests
-        run: ./lcod-run --project packages/std --compose tests/components.registry.tests.yaml
+        run: ./lcod-run --compose tests/components.registry.tests.yaml --input state.json
 
       - name: Export components manifest
         run: npm run export:components
