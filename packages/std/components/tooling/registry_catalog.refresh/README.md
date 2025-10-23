@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:database-refresh.svg?height=48&width=48" alt="Collect and validate registry data, ready to publish artefacts." width="48" height="48" /></p>
+
 # lcod://tooling/registry_catalog/refresh@0.1.0
 
 Collect and validate registry data, ready to publish artefacts.

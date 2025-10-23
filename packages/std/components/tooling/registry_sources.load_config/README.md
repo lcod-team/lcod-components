@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:file-search.svg?height=48&width=48" alt="Load and parse the registry sources specification, applying default fallbacks when the file is missing." width="48" height="48" /></p>
+
 # lcod://tooling/registry_sources/load_config@0.1.0
 
 Load and parse the registry sources specification, applying default fallbacks when the file is missing.

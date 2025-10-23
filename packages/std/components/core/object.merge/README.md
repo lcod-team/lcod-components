@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:merge.svg?height=48&width=48" alt="Expose core/object/merge@1 (shallow or deep merge) as a component." width="48" height="48" /></p>
+
 # lcod://core/object/merge@0.1.0
 
 Expose core/object/merge@1 (shallow or deep merge) as a component.

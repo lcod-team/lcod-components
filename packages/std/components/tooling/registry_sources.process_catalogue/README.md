@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:table-search.svg?height=48&width=48" alt="Analyse a resolved catalogue payload and emit inline component entries." width="48" height="48" /></p>
+
 # lcod://tooling/registry_sources/process_catalogue@0.1.0
 
 Analyse a resolved catalogue payload and emit inline component entries.

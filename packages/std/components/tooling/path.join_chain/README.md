@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:vector-polyline.svg?height=48&width=48" alt="Join a base path with a sequence of segments using path axioms." width="48" height="48" /></p>
+
 # lcod://tooling/path/join_chain@0.1.0
 
 Join a base path with a sequence of segments using path axioms.

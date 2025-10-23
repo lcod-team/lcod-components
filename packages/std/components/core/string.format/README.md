@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:code-braces.svg?height=48&width=48" alt="Expose core/string/format@1 as an LCOD component." width="48" height="48" /></p>
+
 # lcod://core/string/format@0.1.0
 
 Expose core/string/format@1 as an LCOD component.

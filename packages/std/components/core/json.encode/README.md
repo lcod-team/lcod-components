@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:code-json.svg?height=48&width=48" alt="Expose core/json/encode@1 as an LCOD component." width="48" height="48" /></p>
+
 # lcod://core/json/encode@0.1.0
 
 Expose core/json/encode@1 as an LCOD component.

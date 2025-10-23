@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:application-brackets-outline.svg?height=48&width=48" alt="Generate a minimal LCOD component skeleton (descriptor, compose, docs) inside a workspace." width="48" height="48" /></p>
+
 # lcod://tooling/mcp/component/scaffold@0.1.0
 
 Generate a minimal LCOD component skeleton (descriptor, compose, docs) inside a workspace.

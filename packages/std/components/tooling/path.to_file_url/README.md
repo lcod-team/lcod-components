@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:link-variant.svg?height=48&width=48" alt="Convert an absolute filesystem path into a file:// URL." width="48" height="48" /></p>
+
 # lcod://tooling/path/to_file_url@0.1.0
 
 Convert an absolute filesystem path into a file:// URL.

@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:database-cog-outline.svg?height=48&width=48" alt="Collect registry metadata into JSONL and JSON descriptors." width="48" height="48" /></p>
+
 # lcod://tooling/registry_catalog/collect@0.1.0
 
 Collect registry metadata into JSONL and JSON descriptors.

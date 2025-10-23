@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:clipboard-check-outline.svg?height=48&width=48" alt="Validate the registry catalog against structural and manifest rules." width="48" height="48" /></p>
+
 # lcod://tooling/registry_catalog/validate@0.1.0
 
 Validate the registry catalog against structural and manifest rules.

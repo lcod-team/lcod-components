@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:folder-cog.svg?height=48&width=48" alt="Resolve project, cache and downloads directories used by registry source resolution." width="48" height="48" /></p>
+
 # lcod://tooling/registry_sources/prepare_env@0.1.0
 
 Resolve project, cache and downloads directories used by registry source resolution.

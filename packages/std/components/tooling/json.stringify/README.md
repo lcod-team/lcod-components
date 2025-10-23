@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:code-json.svg?height=48&width=48" alt="Serialize a value into JSON text using core/json/encode and append an optional newline." width="48" height="48" /></p>
+
 # lcod://tooling/json/stringify@0.1.0
 
 Serialize a value into JSON text using core/json/encode and append an optional newline.

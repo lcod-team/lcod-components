@@ -1,27 +1,27 @@
 compose:
   - call: lcod://impl/set@1
     in:
-      effectiveEncoding: "utf-8"
+      effectiveEncoding: utf-8
     out:
       effectiveEncoding: effectiveEncoding
-
   - call: lcod://flow/if@1
     in:
       cond: $.encoding
-    children:
+    out:
+      effectiveEncoding: effectiveEncoding
+    slots:
       then:
         - call: lcod://impl/set@1
           in:
             effectiveEncoding: $.encoding
           out:
             effectiveEncoding: effectiveEncoding
-    out:
-      effectiveEncoding: effectiveEncoding
-
   - call: lcod://flow/if@1
     in:
       cond: $.basePath
-    children:
+    out:
+      resolvedPath: resolvedPath
+    slots:
       then:
         - call: lcod://axiom/path/join@1
           in:
@@ -35,22 +35,17 @@ compose:
             resolvedPath: $.path
           out:
             resolvedPath: resolvedPath
-    out:
-      resolvedPath: resolvedPath
-
   - call: lcod://axiom/fs/read-file@1
     in:
       path: $.resolvedPath
       encoding: $.effectiveEncoding
     out:
       fileContent: data
-
   - call: lcod://core/json/decode@0.1.0
     in:
       text: $.fileContent
     out:
       decoded: $
-
   - call: lcod://impl/set@1
     in:
       path: $.resolvedPath

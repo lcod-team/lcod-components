@@ -1,16 +1,13 @@
-
 compose:
   - call: lcod://tooling/script@1
     in:
       source: |
         async ({ state }) => {
           const text = typeof state.text === 'string' ? state.text : '';
-          if (text.endsWith('
-')) {
+          if (text.endsWith('\n')) {
             return { text };
           }
-          return { text: `${text}
-` };
+          return { text: `${text}\n` };
         }
       input:
         text: $.text

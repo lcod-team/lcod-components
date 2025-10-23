@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:file-document.svg?height=48&width=48" alt="Read a text file when available, otherwise return fallback text and an optional warning." width="48" height="48" /></p>
+
 # lcod://tooling/fs/read_optional@0.1.0
 
 Read a text file when available, otherwise return fallback text and an optional warning.

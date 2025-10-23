@@ -55,11 +55,31 @@ compose:
             if (kind === 'file') {
               const rawPath = await ensureString(entrypoint.path);
               if (!rawPath) throw new Error('file entrypoint is missing path');
-              const absolutePath = await resolveAbsolute(pointer.baseDir || '.', rawPath);
-              if (!absolutePath) throw new Error('Unable to resolve file path for catalogue pointer');
-              const text = await readUtf8(absolutePath);
-              const baseDir = await dirname(absolutePath);
-              return { text, baseDir, originPath: absolutePath };
+              const baseDirHint = await ensureString(pointer.catalogueBaseDir);
+              const effectiveBase = baseDirHint || pointer.baseDir || '.';
+              const absolutePath = await resolveAbsolute(effectiveBase, rawPath);
+              const readCatalogue = async (pathCandidate) => {
+                if (!pathCandidate) throw new Error('Unable to resolve file path for catalogue pointer');
+                const text = await readUtf8(pathCandidate);
+                const baseDir = await dirname(pathCandidate);
+                return { text, baseDir, originPath: pathCandidate };
+              };
+              try {
+                return await readCatalogue(absolutePath);
+              } catch (error) {
+                const fallbackBase = pointer.baseDir && pointer.baseDir.length
+                  ? await joinChain(pointer.baseDir, 'registry')
+                  : null;
+                if (fallbackBase && rawPath.startsWith('./')) {
+                  try {
+                    const fallbackPath = await resolveAbsolute(fallbackBase, rawPath);
+                    return await readCatalogue(fallbackPath);
+                  } catch (_) {
+                    throw error;
+                  }
+                }
+                throw error;
+              }
             }
 
             if (kind === 'http' || kind === 'https') {
@@ -114,6 +134,11 @@ compose:
             return { entry: null, children: [], warnings };
           }
 
+          if (payload && typeof payload.baseDir === 'string' && payload.baseDir.length) {
+            pointer.baseDir = payload.baseDir;
+            pointer.catalogueBaseDir = payload.baseDir;
+          }
+
           if (pointer.checksum) {
             const digest = await imports.sha256({ data: payload.text ?? '' });
             const payloadBase64 = digest?.base64 ? `sha256-${digest.base64}` : null;
@@ -143,7 +168,8 @@ compose:
                 baseDir: payload.baseDir,
                 sourcesBaseDir: payload.baseDir || pointer.baseDir || '.',
                 defaultEntrypoint,
-                basePriority
+                basePriority,
+                catalogueBaseDir: payload.baseDir
               });
               if (normalized?.warnings?.length) warnings.push(...normalized.warnings);
               if (normalized?.pointer) children.push(normalized.pointer);
@@ -185,3 +211,4 @@ compose:
       children: children
       warnings: warnings
       commit: commit
+      slots: children

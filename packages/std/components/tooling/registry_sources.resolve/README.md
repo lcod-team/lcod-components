@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:source-branch.svg?height=48&width=48" alt="Load registry catalogues defined in sources.json and produce inline registry sources." width="48" height="48" /></p>
+
 # lcod://tooling/registry_sources/resolve@0.1.0
 
 Load registry catalogues defined in sources.json and produce inline registry sources.

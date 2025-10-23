@@ -1,42 +1,24 @@
-
 compose:
-  - call: lcod://tooling/value/is_array@0.1.0
+  - call: lcod://tooling/script@1
     in:
-      value: $.items
-    out:
-      hasInputArray: ok
-
-  - call: lcod://flow/if@1
-    in:
-      cond: $.hasInputArray
-    children:
-      then:
-        - call: lcod://impl/set@1
-          in:
-            baseArray: $.items
-          out:
-            baseArray: baseArray
-      else:
-        - call: lcod://impl/set@1
-          in:
-            baseArray: []
-          out:
-            baseArray: baseArray
-    out:
-      baseArray: baseArray
-
-  - call: lcod://core/array/append@0.1.0
-    in:
-      array: $.baseArray
-      items: $.values
-      item: $.value
-    out:
-      appendResult: $
-
-  - call: lcod://impl/set@1
-    in:
-      items: $.appendResult.value
-      length: $.appendResult.length
+      source: |
+        async ({ state }) => {
+          const base = Array.isArray(state.items) ? state.items.slice() : [];
+          if (Array.isArray(state.values)) {
+            base.push(...state.values);
+          }
+          if (typeof state.value !== 'undefined') {
+            base.push(state.value);
+          }
+          return {
+            items: base,
+            length: base.length
+          };
+        }
+      input:
+        items: $.items
+        values: $.values
+        value: $.value
     out:
       items: items
       length: length

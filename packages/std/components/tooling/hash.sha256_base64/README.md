@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:lock.svg?height=48&width=48" alt="Compute a SHA-256 checksum and return it in base64 format." width="48" height="48" /></p>
+
 # lcod://tooling/hash/sha256_base64@0.1.0
 
 Compute a SHA-256 checksum and return it in base64 format.

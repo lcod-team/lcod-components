@@ -1,4 +1,3 @@
-
 compose:
   - call: lcod://tooling/registry_catalog/collect@0.1.0
     in:
@@ -9,7 +8,6 @@ compose:
       collectedRegistryJson: registryJson
       collectedPackages: packages
       collectWarnings: warnings
-
   - call: lcod://tooling/registry_catalog/validate@0.1.0
     in:
       rootPath: $.rootPath
@@ -17,7 +15,6 @@ compose:
     out:
       validationErrors: errors
       validationPackages: packages
-
   - call: lcod://flow/if@1
     in:
       cond: $.collectWarnings
@@ -30,7 +27,13 @@ compose:
             collectWarnings: collectWarnings
     out:
       collectWarnings: collectWarnings
-
+    slots:
+      else:
+        - call: lcod://impl/set@1
+          in:
+            collectWarnings: []
+          out:
+            collectWarnings: collectWarnings
   - call: lcod://flow/if@1
     in:
       cond: $.validationErrors
@@ -43,7 +46,13 @@ compose:
             validationErrors: validationErrors
     out:
       validationErrors: validationErrors
-
+    slots:
+      else:
+        - call: lcod://impl/set@1
+          in:
+            validationErrors: []
+          out:
+            validationErrors: validationErrors
   - call: lcod://impl/set@1
     in:
       packagesJsonl: $.collectedPackagesJsonl

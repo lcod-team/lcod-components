@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:code-json.svg?height=48&width=48" alt="Decode JSON text and ensure the result is an object, falling back when needed." width="48" height="48" /></p>
+
 # lcod://tooling/json/decode_object@0.1.0
 
 Decode JSON text and ensure the result is an object, falling back when needed.

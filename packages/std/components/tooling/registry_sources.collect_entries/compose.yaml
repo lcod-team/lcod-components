@@ -4,7 +4,6 @@ compose:
       value: $.sourcesConfig
     out:
       sourcesConfig: resolved
-
   - call: lcod://impl/set@1
     in:
       defaultsCandidate: $.sourcesConfig.defaults
@@ -14,13 +13,11 @@ compose:
       defaultsCandidate: defaultsCandidate
       sourcesCandidate: sourcesCandidate
       basePriority: basePriority
-
   - call: lcod://tooling/value/default_object@0.1.0
     in:
       value: $.defaultsCandidate
     out:
       defaults: resolved
-
   - call: lcod://impl/set@1
     in:
       defaultEntrypointCandidate: $.defaults.entrypoint
@@ -28,23 +25,23 @@ compose:
     out:
       defaultEntrypointCandidate: defaultEntrypointCandidate
       basePriority: basePriority
-
   - call: lcod://tooling/value/default_object@0.1.0
     in:
       value: $.defaultEntrypointCandidate
     out:
       defaultEntrypoint: resolved
-
   - call: lcod://tooling/value/default_array@0.1.0
     in:
       value: $.sourcesCandidate
     out:
       sourcesList: resolved
-
   - call: lcod://flow/foreach@1
     in:
       list: $.sourcesList
-    children:
+    collectPath: $.normalized
+    out:
+      rootNormalized: results
+    slots:
       body:
         - call: lcod://tooling/registry_sources/normalize_pointer@0.1.0
           in:
@@ -63,17 +60,12 @@ compose:
               warnings: $.warnings
           out:
             normalized: normalized
-    collectPath: $.normalized
-    out:
-      rootNormalized: results
-
   - call: lcod://tooling/registry_sources/partition_normalized@0.1.0
     in:
       entries: $.rootNormalized
     out:
       rootPointers: pointers
       rootWarnings: warnings
-
   - call: lcod://tooling/registry_sources/collect_queue@0.1.0
     in:
       queue: $.rootPointers
@@ -84,32 +76,27 @@ compose:
     out:
       contributions: contributions
       queueWarnings: warnings
-
   - call: lcod://tooling/registry_sources/merge_inline_entries@0.1.0
     in:
       entries: $.contributions
     out:
       registrySources: registrySources
-
   - call: lcod://tooling/value/default_array@0.1.0
     in:
       value: $.rootWarnings
     out:
       rootWarnings: resolved
-
   - call: lcod://tooling/value/default_array@0.1.0
     in:
       value: $.queueWarnings
     out:
       queueWarnings: resolved
-
-  - call: lcod://tooling/array.append@0.1.0
+  - call: lcod://tooling/array/append@0.1.0
     in:
       items: $.rootWarnings
       values: $.queueWarnings
     out:
       warnings: items
-
   - call: lcod://impl/set@1
     in:
       registrySources: $.registrySources

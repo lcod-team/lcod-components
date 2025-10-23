@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:map-marker-path.svg?height=48&width=48" alt="Merge pointer defaults and entry overrides to produce a normalized catalogue pointer." width="48" height="48" /></p>
+
 # lcod://tooling/registry_sources/normalize_pointer@0.1.0
 
 Merge pointer defaults and entry overrides to produce a normalized catalogue pointer.

@@ -146,6 +146,26 @@ function renderSlots(slots) {
   return lines.join('\n').trimEnd() + '\n';
 }
 
+function encodeIconId(iconId) {
+  if (typeof iconId !== 'string') return '';
+  const trimmed = iconId.trim();
+  if (!trimmed) return '';
+  return trimmed
+    .split(':')
+    .map((part) => encodeURIComponent(part.trim()))
+    .join(':');
+}
+
+function buildIconMarkup(descriptor, size = 48) {
+  const iconId = descriptor?.palette?.icon;
+  if (typeof iconId !== 'string' || !iconId.trim()) return '';
+  const encoded = encodeIconId(iconId);
+  if (!encoded) return '';
+  const altSource = descriptor.summary || descriptor.id || 'Component icon';
+  const alt = String(altSource).replace(/"/g, '&quot;');
+  return `<p><img src="https://api.iconify.design/${encoded}.svg?height=${size}&width=${size}" alt="${alt}" width="${size}" height="${size}" /></p>`;
+}
+
 function buildObjectSchema(entries, options = {}) {
   const schema = {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -210,13 +230,15 @@ async function generateForComponent(lcpPath) {
     throw new Error(`Unsupported schemaVersion in ${rel}: ${descriptor.schemaVersion}`);
   }
 
-  const readmeSections = [
-    HEADER_LINE,
-    `# ${descriptor.id}`,
-    '',
-    descriptor.summary || '',
-    ''
-  ];
+  const readmeSections = [HEADER_LINE];
+  const iconMarkup = buildIconMarkup(descriptor);
+  if (iconMarkup) {
+    readmeSections.push(iconMarkup, '');
+  }
+  readmeSections.push(`# ${descriptor.id}`, '');
+  if (descriptor.summary) {
+    readmeSections.push(descriptor.summary, '');
+  }
 
   const inputsSection = renderInputs(descriptor.inputs);
   if (inputsSection) {

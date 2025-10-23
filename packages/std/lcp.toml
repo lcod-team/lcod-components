@@ -2,4 +2,10 @@ schemaVersion = "2.0"
 id = "lcod://pkg/std@0.1.0"
 version = "0.1.0"
 kind = "workspace-package"
-summary = ""
+summary = "Standard LCOD tooling and core helpers bundled with lcod-components."
+
+[palette]
+icon = "mdi:toolbox"
+
+[workspace]
+componentsDir = "components"

@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:folder-open.svg?height=48&width=48" alt="Create or reuse a workspace folder for MCP authoring sessions." width="48" height="48" /></p>
+
 # lcod://tooling/mcp/session/open@0.1.0
 
 Create or reuse a workspace folder for MCP authoring sessions.

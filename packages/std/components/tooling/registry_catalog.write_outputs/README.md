@@ -1,4 +1,6 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+<p><img src="https://api.iconify.design/mdi:database-export.svg?height=48&width=48" alt="Persist registry artefacts when their content changes." width="48" height="48" /></p>
+
 # lcod://tooling/registry_catalog/write_outputs@0.1.0
 
 Persist registry artefacts when their content changes.
