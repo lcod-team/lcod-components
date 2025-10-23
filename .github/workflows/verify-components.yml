@@ -9,26 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LCOD_RESOLVER_PATH: ${{ github.workspace }}
+      LCOD_RUN_VERSION: "0.1.12"
     steps:
       - uses: actions/checkout@v4
-
-      - name: Checkout lcod-spec
-        uses: actions/checkout@v4
-        with:
-          repository: lcod-team/lcod-spec
-          path: spec
-
-      - name: Checkout lcod-resolver
-        uses: actions/checkout@v4
-        with:
-          repository: lcod-team/lcod-resolver
-          path: resolver
-
-      - name: Checkout lcod-kernel-rs
-        uses: actions/checkout@v4
-        with:
-          repository: lcod-team/lcod-kernel-rs
-          path: kernel
 
       - name: Set up Node 20
         uses: actions/setup-node@v4
@@ -38,25 +21,12 @@ jobs:
       - name: Install repo dependencies
         run: npm install --no-fund --no-audit
 
-      - name: Install spec dependencies
-        working-directory: spec
-        run: npm install --no-fund --no-audit
-
-      - name: Prepare runtime bundle
-        working-directory: spec
-        run: node scripts/package-runtime.mjs --label ci --resolver ../resolver
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build lcod-run (embedded runtime)
-        working-directory: kernel
-        env:
-          LCOD_EMBED_RUNTIME: ${{ github.workspace }}/spec/dist/runtime/lcod-runtime-ci.tar.gz
+      - name: Download lcod-run
         run: |
-          cargo build --release --bin lcod_run
-          cp target/release/lcod_run ${{ github.workspace }}/lcod-run
-          chmod +x ${{ github.workspace }}/lcod-run
+          set -euo pipefail
+          curl -sSL -o lcod-run.tar.gz https://github.com/lcod-team/lcod-kernel-rs/releases/download/lcod-run-v${LCOD_RUN_VERSION}/lcod-run-linux-x86_64.tar.gz
+          tar -xzf lcod-run.tar.gz
+          chmod +x lcod-run
 
       - name: Prepare state
         run: echo '{"projectPath":"'"${{ github.workspace }}/packages/std"'"}' > state.json
