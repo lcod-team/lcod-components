@@ -53,16 +53,19 @@ jobs:
         working-directory: kernel
         env:
           LCOD_EMBED_RUNTIME: ${{ github.workspace }}/spec/dist/runtime/lcod-runtime-ci.tar.gz
-        run: cargo build --release --bin lcod_run
+        run: |
+          cargo build --release --bin lcod_run
+          cp target/release/lcod_run ${{ github.workspace }}/lcod-run
+          chmod +x ${{ github.workspace }}/lcod-run
 
       - name: Run metadata verification
-        run: kernel/target/release/lcod-run --project packages/std --compose tests/components.verify.metadata.yaml
+        run: ./lcod-run --project packages/std --compose tests/components.verify.metadata.yaml
 
       - name: Run registry component tests
-        run: kernel/target/release/lcod-run --project packages/std --compose tests/components.registry.yaml
+        run: ./lcod-run --project packages/std --compose tests/components.registry.yaml
 
       - name: Run component unit tests
-        run: kernel/target/release/lcod-run --project packages/std --compose tests/components.registry.tests.yaml
+        run: ./lcod-run --project packages/std --compose tests/components.registry.tests.yaml
 
       - name: Export components manifest
         run: npm run export:components
