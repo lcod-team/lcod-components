@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LCOD_RESOLVER_PATH: ${{ github.workspace }}
-      LCOD_RUN_VERSION: "0.1.12"
+      LCOD_RUN_VERSION: "0.1.13"
     steps:
       - uses: actions/checkout@v4
 
