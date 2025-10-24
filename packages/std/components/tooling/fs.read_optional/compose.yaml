@@ -1,45 +1,10 @@
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://contract/tooling/fs/read_optional@1
     in:
-      source: |
-        async ({ state }, { imports }) => {
-          const warnings = [];
-          const isNonEmptyString = async (value) => {
-            const res = await imports.isStringNonEmpty({ value });
-            return !!res?.ok;
-          };
-          const ensureString = async (value) => (await isNonEmptyString(value)) ? String(value) : null;
-
-          const encodingValue = await ensureString(state.encoding);
-          const effectiveEncoding = encodingValue || 'utf-8';
-
-          const pathValue = await ensureString(state.path);
-          if (!pathValue) {
-            const fallbackText = await ensureString(state.fallback);
-            const warningMessage = await ensureString(state.warningMessage);
-            return { text: fallbackText, exists: false, warning: warningMessage };
-          }
-
-          try {
-            const result = await imports.fsReadFile({ path: pathValue, encoding: effectiveEncoding });
-            return { text: result?.data ?? null, exists: true, warning: null };
-          } catch (err) {
-            const fallbackText = await ensureString(state.fallback);
-            const warningMessage = await ensureString(state.warningMessage);
-            if (fallbackText != null) {
-              return { text: fallbackText, exists: false, warning: warningMessage };
-            }
-            return { text: null, exists: false, warning: warningMessage || err?.message || String(err) };
-          }
-        }
-      input:
-        path: $.path
-        encoding: $.encoding
-        fallback: $.fallback
-        warningMessage: $.warningMessage
-      imports:
-        fsReadFile: lcod://contract/core/fs/read-file@1
-        isStringNonEmpty: lcod://tooling/value/is_string_nonempty@0.1.0
+      path: $.path
+      encoding: $.encoding
+      fallback: $.fallback
+      warningMessage: $.warningMessage
     out:
       text: text
       exists: exists

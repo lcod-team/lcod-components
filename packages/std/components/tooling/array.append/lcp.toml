@@ -10,12 +10,7 @@ icon = "mdi:plus-box-outline"
 tags = [ "array", "mutation" ]
 
 [deps]
-requires = [
-  "lcod://tooling/value/is_array@0.1.0",
-  "lcod://flow/if@1",
-  "lcod://impl/set@1",
-  "lcod://core/array/append@0.1.0"
-]
+requires = [ "lcod://contract/tooling/array/append@1" ]
 
 [inputs.items]
 summary = "Source array (defaults to an empty list)."

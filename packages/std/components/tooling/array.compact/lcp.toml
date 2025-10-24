@@ -10,7 +10,7 @@ icon = "mdi:filter-variant"
 tags = [ "array", "cleanup" ]
 
 [deps]
-requires = [ "lcod://tooling/script@1" ]
+requires = [ "lcod://contract/tooling/array/compact@1" ]
 
 [inputs.items]
 summary = "Array that may contain null or undefined values."

@@ -1,15 +1,7 @@
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://contract/tooling/string/ensure_trailing_newline@1
     in:
-      source: |
-        async ({ state }) => {
-          const text = typeof state.text === 'string' ? state.text : '';
-          if (text.endsWith('\n')) {
-            return { text };
-          }
-          return { text: `${text}\n` };
-        }
-      input:
-        text: $.text
+      text: $.text
+      newline: $.newline
     out:
       text: text

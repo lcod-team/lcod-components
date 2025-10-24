@@ -1,24 +1,9 @@
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://contract/tooling/array/append@1
     in:
-      source: |
-        async ({ state }) => {
-          const base = Array.isArray(state.items) ? state.items.slice() : [];
-          if (Array.isArray(state.values)) {
-            base.push(...state.values);
-          }
-          if (typeof state.value !== 'undefined') {
-            base.push(state.value);
-          }
-          return {
-            items: base,
-            length: base.length
-          };
-        }
-      input:
-        items: $.items
-        values: $.values
-        value: $.value
+      items: $.items
+      values: $.values
+      value: $.value
     out:
       items: items
       length: length

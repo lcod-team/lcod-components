@@ -1,23 +1,6 @@
-
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://contract/tooling/array/find_duplicates@1
     in:
-      source: |
-        async ({ state }) => {
-          const source = Array.isArray(state.items) ? state.items : [];
-          const seen = new Set();
-          const duplicates = new Set();
-          for (const value of source) {
-            if (typeof value !== "string") continue;
-            if (seen.has(value)) {
-              duplicates.add(value);
-            } else {
-              seen.add(value);
-            }
-          }
-          return { duplicates: Array.from(duplicates) };
-        }
-      input:
-        items: $.items
+      items: $.items
     out:
       duplicates: duplicates

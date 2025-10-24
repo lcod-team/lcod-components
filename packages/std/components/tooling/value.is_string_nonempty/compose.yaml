@@ -1,14 +1,37 @@
 
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://flow/try@1
     in:
-      source: |
-        async ({ state }) => {
-          const value = state.value;
-          const ok = typeof value === "string" && value.length > 0;
-          return { ok };
-        }
-      input:
-        value: $.value
+      value: $.value
     out:
       ok: ok
+    slots:
+      body:
+        - call: lcod://core/string/format@0.1.0
+          in:
+            template: $.value
+            missingPolicy: "ignore"
+        - call: lcod://flow/if@1
+          in:
+            cond: $.value
+          out:
+            ok: ok
+          slots:
+            then:
+              - call: lcod://impl/set@1
+                in:
+                  ok: true
+                out:
+                  ok: ok
+            else:
+              - call: lcod://impl/set@1
+                in:
+                  ok: false
+                out:
+                  ok: ok
+      catch:
+        - call: lcod://impl/set@1
+          in:
+            ok: false
+          out:
+            ok: ok

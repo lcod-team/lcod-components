@@ -10,7 +10,12 @@ icon = "mdi:format-letter-case"
 tags = [ "validation" ]
 
 [deps]
-requires = [ "lcod://tooling/script@1" ]
+requires = [
+  "lcod://flow/try@1",
+  "lcod://flow/if@1",
+  "lcod://impl/set@1",
+  "lcod://core/string/format@0.1.0"
+]
 
 [inputs.value]
 summary = "Value to inspect."

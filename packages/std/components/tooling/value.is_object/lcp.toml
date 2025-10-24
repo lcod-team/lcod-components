@@ -10,7 +10,11 @@ icon = "mdi:code-json"
 tags = [ "validation" ]
 
 [deps]
-requires = [ "lcod://tooling/script@1" ]
+requires = [
+  "lcod://flow/try@1",
+  "lcod://impl/set@1",
+  "lcod://core/object/merge@0.1.0"
+]
 
 [inputs.value]
 summary = "Value to inspect."

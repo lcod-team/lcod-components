@@ -1,15 +1,28 @@
 
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://flow/try@1
     in:
-      source: |
-        async ({ state }) => {
-          const ok = Array.isArray(state.value);
-          const length = ok ? state.value.length : 0;
-          return { ok, length };
-        }
-      input:
-        value: $.value
+      value: $.value
     out:
       ok: ok
       length: length
+    slots:
+      body:
+        - call: lcod://contract/core/array/length@1
+          in:
+            items: $.value
+          out:
+            length: length
+        - call: lcod://impl/set@1
+          in:
+            ok: true
+          out:
+            ok: ok
+      catch:
+        - call: lcod://impl/set@1
+          in:
+            ok: false
+            length: 0
+          out:
+            ok: ok
+            length: length

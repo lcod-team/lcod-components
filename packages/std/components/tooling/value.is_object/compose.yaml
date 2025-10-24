@@ -1,14 +1,24 @@
 
 compose:
-  - call: lcod://tooling/script@1
+  - call: lcod://flow/try@1
     in:
-      source: |
-        async ({ state }) => {
-          const value = state.value;
-          const ok = !!value && typeof value === "object" && !Array.isArray(value);
-          return { ok };
-        }
-      input:
-        value: $.value
+      value: $.value
     out:
       ok: ok
+    slots:
+      body:
+        - call: lcod://core/object/merge@0.1.0
+          in:
+            left: $.value
+            right: {}
+        - call: lcod://impl/set@1
+          in:
+            ok: true
+          out:
+            ok: ok
+      catch:
+        - call: lcod://impl/set@1
+          in:
+            ok: false
+          out:
+            ok: ok

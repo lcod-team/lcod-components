@@ -18,9 +18,9 @@ Read a text file when available, otherwise return fallback text and an optional 
 
 | Name | Type | Description |
 | --- | --- | --- |
-| `text` | string | File contents or fallback text. |
+| `text` | string | null | File contents or fallback text. |
 | `exists` | boolean | True when the file was read successfully. |
-| `warning` | string | Warning emitted when the fallback was returned (null otherwise). |
+| `warning` | string | null | Warning emitted when the fallback was returned (null otherwise). |
 
 ## Notes
 
