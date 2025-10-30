@@ -260,7 +260,28 @@ async function ensureKernelBinary(kernelId, version, kernelInfo) {
     if (kernelId === 'rs') {
       await runCommand('tar', ['-xzf', tmpFile, '-C', targetDir]);
     } else if (kernelId === 'java') {
-      await runCommand('tar', ['-xf', tmpFile, '-C', targetDir, '--strip-components=1']);
+      if (asset.name.endsWith('.tar')) {
+        await runCommand('tar', ['-xf', tmpFile, '-C', targetDir, '--strip-components=1']);
+      } else if (asset.name.endsWith('.jar')) {
+        const jarName = path.basename(asset.name);
+        const jarDest = path.join(targetDir, jarName);
+        await fs.rename(tmpFile, jarDest);
+
+        const binDir = path.join(targetDir, 'bin');
+        await fs.mkdir(binDir, { recursive: true });
+        const wrapperPath = path.join(binDir, 'lcod-kernel-java');
+        const script = `#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+exec java -jar "\${SCRIPT_DIR}/../${jarName}" "$@"
+`;
+        await fs.writeFile(wrapperPath, script, { mode: 0o755 });
+        return wrapperPath;
+      } else if (asset.name.endsWith('.zip')) {
+        await runCommand('unzip', ['-q', tmpFile, '-d', targetDir]);
+      } else {
+        throw new Error(`Unsupported Java asset format: ${asset.name}`);
+      }
     }
   } finally {
     await fs.unlink(tmpFile).catch(() => {});
@@ -281,6 +302,9 @@ function selectKernelAsset(kernelId, assets = []) {
     const predicates = [
       (name) => name.includes('-shadow-') && name.endsWith('.tar'),
       (name) => name.endsWith('.tar'),
+      (name) => name.startsWith('lcod-run-') && name.endsWith('.jar'),
+      (name) => name.endsWith('.jar'),
+      (name) => name.endsWith('.zip'),
     ];
     for (const predicate of predicates) {
       const match = assets.find((asset) => typeof asset.name === 'string' && predicate(asset.name));
