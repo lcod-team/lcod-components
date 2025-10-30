@@ -278,7 +278,17 @@ function selectKernelAsset(kernelId, assets = []) {
     return assets.find((asset) => typeof asset.name === 'string' && asset.name.includes('linux-x86_64.tar.gz'));
   }
   if (kernelId === 'java') {
-    return assets.find((asset) => typeof asset.name === 'string' && asset.name.endsWith('.tar'));
+    const predicates = [
+      (name) => name.includes('-shadow-') && name.endsWith('.tar'),
+      (name) => name.endsWith('.tar'),
+    ];
+    for (const predicate of predicates) {
+      const match = assets.find((asset) => typeof asset.name === 'string' && predicate(asset.name));
+      if (match) {
+        return match;
+      }
+    }
+    return null;
   }
   return null;
 }
