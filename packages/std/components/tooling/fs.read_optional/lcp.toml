@@ -70,3 +70,5 @@ body = """
 Attempt to read a text file and fall back to a default string when the file is
 missing or cannot be read. Optionally emits a warning message."""
 
+[docs]
+readme = "README.md"

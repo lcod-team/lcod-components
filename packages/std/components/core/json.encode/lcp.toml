@@ -64,3 +64,6 @@ schema = """
 
 [documentation]
 body = "Wrapper over `core/json/encode@1` that serialises structured data to JSON text."
+
+[docs]
+readme = "README.md"

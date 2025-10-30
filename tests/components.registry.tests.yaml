@@ -1,4 +1,74 @@
 compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const projectRoot = state.projectPath || '.';
+          const joinPath = async (base, segment) => {
+            const resolved = await imports.pathJoin({ base, segment });
+            return resolved?.path ?? `${base.replace(/\/$/, '')}/${segment}`;
+          };
+          const componentsRoot = await joinPath(projectRoot, 'components');
+          const stack = [componentsRoot];
+          const visited = new Set();
+          const components = [];
+          while (stack.length > 0) {
+            const current = stack.pop();
+            if (!current || visited.has(current)) continue;
+            visited.add(current);
+            const listing = await imports.fsListDir({ path: current });
+            const entries = Array.isArray(listing?.entries) ? listing.entries : [];
+            let hasDescriptor = false;
+            let hasCompose = false;
+            for (const entry of entries) {
+              if (!entry || typeof entry !== 'object') continue;
+              const entryPath = await joinPath(current, entry.name);
+              if (entry.type === 'directory') {
+                stack.push(entryPath);
+              } else if (entry.type === 'file') {
+                if (entry.name === 'lcp.toml') hasDescriptor = true;
+                if (entry.name === 'compose.yaml') hasCompose = true;
+              }
+            }
+            if (hasDescriptor && hasCompose) {
+              const descriptorPath = await joinPath(current, 'lcp.toml');
+              const composePath = await joinPath(current, 'compose.yaml');
+              try {
+                const descriptorRaw = await imports.fsReadFile({ path: descriptorPath, encoding: 'utf-8' });
+                const descriptorText = typeof descriptorRaw?.data === 'string' ? descriptorRaw.data : descriptorRaw;
+                const match = /(^|\n)\s*id\s*=\s*"([^"]+)"/.exec(descriptorText);
+                if (!match) {
+                  throw new Error('missing id field');
+                }
+                const id = match[2];
+                components.push({ id, composePath });
+              } catch (err) {
+                throw new Error(`failed to register ${descriptorPath}: ${err?.message ?? err}`);
+              }
+            }
+          }
+          if (components.length > 0 && imports.register) {
+            try {
+              await imports.register({ components });
+            } catch (err) {
+              const message = err?.message ?? String(err);
+              if (!/Function not registered/.test(message)) {
+                throw err;
+              }
+            }
+          }
+          return { components };
+        }
+      input:
+        projectPath: $.projectPath
+      imports:
+        fsListDir: lcod://contract/core/fs/list-dir@1
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        pathJoin: lcod://axiom/path/join@1
+        register: lcod://tooling/resolver/register@1
+    out:
+      registryComponents: components
+
   - call: lcod://axiom/path/join@1
     in:
       base: $.projectPath
@@ -45,7 +115,22 @@ compose:
             - id: "lcod://example/pkg"
               versions:
                 - version: "1.0.0"
-                  manifest: "tests/fixtures/registry/packages/example/pkg/1.0.0/manifest.json"
+                  manifest: "packages/example/pkg/1.0.0/manifest.json"
+                  registryId: "main"
+                  priority: null
+          packagesJsonl: |
+            {"kind":"registry","id":"main","type":"git","url":"https://github.com/example"}
+            {"kind":"component","id":"lcod://example/pkg","version":"1.0.0","manifest":"packages/example/pkg/1.0.0/manifest.json","registryId":"main"}
+          registryJson:
+            schema: "lcod-registry@1"
+            registries:
+              - id: "main"
+                type: "git"
+                url: "https://github.com/example"
+            namespaces: {}
+            packages:
+              "lcod://example/pkg":
+                registry: "main"
           warnings: []
     out:
       collectReport: $

@@ -1,0 +1,162 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const fallbackCwd = typeof state.cwd === 'string' && state.cwd.length > 0
+            ? state.cwd
+            : (typeof process !== 'undefined' && process && typeof process.cwd === 'function'
+              ? process.cwd()
+              : '.');
+          const rawProjectPath = typeof state.projectPath === 'string' && state.projectPath.length > 0
+            ? state.projectPath
+            : fallbackCwd;
+          const projectPath = rawProjectPath.startsWith('/') || rawProjectPath.startsWith('~')
+            ? rawProjectPath
+            : (await imports.pathJoin({ base: fallbackCwd, segment: rawProjectPath }))?.path || rawProjectPath;
+          const rawSources = Array.isArray(state.sources) ? state.sources : [];
+          const resolvedSources = [];
+          const warnings = [];
+
+          const joinPath = async (base, segment) => {
+            const joined = await imports.pathJoin({ base, segment });
+            return joined?.path || base;
+          };
+
+          const readFile = async (path, encoding = 'utf-8') => {
+            try {
+              const res = await imports.fsReadFile({ path, encoding });
+              return res?.data ?? null;
+            } catch (err) {
+              warnings.push(`registry source: failed to read ${path}: ${err.message}`);
+              return null;
+            }
+          };
+
+          for (const entry of rawSources) {
+            if (!entry || typeof entry !== 'object') continue;
+            const registryId = typeof entry.id === 'string' && entry.id.length > 0 ? entry.id : null;
+            if (!registryId) continue;
+            const type = typeof entry.type === 'string' && entry.type.length > 0 ? entry.type : 'path';
+            const priority = Number.isFinite(entry.priority) ? Math.trunc(entry.priority) : undefined;
+            const defaults = entry.defaults && typeof entry.defaults === 'object' ? entry.defaults : undefined;
+
+            const descriptor = { registryId };
+            if (priority !== undefined) descriptor.priority = priority;
+            if (defaults) descriptor.defaults = defaults;
+
+            if (type === 'path') {
+              const rootBase = typeof entry.path === 'string' && entry.path.length > 0
+                ? entry.path
+                : '.';
+              const absoluteRoot = rootBase.startsWith('/') || rootBase.startsWith('~')
+                ? rootBase
+                : await joinPath(projectPath, rootBase);
+
+              const packagesRel = typeof entry.packagesPath === 'string' && entry.packagesPath.length > 0
+                ? entry.packagesPath
+                : 'packages.jsonl';
+              const packagesPath = await joinPath(absoluteRoot, packagesRel);
+              const jsonlContent = await readFile(packagesPath, 'utf-8');
+              if (!jsonlContent) continue;
+              descriptor.jsonl = jsonlContent;
+
+              if (!descriptor.defaults) {
+                const registryRel = typeof entry.registryPath === 'string' && entry.registryPath.length > 0
+                  ? entry.registryPath
+                  : 'registry.json';
+                const registryPath = await joinPath(absoluteRoot, registryRel);
+                const registryContent = await readFile(registryPath, 'utf-8');
+                if (registryContent) {
+                  try {
+                    const parsed = JSON.parse(registryContent);
+                    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.registries)) {
+                      const match = parsed.registries.find((candidate) => candidate && candidate.id === registryId);
+                      if (match && typeof match === 'object') {
+                        descriptor.defaults = {
+                          ...(descriptor.defaults || {}),
+                          ...match
+                        };
+                      }
+                    }
+                  } catch (err) {
+                    warnings.push(`registry source: invalid registry.json for ${registryId}: ${err.message}`);
+                  }
+                }
+              }
+            } else if (type === 'jsonl') {
+              if (typeof entry.jsonl === 'string' && entry.jsonl.length > 0) {
+                descriptor.jsonl = entry.jsonl;
+              } else if (typeof entry.path === 'string' && entry.path.length > 0) {
+                const absolutePath = entry.path.startsWith('/') || entry.path.startsWith('~')
+                  ? entry.path
+                  : await joinPath(projectPath, entry.path);
+                const jsonlContent = await readFile(absolutePath, 'utf-8');
+                if (!jsonlContent) continue;
+                descriptor.jsonl = jsonlContent;
+              } else {
+                warnings.push(`registry source ${registryId}: jsonl type requires "path" or inline "jsonl"`);
+                continue;
+              }
+
+              if (!descriptor.defaults && typeof entry.registryPath === 'string' && entry.registryPath.length > 0) {
+                const registryPath = entry.registryPath.startsWith('/') || entry.registryPath.startsWith('~')
+                  ? entry.registryPath
+                  : await joinPath(projectPath, entry.registryPath);
+                const registryContent = await readFile(registryPath, 'utf-8');
+                if (registryContent) {
+                  try {
+                    const parsed = JSON.parse(registryContent);
+                    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.registries)) {
+                      const match = parsed.registries.find((candidate) => candidate && candidate.id === registryId);
+                      if (match && typeof match === 'object') {
+                        descriptor.defaults = {
+                          ...(descriptor.defaults || {}),
+                          ...match
+                        };
+                      }
+                    }
+                  } catch (err) {
+                    warnings.push(`registry source: invalid registry.json for ${registryId}: ${err.message}`);
+                  }
+                }
+              }
+            } else if (type === 'inline') {
+              const lines = Array.isArray(entry.lines)
+                ? entry.lines.filter((row) => row && typeof row === 'object')
+                : [];
+              if (!lines.length) {
+                warnings.push(`registry source ${registryId}: inline type requires "lines"`);
+                continue;
+              }
+              descriptor.lines = lines;
+              if (typeof entry.jsonl === 'string' && entry.jsonl.length > 0) {
+                descriptor.jsonl = entry.jsonl;
+              }
+            } else {
+              warnings.push(`registry source ${registryId}: unsupported type "${type}"`);
+              continue;
+            }
+
+            if (!descriptor.jsonl && (!descriptor.lines || descriptor.lines.length === 0)) {
+              warnings.push(`registry source ${registryId}: no JSONL content produced`);
+              continue;
+            }
+
+            resolvedSources.push(descriptor);
+          }
+
+          return {
+            sources: resolvedSources,
+            warnings
+          };
+        }
+      input:
+        projectPath: $.projectPath
+        sources: $.sources
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+        fsReadFile: lcod://axiom/fs/read-file@1
+    out:
+      sources: sources
+      warnings: warnings

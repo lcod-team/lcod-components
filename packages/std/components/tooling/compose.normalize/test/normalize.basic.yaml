@@ -1,0 +1,23 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      composeRef:
+        path: ../../compose/normalize/compose.yaml
+      input:
+        compose:
+          - call: lcod://impl/echo@1
+            in:
+              foo: "="
+              nested:
+                value: "stay"
+            out:
+              bar: "="
+      expected:
+        compose:
+          - call: lcod://impl/echo@1
+            in:
+              foo: "$.foo"
+              nested:
+                value: "stay"
+            out:
+              bar: "bar"

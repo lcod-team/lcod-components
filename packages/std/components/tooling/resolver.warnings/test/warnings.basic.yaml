@@ -1,0 +1,14 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/resolver/warnings/merge@0.1.0
+          in:
+            buckets:
+              - ["a", "", null]
+              - null
+              - ["b"]
+      expected:
+        warnings:
+          - "a"
+          - "b"

@@ -36,3 +36,6 @@ schema = """
 
 [documentation]
 body = "Normalise a versions document."
+
+[docs]
+readme = "README.md"

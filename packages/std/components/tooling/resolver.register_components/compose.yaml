@@ -1,0 +1,114 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const specRoot = typeof state.specRoot === 'string' && state.specRoot.length > 0
+            ? state.specRoot
+            : null;
+          const warnings = [];
+          if (!specRoot) {
+            warnings.push('resolver/register_components: specRoot is missing');
+            return { components: [], warnings };
+          }
+
+          const definitions = [
+            { id: 'lcod://tooling/value/default_object@0.1.0', path: 'tooling/value/default_object/compose.yaml' },
+            { id: 'lcod://tooling/value/default_array@0.1.0', path: 'tooling/value/default_array/compose.yaml' },
+            { id: 'lcod://tooling/value/is_object@0.1.0', path: 'tooling/value/is_object/compose.yaml' },
+            { id: 'lcod://tooling/value/is_array@0.1.0', path: 'tooling/value/is_array/compose.yaml' },
+            { id: 'lcod://tooling/value/is_string_nonempty@0.1.0', path: 'tooling/value/is_string_nonempty/compose.yaml' },
+            { id: 'lcod://tooling/array/append@0.1.0', path: 'tooling/array/append/compose.yaml' },
+            { id: 'lcod://tooling/array/compact@0.1.0', path: 'tooling/array/compact/compose.yaml' },
+            { id: 'lcod://tooling/array/concat@0.1.0', path: 'tooling/array/concat/compose.yaml' },
+            { id: 'lcod://tooling/array/filter_objects@0.1.0', path: 'tooling/array/filter_objects/compose.yaml' },
+            { id: 'lcod://tooling/array/length@0.1.0', path: 'tooling/array/length/compose.yaml' },
+            { id: 'lcod://tooling/array/shift@0.1.0', path: 'tooling/array/shift/compose.yaml' },
+            { id: 'lcod://tooling/fs/read_optional@0.1.0', path: 'tooling/fs/read_optional/compose.yaml' },
+            { id: 'lcod://tooling/json/decode_object@0.1.0', path: 'tooling/json/decode_object/compose.yaml' },
+            { id: 'lcod://tooling/hash/sha256_base64@0.1.0', path: 'tooling/hash/sha256_base64/compose.yaml' },
+            { id: 'lcod://tooling/component/build_artifacts@0.1.0', path: 'tooling/component/build_artifacts/compose.yaml' },
+            { id: 'lcod://tooling/path/join_chain@0.1.0', path: 'tooling/path/join_chain/compose.yaml' },
+            { id: 'lcod://tooling/path/dirname@0.1.0', path: 'tooling/path/dirname/compose.yaml' },
+            { id: 'lcod://tooling/path/is_absolute@0.1.0', path: 'tooling/path/is_absolute/compose.yaml' },
+            { id: 'lcod://tooling/path/to_file_url@0.1.0', path: 'tooling/path/to_file_url/compose.yaml' },
+            { id: 'lcod://core/array/append@0.1.0', path: 'core/array/append/compose.yaml' },
+            { id: 'lcod://core/json/decode@0.1.0', path: 'core/json/decode/compose.yaml' },
+            { id: 'lcod://core/json/encode@0.1.0', path: 'core/json/encode/compose.yaml' },
+            { id: 'lcod://core/object/merge@0.1.0', path: 'core/object/merge/compose.yaml' },
+            { id: 'lcod://core/string/format@0.1.0', path: 'core/string/format/compose.yaml' },
+            { id: 'lcod://tooling/registry/source/load@0.1.0', path: 'tooling/registry/source/compose.yaml' },
+            { id: 'lcod://tooling/registry/index@0.1.0', path: 'tooling/registry/index/compose.yaml' },
+            { id: 'lcod://tooling/registry/select@0.1.0', path: 'tooling/registry/select/compose.yaml' },
+            { id: 'lcod://tooling/registry/resolution@0.1.0', path: 'tooling/registry/resolution/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/build_inline_entry@0.1.0', path: 'tooling/registry_sources/build_inline_entry/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/collect_entries@0.1.0', path: 'tooling/registry_sources/collect_entries/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/collect_queue@0.1.0', path: 'tooling/registry_sources/collect_queue/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/load_config@0.1.0', path: 'tooling/registry_sources/load_config/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/merge_inline_entries@0.1.0', path: 'tooling/registry_sources/merge_inline_entries/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/normalize_pointer@0.1.0', path: 'tooling/registry_sources/normalize_pointer/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/partition_normalized@0.1.0', path: 'tooling/registry_sources/partition_normalized/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/prepare_env@0.1.0', path: 'tooling/registry_sources/prepare_env/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/process_catalogue@0.1.0', path: 'tooling/registry_sources/process_catalogue/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/process_pointer@0.1.0', path: 'tooling/registry_sources/process_pointer/compose.yaml' },
+            { id: 'lcod://tooling/registry_sources/resolve@0.1.0', path: 'tooling/registry_sources/resolve/compose.yaml' },
+            { id: 'lcod://tooling/resolver/warnings/merge@0.1.0', path: 'tooling/resolver/warnings/compose.yaml' },
+            { id: 'lcod://tooling/resolver/context/prepare@0.1.0', path: 'tooling/resolver/context/compose.yaml' },
+            { id: 'lcod://tooling/resolver/replace/apply@0.1.0', path: 'tooling/resolver/replace/compose.yaml' },
+            { id: 'lcod://tooling/resolver/internal/load-sources@0.1.0', path: 'packages/resolver/components/internal/load_sources/compose.yaml' }
+          ];
+
+          const components = [];
+          for (const def of definitions) {
+            try {
+              const { path } = await imports.pathJoin({ base: specRoot, segment: def.path });
+              components.push({ id: def.id, composePath: path });
+            } catch (err) {
+              warnings.push(`resolver/register_components: failed to resolve ${def.id}: ${err.message}`);
+            }
+          }
+
+          return { components, warnings };
+        }
+      input:
+        specRoot: $.specRoot
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+    out:
+      components: components
+      buildWarnings: warnings
+
+  - call: lcod://tooling/resolver/register@1
+    in:
+      components: $.components
+    out:
+      registered: registered
+      registerWarnings: warnings
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const warnings = [];
+          const collect = (items) => {
+            if (!Array.isArray(items)) return;
+            for (const item of items) {
+              if (typeof item === 'string' && item.length > 0) {
+                warnings.push(item);
+              }
+            }
+          };
+          collect(state.buildWarnings);
+          collect(state.registerWarnings);
+          return {
+            registered: Number.isFinite(state.registered) ? state.registered : 0,
+            warnings
+          };
+        }
+      input:
+        registered: $.registered
+        buildWarnings: $.buildWarnings
+        registerWarnings: $.registerWarnings
+    out:
+      registered: registered
+      warnings: warnings

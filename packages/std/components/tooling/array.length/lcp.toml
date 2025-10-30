@@ -29,3 +29,6 @@ schema = """
 
 [documentation]
 body = "Return the number of items in an array."
+
+[docs]
+readme = "README.md"

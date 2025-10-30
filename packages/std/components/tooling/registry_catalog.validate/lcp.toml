@@ -56,3 +56,6 @@ schema = """
 
 [documentation]
 body = "Validate the registry catalog against structural and manifest rules."
+
+[docs]
+readme = "README.md"

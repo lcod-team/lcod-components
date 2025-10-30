@@ -31,3 +31,6 @@ schema = """
 
 [documentation]
 body = "Check whether a value is a non-empty string."
+
+[docs]
+readme = "README.md"

@@ -30,3 +30,6 @@ schema = """
 
 [documentation]
 body = "Check whether a value is a non-null object."
+
+[docs]
+readme = "README.md"

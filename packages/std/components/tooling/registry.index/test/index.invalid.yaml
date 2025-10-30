@@ -1,0 +1,19 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      composeRef:
+        path: ../../registry/index/compose.yaml
+      input:
+        sources:
+          - registryId: broken
+            jsonl: |
+              {"kind":"component","id":"lcod://demo/foo","version":"0.1.0","manifest":"packages/demo/foo/0.1.0/manifest.json"}
+              {"kind":"component","id":"lcod://demo/foo","version": bad json }
+      expected:
+        entries:
+          - id: lcod://demo/foo
+            version: 0.1.0
+            manifest: packages/demo/foo/0.1.0/manifest.json
+            registryId: broken
+        errors:
+          - registry "broken" line 2: invalid JSON

@@ -1,0 +1,53 @@
+resolverVersion = "0.1.0"
+schemaVersion = "1.0"
+
+[[components]]
+id = "lcod://tooling/component/build_artifacts@0.1.0"
+integrity = "sha256-f04ff760dcd504f54cac362d0bafda56f5187e251e20b69701bc382bb5bd67b1"
+resolved = "lcod://tooling/component/build_artifacts@0.1.0"
+
+[[components.dependencies]]
+id = "lcod://tooling/value/default_object@0.1.0"
+
+[components.dependencies.source]
+reference = "lcod://tooling/value/default_object@0.1.0"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://contract/core/fs/read_file@1"
+
+[components.dependencies.source]
+reference = "lcod://contract/core/fs/read_file@1"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://contract/core/fs/write_file@1"
+
+[components.dependencies.source]
+reference = "lcod://contract/core/fs/write_file@1"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://contract/core/parse/toml@1"
+
+[components.dependencies.source]
+reference = "lcod://contract/core/parse/toml@1"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://tooling/script@1"
+
+[components.dependencies.source]
+reference = "lcod://tooling/script@1"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://flow/if@1"
+
+[components.dependencies.source]
+reference = "lcod://flow/if@1"
+type = "registry"
+
+[components.source]
+path = "."
+type = "path"

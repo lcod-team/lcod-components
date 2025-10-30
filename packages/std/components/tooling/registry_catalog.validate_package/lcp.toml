@@ -48,3 +48,6 @@ schema = """
 
 [documentation]
 body = "Validate a single package entry and its manifests."
+
+[docs]
+readme = "README.md"

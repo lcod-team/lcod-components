@@ -1,0 +1,102 @@
+compose:
+  - call: lcod://tooling/registry/source/load@0.1.0
+    in:
+      projectPath: $.projectPath
+      sources: $.sources
+    out:
+      loadedSources: sources
+      loadWarnings: warnings
+
+  - call: lcod://tooling/registry/index@0.1.0
+    in:
+      sources: $.loadedSources
+    out:
+      registries: registries
+      entries: entries
+      packages: packages
+      indexWarnings: errors
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const requests = Array.isArray(state.requests) ? state.requests : [];
+          const resolved = [];
+          const selectionWarnings = [];
+          for (const request of requests) {
+            if (!request || typeof request !== 'object') {
+              selectionWarnings.push('registry: ignoring invalid request');
+              continue;
+            }
+            const id = typeof request.id === 'string' && request.id.length > 0 ? request.id : null;
+            if (!id) {
+              selectionWarnings.push('registry: missing id');
+              continue;
+            }
+            const selectInput = { packages: state.packages, id };
+            if (typeof request.range === 'string' && request.range.trim().length > 0) {
+              selectInput.range = request.range.trim();
+            }
+            if (typeof request.registryId === 'string' && request.registryId.length > 0) {
+              selectInput.registryId = request.registryId;
+            }
+            try {
+              const { entry } = await imports.select(selectInput);
+              if (entry) {
+                resolved.push({ id, entry });
+              } else {
+                selectionWarnings.push(`registry: no entry found for ${id}`);
+              }
+            } catch (err) {
+              selectionWarnings.push(`registry: failed to select ${id}: ${err.message}`);
+            }
+          }
+          return { resolved, selectionWarnings };
+        }
+      input:
+        requests: $.requests
+        packages: $.packages
+      imports:
+        select: lcod://tooling/registry/select@0.1.0
+    out:
+      resolved: resolved
+      selectionWarnings: selectionWarnings
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const allWarnings = [];
+          const pushAll = (items) => {
+            if (!Array.isArray(items)) return;
+            for (const item of items) {
+              if (typeof item === 'string' && item.length > 0) {
+                allWarnings.push(item);
+              }
+            }
+          };
+          pushAll(state.loadWarnings);
+          pushAll(state.indexWarnings);
+          pushAll(state.selectionWarnings);
+          return {
+            registries: Array.isArray(state.registries) ? state.registries : [],
+            entries: Array.isArray(state.entries) ? state.entries : [],
+            packages: state.packages && typeof state.packages === 'object' ? state.packages : {},
+            resolved: Array.isArray(state.resolved) ? state.resolved : [],
+            warnings: allWarnings
+          };
+        }
+      input:
+        loadWarnings: $.loadWarnings
+        indexWarnings: $.indexWarnings
+        selectionWarnings: $.selectionWarnings
+        registries: $.registries
+        entries: $.entries
+        packages: $.packages
+        resolved: $.resolved
+    out:
+      registries: registries
+      entries: entries
+      packages: packages
+      resolved: resolved
+      warnings: warnings

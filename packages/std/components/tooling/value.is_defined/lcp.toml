@@ -28,3 +28,6 @@ schema = """
 body = """
 Returns whether the provided value is defined (i.e. neither `null` nor
 `undefined`)."""
+
+[docs]
+readme = "README.md"

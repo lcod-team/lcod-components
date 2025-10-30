@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/catalog/generate output",
+  "type": "object",
+  "required": ["packagesJsonl", "registryJson", "packages", "warnings"],
+  "properties": {
+    "packagesJsonl": {
+      "type": "string",
+      "description": "Serialized JSONL catalogue containing registry and component entries."
+    },
+    "registryJson": {
+      "type": "object",
+      "description": "Registry JSON descriptor ready to be written to registry.json."
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Diagnostics per package (versions, registries, priority metadata)."
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Non-fatal issues encountered while generating the catalogue."
+    }
+  },
+  "additionalProperties": false
+}

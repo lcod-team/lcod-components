@@ -1,0 +1,125 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const packages = state.packages && typeof state.packages === 'object'
+            ? state.packages
+            : {};
+          const componentId = typeof state.id === 'string' && state.id.length > 0
+            ? state.id
+            : null;
+          const range = typeof state.range === 'string' && state.range.length > 0
+            ? state.range.trim()
+            : null;
+          const preferredRegistry = typeof state.registryId === 'string' && state.registryId.length > 0
+            ? state.registryId
+            : null;
+
+          if (!componentId) {
+            return { entry: null };
+          }
+
+          const parseSemver = (value) => {
+            if (typeof value !== 'string') return null;
+            const match = value.trim().match(/^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
+            if (!match) return null;
+            return {
+              major: Number.parseInt(match[1], 10),
+              minor: Number.parseInt(match[2] ?? '0', 10),
+              patch: Number.parseInt(match[3] ?? '0', 10)
+            };
+          };
+
+          const compareSemver = (a, b) => {
+            if (a.major !== b.major) return a.major - b.major;
+            if (a.minor !== b.minor) return a.minor - b.minor;
+            return a.patch - b.patch;
+          };
+
+          const matchesRange = (rawRange, candidateVersion) => {
+            if (!rawRange) return true;
+            if (!candidateVersion) return false;
+            const candidate = parseSemver(candidateVersion);
+            if (!candidate) return false;
+
+            const normalized = rawRange.trim();
+            if (normalized === '*' || normalized.toLowerCase() === 'latest') {
+              return true;
+            }
+
+            if (normalized.includes('||')) {
+              return normalized.split('||').some((chunk) => matchesRange(chunk, candidateVersion));
+            }
+
+            if (normalized.endsWith('.x') || normalized.endsWith('.*')) {
+              const base = normalized.slice(0, -2);
+              const parts = base.split('.');
+              if (parts.length === 1) {
+                return Number.parseInt(parts[0], 10) === candidate.major;
+              }
+              if (parts.length === 2) {
+                return Number.parseInt(parts[0], 10) === candidate.major
+                  && Number.parseInt(parts[1], 10) === candidate.minor;
+              }
+            }
+
+            if (normalized.startsWith('^')) {
+              const base = parseSemver(normalized.slice(1));
+              if (!base) return false;
+              if (base.major > 0) {
+                return candidate.major === base.major && compareSemver(candidate, base) >= 0;
+              }
+              if (base.minor > 0) {
+                return candidate.major === base.major
+                  && candidate.minor === base.minor
+                  && compareSemver(candidate, base) >= 0;
+              }
+              return candidate.major === base.major
+                && candidate.minor === base.minor
+                && compareSemver(candidate, base) >= 0;
+            }
+
+            if (normalized.startsWith('~')) {
+              const base = parseSemver(normalized.slice(1));
+              if (!base) return false;
+              if (candidate.major !== base.major) return false;
+              if (base.minor >= 0 && candidate.minor !== base.minor) return false;
+              return compareSemver(candidate, base) >= 0;
+            }
+
+            const stripped = normalized.replace(/^v/, '');
+            const candidateStripped = candidateVersion.replace(/^v/, '');
+            return stripped === candidateStripped;
+          };
+
+          const entries = Array.isArray(packages[componentId]) ? packages[componentId] : [];
+          if (entries.length === 0) {
+            return { entry: null };
+          }
+
+          const scopedEntries = preferredRegistry
+            ? entries.filter((entry) => entry && entry.registryId === preferredRegistry)
+            : entries;
+          const candidates = scopedEntries.length > 0 ? scopedEntries : entries;
+
+          if (!range) {
+            return { entry: candidates[0] ?? null };
+          }
+
+          for (const entry of candidates) {
+            if (entry && typeof entry.version === 'string' && matchesRange(range, entry.version)) {
+              return { entry };
+            }
+          }
+
+          const exact = candidates.find((entry) => entry && entry.version === range);
+          return { entry: exact ?? null };
+        }
+      input:
+        packages: $.packages
+        id: $.id
+        range: $.range
+        registryId: $.registryId
+    out:
+      entry: entry

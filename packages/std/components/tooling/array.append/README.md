@@ -1,9 +1,9 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
-<p><img src="https://api.iconify.design/mdi:plus-box-outline.svg?height=48&width=48" alt="Append values to an array using the core/array/append primitive." width="48" height="48" /></p>
+<p><img src="https://api.iconify.design/mdi:plus-box-outline.svg?height=48&width=48" alt="Append optional arrays and/or a single value to the provided items." width="48" height="48" /></p>
 
 # lcod://tooling/array/append@0.1.0
 
-Append values to an array using the core/array/append primitive.
+Append optional arrays and/or a single value to the provided items.
 
 ## Inputs
 
@@ -22,5 +22,5 @@ Append values to an array using the core/array/append primitive.
 
 ## Notes
 
-Append values to an array without mutating the original list. Relies on the
-standard `core/array/append@1` primitive.
+Append optional arrays and/or a single value to the provided list without
+mutating the original array.

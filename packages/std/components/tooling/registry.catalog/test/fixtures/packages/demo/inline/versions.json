@@ -1,0 +1,14 @@
+{
+  "schema": "lcod-registry/versions@1",
+  "id": "lcod://demo/inline",
+  "versions": [
+    {
+      "version": "0.2.0",
+      "manifest": "packages/demo/inline/0.2.0/manifest.json"
+    },
+    {
+      "version": "0.1.0",
+      "manifest": "packages/demo/inline/0.1.0/manifest.json"
+    }
+  ]
+}

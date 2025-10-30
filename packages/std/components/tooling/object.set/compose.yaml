@@ -1,0 +1,60 @@
+compose:
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.target
+    out:
+      baseObject: resolved
+
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value: $.path
+    out:
+      keyPath: resolved
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const target = state.object && typeof state.object === 'object' && !Array.isArray(state.object)
+            ? JSON.parse(JSON.stringify(state.object))
+            : {};
+          const path = Array.isArray(state.path) ? state.path : [];
+          if (path.length === 0) {
+            return {
+              updated: state.value,
+              previous: target
+            };
+          }
+          let cursor = target;
+          for (let i = 0; i < path.length - 1; i++) {
+            const segment = path[i];
+            if (typeof segment !== 'string' || !segment.length) continue;
+            if (!cursor[segment] || typeof cursor[segment] !== 'object' || Array.isArray(cursor[segment])) {
+              cursor[segment] = {};
+            }
+            cursor = cursor[segment];
+          }
+          const last = path[path.length - 1];
+          if (typeof last === 'string' && last.length) {
+            cursor[last] = state.value;
+          }
+          return {
+            updated: target,
+            previous: state.object
+          };
+        }
+      input:
+        object: $.baseObject
+        path: $.keyPath
+        value: $.value
+    out:
+      updatedObject: updated
+      previousObject: previous
+
+  - call: lcod://impl/set@1
+    in:
+      object: $.updatedObject
+      previous: $.previousObject
+    out:
+      object: object
+      previous: previous

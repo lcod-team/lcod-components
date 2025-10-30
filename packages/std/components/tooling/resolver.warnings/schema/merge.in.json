@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/resolver/warnings/merge input",
+  "type": "object",
+  "required": ["buckets"],
+  "properties": {
+    "buckets": {
+      "type": "array",
+      "items": {}
+    }
+  },
+  "additionalProperties": false
+}

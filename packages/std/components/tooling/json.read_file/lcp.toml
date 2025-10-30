@@ -55,3 +55,6 @@ schema = "{}"
 
 [documentation]
 body = "Read and parse a JSON file from disk."
+
+[docs]
+readme = "README.md"

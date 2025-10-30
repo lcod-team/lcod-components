@@ -1,0 +1,43 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/object/has@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Test whether an object has a value at the specified path."
+
+[deps]
+requires = [
+  "lcod://impl/set@1",
+  "lcod://tooling/script@1",
+  "lcod://tooling/value/default_array@0.1.0",
+  "lcod://tooling/value/default_object@0.1.0"
+]
+
+[inputs.target]
+summary = "Object to inspect."
+required = false
+schema = """
+{
+  "type": "object"
+}"""
+
+[inputs.path]
+summary = "Array of string keys representing the path to check."
+required = false
+schema = """
+{
+  "type": "array"
+}"""
+
+[outputs.hasKey]
+summary = "True when the path resolves to a value."
+schema = """
+{
+  "type": "boolean"
+}"""
+
+[outputs.value]
+summary = "Value found at the path when present."
+schema = "{}"
+
+[docs]
+readme = "README.md"

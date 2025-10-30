@@ -88,3 +88,6 @@ body = """
 Load the registry `sources.json` specification, applying reasonable defaults
 when the file is missing. The component resolves the effective file path,
 parses the JSON payload, and reports warnings for recoverable issues."""
+
+[docs]
+readme = "README.md"

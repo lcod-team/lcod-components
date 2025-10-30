@@ -1,0 +1,27 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/registry/select@0.1.0
+          in:
+            packages:
+              lcod://demo/catalog:
+                - version: 2.0.0
+                  registryId: official
+                  manifest: packages/demo/catalog/2.0.0/manifest.json
+                - version: 1.5.0
+                  registryId: official
+                  manifest: packages/demo/catalog/1.5.0/manifest.json
+                - version: 1.2.0
+                  registryId: official
+                  manifest: packages/demo/catalog/1.2.0/manifest.json
+                - version: 1.1.0
+                  registryId: official
+                  manifest: packages/demo/catalog/1.1.0/manifest.json
+            id: lcod://demo/catalog
+            range: "^1.2.0"
+      expected:
+        entry:
+          version: 1.5.0
+          registryId: official
+          manifest: packages/demo/catalog/1.5.0/manifest.json

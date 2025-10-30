@@ -63,3 +63,6 @@ Resolve the working directories required by the registry sources pipeline. The
 component normalises the project root (falling back to the provided `cwd`),
 derives the cache folder, and returns the dedicated downloads directory used to
 store fetched catalogues."""
+
+[docs]
+readme = "README.md"

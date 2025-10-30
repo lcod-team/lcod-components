@@ -51,3 +51,6 @@ schema = """
 body = """
 Thin wrapper around `core/array/append@1` that exposes the new standard
 primitive as an LCOD component."""
+
+[docs]
+readme = "README.md"

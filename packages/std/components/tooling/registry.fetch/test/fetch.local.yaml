@@ -1,0 +1,180 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://axiom/path/join@1
+          in:
+            base: "./.tmp"
+            segment: "registry-fetch/source"
+          out:
+            path: sourceDir
+
+        - call: lcod://axiom/path/join@1
+          in:
+            base: "./.tmp"
+            segment: "registry-fetch/cache"
+          out:
+            path: cacheRoot
+
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ state, imports }) => {
+                const joinSegments = async (base, relative) => {
+                  const segments = relative.split('/').filter(Boolean);
+                  let cursor = base;
+                  for (const segment of segments) {
+                    const joined = await imports.pathJoin({ base: cursor, segment });
+                    cursor = joined?.path ?? cursor;
+                  }
+                  return cursor;
+                };
+
+                const manifestRel = 'packages/demo/catalog/1.0.0/manifest.json';
+                const artifactRel = 'artifacts/demo/catalog-1.0.0.bin';
+                const manifestPath = await joinSegments(state.sourceDir, manifestRel);
+                const artifactPath = await joinSegments(state.sourceDir, artifactRel);
+
+                const manifestObject = {
+                  schema: 'lcod-registry/manifest@1',
+                  id: 'lcod://demo/catalog@1.0.0',
+                  files: []
+                };
+                const manifestContent = `${JSON.stringify(manifestObject, null, 2)}\n`;
+                const artifactContent = 'SGVsbG8='; // "Hello" in base64
+
+                const manifestHash = await imports.hash({ data: manifestContent, encoding: 'utf-8' });
+                const artifactHash = await imports.hash({ data: artifactContent, encoding: 'base64' });
+
+                return {
+                  manifestPath,
+                  artifactPath,
+                  manifestContent,
+                  artifactContent,
+                  manifestSha: `sha256-${manifestHash.hex}`,
+                  artifactSha: `sha256-${artifactHash.hex}`,
+                  entry: {
+                    id: 'lcod://demo/catalog',
+                    version: '1.0.0',
+                    manifest: manifestRel,
+                    registryId: 'official',
+                    sha256: `sha256-${manifestHash.hex}`,
+                    artifact: {
+                      url: `file://${artifactPath}`,
+                      sha256: `sha256-${artifactHash.hex}`
+                    }
+                  },
+                  registry: {
+                    id: 'official',
+                    type: 'file',
+                    url: `file://${state.sourceDir}`
+                  },
+                  cache: {
+                    root: state.cacheRoot
+                  }
+                };
+              }
+            input:
+              sourceDir: $.sourceDir
+              cacheRoot: $.cacheRoot
+            imports:
+              pathJoin: lcod://axiom/path/join@1
+              hash: lcod://axiom/hash/sha256@1
+          out:
+            manifestPath: manifestPath
+            artifactPath: artifactPath
+            manifestContent: manifestContent
+            artifactContent: artifactContent
+            manifestSha: manifestSha
+            artifactSha: artifactSha
+            entry: entry
+            registry: registry
+            cache: cache
+
+        - call: lcod://axiom/fs/write-file@1
+          in:
+            path: $.manifestPath
+            data: $.manifestContent
+            encoding: "utf-8"
+            createParents: true
+
+        - call: lcod://axiom/fs/write-file@1
+          in:
+            path: $.artifactPath
+            data: $.artifactContent
+            encoding: "base64"
+            createParents: true
+
+        - call: lcod://tooling/registry/fetch@0.1.0
+          in:
+            entry: $.entry
+            registry: $.registry
+            cache: $.cache
+          out:
+            manifest1Path: manifestPath
+            manifest1: manifest
+            integrity1: manifestIntegrity
+            artifact1Path: artifactPath
+            artifact1Integrity: artifactIntegrity
+            downloaded1: downloaded
+
+        - call: lcod://tooling/registry/fetch@0.1.0
+          in:
+            entry: $.entry
+            registry: $.registry
+            cache: $.cache
+          out:
+            manifest2Path: manifestPath
+            artifact2Path: artifactPath
+            downloaded2: downloaded
+
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ state }) => {
+                return {
+                  manifest1: state.manifest1,
+                  manifest1Path: state.manifest1Path,
+                  manifest2Path: state.manifest2Path,
+                  artifact1Path: state.artifact1Path,
+                  artifact2Path: state.artifact2Path,
+                  downloadedFirst: state.downloaded1 === true,
+                  downloadedSecond: state.downloaded2 === true,
+                  manifestIntegrityMatches: state.integrity1 === state.manifestSha,
+                  artifactIntegrityMatches: state.artifact1Integrity === state.artifactSha
+                };
+              }
+            input:
+              manifest1: $.manifest1
+              manifest1Path: $.manifest1Path
+              manifest2Path: $.manifest2Path
+              artifact1Path: $.artifact1Path
+              artifact2Path: $.artifact2Path
+              downloaded1: $.downloaded1
+              downloaded2: $.downloaded2
+              integrity1: $.integrity1
+              artifact1Integrity: $.artifact1Integrity
+              manifestSha: $.manifestSha
+              artifactSha: $.artifactSha
+          out:
+            manifest1: manifest1
+            manifest1Path: manifest1Path
+            manifest2Path: manifest2Path
+            artifact1Path: artifact1Path
+            artifact2Path: artifact2Path
+            downloadedFirst: downloadedFirst
+            downloadedSecond: downloadedSecond
+            manifestIntegrityMatches: manifestIntegrityMatches
+            artifactIntegrityMatches: artifactIntegrityMatches
+      input: {}
+      expected:
+        manifest1:
+          id: lcod://demo/catalog@1.0.0
+        manifest1Path: "./.tmp/registry-fetch/cache/manifests/demo/catalog/1.0.0/manifest.json"
+        manifest2Path: "./.tmp/registry-fetch/cache/manifests/demo/catalog/1.0.0/manifest.json"
+        artifact1Path: "./.tmp/registry-fetch/cache/artifacts/demo/catalog/1.0.0/catalog-1.0.0.bin"
+        artifact2Path: "./.tmp/registry-fetch/cache/artifacts/demo/catalog/1.0.0/catalog-1.0.0.bin"
+        downloadedFirst: true
+        downloadedSecond: false
+        manifestIntegrityMatches: true
+        artifactIntegrityMatches: true

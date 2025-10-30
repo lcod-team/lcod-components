@@ -37,3 +37,6 @@ schema = """
 
 [documentation]
 body = "Check whether a value is an array."
+
+[docs]
+readme = "README.md"

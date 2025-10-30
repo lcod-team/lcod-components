@@ -37,3 +37,6 @@ schema = """
 
 [documentation]
 body = "Extract a property from each object in an array."
+
+[docs]
+readme = "README.md"

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/resolution input",
+  "type": "object",
+  "required": ["projectPath"],
+  "properties": {
+    "projectPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "range": { "type": ["string", "null"] },
+          "registryId": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

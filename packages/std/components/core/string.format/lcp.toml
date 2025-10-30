@@ -69,3 +69,6 @@ schema = """
 body = """
 Wrapper around the `core/string/format@1` contract that renders template strings
 using named placeholders."""
+
+[docs]
+readme = "README.md"

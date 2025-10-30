@@ -29,3 +29,6 @@ schema = """
 
 [documentation]
 body = "Remove null and undefined entries from an array."
+
+[docs]
+readme = "README.md"

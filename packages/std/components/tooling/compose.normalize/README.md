@@ -1,0 +1,83 @@
+<!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
+# lcod://tooling/compose/normalize@0.1.0
+
+Normalize sugar syntax in compose definitions before execution.
+
+## Notes
+
+Expands author-friendly shortcuts (“sugar”) into the canonical compose shape consumed by LCOD kernels.
+
+## Behaviour Overview
+
+| Concern | Purpose |
+| --- | --- |
+| Identity & optional keys | Collapse `foo: $.foo`/`foo: foo` boilerplate and allow opt-in omission via `key?`. |
+| Spreads | Merge whole objects with `...` shorthands instead of enumerating keys. |
+| Children | Normalize slot collections so every branch is handled consistently. |
+
+The component accepts an object with a `compose` array and returns the normalized version. Kernels call it before executing any flow so that reviewers see the short form, while runtimes always deal with the fully expanded structure.
+
+### Example
+
+Input (author-friendly sugar):
+
+```yaml
+compose:
+  - call: lcod://impl/echo@1
+    in:
+      '...': $.payload
+      'configPath?': =
+      value: =
+    out:
+      result: =
+```
+
+Output (canonical form consumed by kernels):
+
+```yaml
+compose:
+  - call: lcod://impl/echo@1
+    in:
+      __lcod_spreads__:
+        - source: '$.payload'
+      configPath:
+        __lcod_optional__: true
+        value: '$.configPath'
+      value: '$.value'
+    out:
+      result: result
+```
+
+## Supported Sugar Rules
+
+1. **Identity mappings** – `foo: '='` ⇢ `foo: '$.foo'`, `bar: '='` ⇢ `bar: 'bar'`.
+2. **Optional keys** – append `?` (`configPath?: '='`) to skip mappings when the referenced path is absent.
+3. **Spreads** – use `...` to merge objects: `...: $.payload`, `...lock: '='`, or pass descriptors (`...: { source: $.payload, pick: ['path','data'] }`).
+4. **Slots** – ensure every slot appears under `slots: { name: [...] }`. Legacy `children` shorthands are still expanded for backwards compatibility but should be avoided in new comps.
+5. **Nested structures** – sugar only applies at the top-level, ensuring inner objects/arrays remain untouched.
+
+The component emits reserved markers to describe these constructs in canonical form:
+
+- `__lcod_spreads__`: array of descriptors `{ source, optional?, pick? }`.
+- `__lcod_optional__`: wraps values that should be omitted when unresolved.
+
+These behaviours mirror the helpers that previously lived in each kernel, keeping the ecosystem consistent.
+
+## Implementation Notes
+
+- The component is implemented via `lcod://tooling/script@1`, so kernels can execute it directly.
+- No external imports are required; a simple deep-clone helper preserves plain JSON objects.
+
+## Runtime Integration
+
+- `lcod-kernel-js` and `lcod-kernel-rs` invoke this component before executing any compose (CLI included).
+- `LCOD_SPEC_PATH` permet de pointer vers une spec alternative ; sinon, les kernels retombent sur le repo adjacent.
+- If execution fails, kernels still keep a legacy normalizer to stay functional.
+
+## Roadmap
+
+- Optional defaults (e.g. `foo?: value('fallback')`) to combine omission with explicit fallback values.
+- Output spreads (e.g. `...: $slot.error`) to simplify error handlers and similar pass-through slots.
+- Slot metadata helpers around `collectPath` to declutter complex flows.
+
+The shared component keeps these improvements aligned across documentation, fixtures, and runtimes while authors continue to write in the concise format.

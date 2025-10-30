@@ -2,12 +2,12 @@ schemaVersion = "2.0"
 id = "lcod://tooling/fs/write_if_changed@0.1.0"
 version = "0.1.0"
 kind = "component"
-summary = "Write a file only when the content differs."
+summary = "Write text to a file only when the contents change."
 
 [palette]
 category = "Filesystem"
-icon = "mdi:file-replace"
-tags = [ "fs", "io" ]
+icon = "mdi:file-document-edit"
+tags = [ "filesystem", "write" ]
 
 [deps]
 requires = [ "lcod://contract/tooling/fs/write_if_changed@1" ]
@@ -17,19 +17,17 @@ summary = "Destination file path."
 required = true
 schema = """
 {
-  "type": "string"
+  "type": "string",
+  "minLength": 1
 }"""
 
 [inputs.content]
-summary = "Content written to the file (coerced to string)."
+summary = "Content to write."
 required = false
-schema = """
-{
-  "type": "string"
-}"""
+schema = "{}"
 
 [inputs.encoding]
-summary = "Encoding used when reading existing content (defaults to utf-8)."
+summary = "Text encoding used to read and write (defaults to \"utf-8\")."
 required = false
 schema = """
 {
@@ -37,11 +35,17 @@ schema = """
 }"""
 
 [outputs.changed]
-summary = "True when the file was rewritten."
+summary = "True when the file was written because the content changed."
 schema = """
 {
   "type": "boolean"
 }"""
 
 [documentation]
-body = "Write a file only when the content differs."
+body = """
+Normalises the provided content to a string, compares it with the current file
+contents (using the requested encoding) and writes the file only when the data
+changes. The component reports whether the file was modified."""
+
+[docs]
+readme = "README.md"

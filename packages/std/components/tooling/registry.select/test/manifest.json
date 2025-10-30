@@ -1,0 +1,4 @@
+[
+  { "name": "registry.select.basic", "compose": "tooling/registry/select/test/select.basic.yaml" },
+  { "name": "registry.select.range", "compose": "tooling/registry/select/test/select.range.yaml" }
+]

@@ -1,0 +1,3 @@
+[
+  { "name": "registry.fetch.local-cache", "compose": "tooling/registry/fetch/test/fetch.local.yaml" }
+]

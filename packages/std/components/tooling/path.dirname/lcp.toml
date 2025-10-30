@@ -10,7 +10,7 @@ icon = "mdi:folder-arrow-left"
 tags = [ "path", "dirname" ]
 
 [deps]
-requires = [ "lcod://tooling/path/join_chain@0.1.0" ]
+requires = [ "lcod://tooling/script@1" ]
 
 [inputs.path]
 summary = "Target path."
@@ -31,3 +31,6 @@ schema = """
 body = """
 Return the parent directory of a given path. This is a lightweight wrapper
 around `tooling/path/join_chain` that appends `..` to the provided path."""
+
+[docs]
+readme = "README.md"

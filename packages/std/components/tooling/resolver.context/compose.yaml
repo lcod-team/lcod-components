@@ -1,0 +1,92 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input }) => {
+          const normalizeObject = (value) => {
+            if (!value || typeof value !== 'object') return {};
+            const result = {};
+            for (const [key, val] of Object.entries(value)) {
+              if (val == null) continue;
+              if (typeof val === 'object') {
+                try {
+                  result[key] = JSON.parse(JSON.stringify(val));
+                } catch (_err) {
+                  result[key] = val;
+                }
+              } else {
+                result[key] = val;
+              }
+            }
+            return result;
+          };
+
+          const warnings = Array.isArray(input.warnings)
+            ? input.warnings.filter((msg) => typeof msg === 'string' && msg.length > 0)
+            : [];
+          if (Array.isArray(input.registryWarnings)) {
+            for (const message of input.registryWarnings) {
+              if (typeof message === 'string' && message.length > 0) {
+                warnings.push(message);
+              }
+            }
+          }
+
+          const fallbackCwd = typeof input.cwd === 'string' && input.cwd.length > 0
+            ? input.cwd
+            : (typeof process !== 'undefined' && process && typeof process.cwd === 'function'
+              ? process.cwd()
+              : '.');
+          const projectPath = typeof input.projectPath === 'string' && input.projectPath.length > 0
+            ? input.projectPath
+            : fallbackCwd;
+          const cacheRoot = typeof input.cacheRoot === 'string' && input.cacheRoot.length > 0
+            ? input.cacheRoot
+            : projectPath;
+
+          const normalizedConfig = input.normalizedConfig && typeof input.normalizedConfig === 'object'
+            ? input.normalizedConfig
+            : {};
+          const sources = normalizeObject(normalizedConfig.sources);
+          const replaceAlias = normalizeObject(normalizedConfig.replaceAlias);
+          const replaceSpecRaw = normalizedConfig.replaceSpec && typeof normalizedConfig.replaceSpec === 'object'
+            ? normalizedConfig.replaceSpec
+            : {};
+          const replaceSpec = {};
+          for (const [key, value] of Object.entries(replaceSpecRaw)) {
+            if (!value || typeof value !== 'object') continue;
+            try {
+              replaceSpec[key] = JSON.parse(JSON.stringify(value));
+            } catch (_err) {
+              replaceSpec[key] = value;
+            }
+          }
+
+          const allowlist = Array.isArray(normalizedConfig.allowlist)
+            ? normalizedConfig.allowlist.filter((item) => typeof item === 'string' && item.length > 0)
+            : null;
+
+          return {
+            projectPath,
+            cacheRoot,
+            sources,
+            replaceAlias,
+            replaceSpec,
+            allowlist,
+            warnings
+          };
+        }
+      input:
+        projectPath: $.projectPath
+        cacheRoot: $.cacheRoot
+        normalizedConfig: $.normalizedConfig
+        warnings: $.warnings
+        registryWarnings: $.registryWarnings
+    out:
+      projectPath: =
+      cacheRoot: =
+      sources: =
+      replaceAlias: =
+      replaceSpec: =
+      allowlist: =
+      warnings: =

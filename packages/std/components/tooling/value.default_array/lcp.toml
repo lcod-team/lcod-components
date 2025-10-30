@@ -40,3 +40,6 @@ schema = """
 body = """
 Return the provided value when it is an array; otherwise fall back to the
 supplied default (or an empty array)."""
+
+[docs]
+readme = "README.md"

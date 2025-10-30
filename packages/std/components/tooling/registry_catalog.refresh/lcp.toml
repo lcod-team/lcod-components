@@ -78,3 +78,6 @@ schema = """
 
 [documentation]
 body = "Collect and validate registry data, ready to publish artefacts."
+
+[docs]
+readme = "README.md"

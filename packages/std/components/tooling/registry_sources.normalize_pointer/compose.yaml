@@ -35,6 +35,11 @@ compose:
             commit: (await ensureString(inherited?.commit)) || null
           };
 
+          const catalogueBaseDir = (await ensureString(entry.catalogueBaseDir)) || (await ensureString(state.catalogueBaseDir)) || null;
+          if (catalogueBaseDir) {
+            pointer.catalogueBaseDir = catalogueBaseDir;
+          }
+
           const mergedEntrypoint = {
             ...defaultEntrypoint,
             ...(inherited?.entrypoint || {}),
@@ -116,6 +121,7 @@ compose:
         sourcesBaseDir: $.sourcesBaseDir
         defaultEntrypoint: $.defaultEntrypoint
         basePriority: $.basePriority
+        catalogueBaseDir: $.catalogueBaseDir
       imports:
         isStringNonEmpty: lcod://tooling/value/is_string_nonempty@0.1.0
     out:

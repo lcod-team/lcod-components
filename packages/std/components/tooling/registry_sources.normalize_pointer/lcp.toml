@@ -82,3 +82,6 @@ body = """
 Merge the defaults defined in sources.json (priority, entrypoint overrides) with a pointer entry to produce a normalized catalogue pointer.
 
 The component applies inheritance rules, resolves the base directory, and validates that required properties are present. Invalid entries return null together with warning messages."""
+
+[docs]
+readme = "README.md"

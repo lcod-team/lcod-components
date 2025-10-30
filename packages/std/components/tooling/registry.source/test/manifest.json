@@ -1,0 +1,4 @@
+[
+  { "name": "registry.source.path", "compose": "tooling/registry/source/test/source.path.yaml" },
+  { "name": "registry.source.inline", "compose": "tooling/registry/source/test/source.inline.yaml" }
+]

@@ -62,3 +62,6 @@ schema = """
 body = """
 Wrapper over the `core/object/merge@1` contract that merges two objects while
 keeping the inputs immutable."""
+
+[docs]
+readme = "README.md"

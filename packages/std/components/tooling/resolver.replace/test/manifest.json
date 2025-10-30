@@ -1,0 +1,4 @@
+[
+  { "name": "resolver.replace.apply.basic", "compose": "tooling/resolver/replace/test/replace.basic.yaml" },
+  { "name": "resolver.replace.apply.cycle", "compose": "tooling/resolver/replace/test/replace.cycle.yaml" }
+]

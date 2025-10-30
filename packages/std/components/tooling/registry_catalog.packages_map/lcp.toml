@@ -29,3 +29,6 @@ schema = """
 
 [documentation]
 body = "Build the registry packages map from package metadata."
+
+[docs]
+readme = "README.md"

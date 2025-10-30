@@ -6,16 +6,24 @@ summary = "Traverse the catalogue pointer queue breadth-first and emit inline co
 
 [deps]
 requires = [
+  "lcod://tooling/queue/bfs@0.1.0",
+  "lcod://flow/foreach@1",
   "lcod://flow/if@1",
+  "lcod://impl/set@1",
   "lcod://tooling/array/append@0.1.0",
-  "lcod://tooling/array/length@0.1.0",
-  "lcod://tooling/array/shift@0.1.0",
   "lcod://tooling/value/default_array@0.1.0",
+  "lcod://tooling/value/default_object@0.1.0",
+  "lcod://tooling/value/is_object@0.1.0",
+  "lcod://tooling/value/is_string_nonempty@0.1.0",
+  "lcod://tooling/hash/to_key@0.1.0",
+  "lcod://tooling/json/stable_stringify@0.1.0",
+  "lcod://tooling/object/has@0.1.0",
+  "lcod://tooling/object/set@0.1.0",
+  "lcod://tooling/registry_sources/build_inline_entry@0.1.0",
   "lcod://tooling/registry_sources/normalize_pointer@0.1.0",
   "lcod://tooling/registry_sources/partition_normalized@0.1.0",
   "lcod://tooling/registry_sources/process_pointer@0.1.0",
-  "lcod://tooling/registry_sources/build_inline_entry@0.1.0",
-  "lcod://impl/set@1"
+  "lcod://core/string/format@0.1.0"
 ]
 
 [inputs.queue]
@@ -68,3 +76,6 @@ schema = """
 {
   "type": "array"
 }"""
+
+[docs]
+readme = "README.md"

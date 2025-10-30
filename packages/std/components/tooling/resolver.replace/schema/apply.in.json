@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/resolver/replace/apply input",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "replaceAlias": { "type": "object" },
+    "replaceSpec": { "type": "object" }
+  },
+  "additionalProperties": false
+}

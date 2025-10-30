@@ -1,0 +1,167 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state, imports }) => {
+          const make = () => Object.create(null);
+          const problems = [];
+
+          const rootPath = typeof state.rootPath === 'string' && state.rootPath.length > 0
+            ? state.rootPath
+            : '.';
+          const catalogPath = typeof state.catalogPath === 'string' && state.catalogPath.length > 0
+            ? state.catalogPath
+            : 'catalog.json';
+
+          const resolvePath = async (segment) => {
+            const joined = await imports.pathJoin({ base: rootPath, segment });
+            return joined?.path ?? segment;
+          };
+
+          const readJsonFile = async (segment) => {
+            const targetPath = await resolvePath(segment);
+            try {
+              const { data } = await imports.fsReadFile({ path: targetPath, encoding: 'utf-8' });
+              return { path: targetPath, value: JSON.parse(data) };
+            } catch (err) {
+              throw new Error(`registry catalog: failed to read ${targetPath}: ${err.message}`);
+            }
+          };
+
+          const { value: catalog } = await readJsonFile(catalogPath);
+
+          const registries = Array.isArray(catalog.registries)
+            ? catalog.registries.filter((entry) => entry && typeof entry.id === 'string' && entry.id.length > 0)
+            : [];
+          const namespaces = catalog.namespaces && typeof catalog.namespaces === 'object'
+            ? catalog.namespaces
+            : {};
+          const packagesConfig = Array.isArray(catalog.packages)
+            ? catalog.packages.filter((entry) => entry && typeof entry.id === 'string' && entry.id.length > 0)
+            : [];
+
+          const lines = [];
+          for (const registry of registries) {
+            const line = make();
+            line.kind = 'registry';
+            line.id = registry.id;
+            line.type = typeof registry.type === 'string' && registry.type.length > 0
+              ? registry.type
+              : 'git';
+            line.url = typeof registry.url === 'string' && registry.url.length > 0
+              ? registry.url
+              : null;
+            if (!line.url) {
+              problems.push(`registry ${registry.id}: missing url`);
+            }
+            if (Number.isFinite(registry.priority)) {
+              line.priority = Math.trunc(registry.priority);
+            }
+            lines.push(line);
+          }
+
+          const packagesMap = make();
+          const packageDetails = [];
+
+          for (const pkg of packagesConfig) {
+            const id = pkg.id;
+            const registryId = typeof pkg.registryId === 'string' && pkg.registryId.length > 0
+              ? pkg.registryId
+              : null;
+            if (!registryId) {
+              problems.push(`package ${id}: missing registryId`);
+              continue;
+            }
+            const versionsPath = typeof pkg.versionsPath === 'string' && pkg.versionsPath.length > 0
+              ? pkg.versionsPath
+              : null;
+            if (!versionsPath) {
+              problems.push(`package ${id}: missing versionsPath`);
+              continue;
+            }
+            packagesMap[id] = { registry: registryId };
+
+            let versions;
+            try {
+              ({ value: versions } = await readJsonFile(versionsPath));
+            } catch (err) {
+              problems.push(err.message);
+              continue;
+            }
+
+            const versionEntries = Array.isArray(versions?.versions)
+              ? versions.versions.filter((entry) => entry && typeof entry.version === 'string')
+              : [];
+
+            const detail = make();
+            detail.id = id;
+            detail.versions = [];
+
+            for (const entry of versionEntries) {
+              const manifest = typeof entry.manifest === 'string' && entry.manifest.length > 0
+                ? entry.manifest
+                : null;
+              if (!manifest) {
+                problems.push(`package ${id}@${entry.version}: missing manifest path`);
+                continue;
+              }
+
+              const line = make();
+              line.kind = 'component';
+              line.id = id;
+              line.version = entry.version;
+              line.manifest = manifest;
+              line.registryId = typeof entry.registryId === 'string' && entry.registryId.length > 0
+                ? entry.registryId
+                : registryId;
+              if (typeof entry.sha256 === 'string' && entry.sha256.length > 0) {
+                line.sha256 = entry.sha256;
+              }
+              const basePriority = Number.isFinite(pkg.priority) ? Math.trunc(pkg.priority) : undefined;
+              const overridePriority = Number.isFinite(entry.priority) ? Math.trunc(entry.priority) : undefined;
+              if (overridePriority !== undefined) {
+                line.priority = overridePriority;
+              } else if (basePriority !== undefined) {
+                line.priority = basePriority;
+              }
+
+              lines.push(line);
+              const versionDetail = make();
+              versionDetail.version = entry.version;
+              versionDetail.manifest = manifest;
+              versionDetail.registryId = line.registryId;
+              versionDetail.priority = line.priority ?? null;
+              detail.versions.push(versionDetail);
+            }
+
+            packageDetails.push(detail);
+          }
+
+          const packagesJsonl = lines.map((line) => JSON.stringify(line)).join('\n') + '\n';
+
+          const registryJson = make();
+          registryJson.schema = typeof catalog.schema === 'string' && catalog.schema.length > 0
+            ? catalog.schema
+            : 'lcod-registry@1';
+          registryJson.registries = registries;
+          registryJson.namespaces = namespaces;
+          registryJson.packages = packagesMap;
+
+          return {
+            packagesJsonl,
+            registryJson,
+            packages: packageDetails,
+            warnings: problems
+          };
+        }
+      input:
+        rootPath: $.rootPath
+        catalogPath: $.catalogPath
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+        fsReadFile: lcod://axiom/fs/read-file@1
+    out:
+      packagesJsonl: packagesJsonl
+      registryJson: registryJson
+      packages: packages
+      warnings: warnings

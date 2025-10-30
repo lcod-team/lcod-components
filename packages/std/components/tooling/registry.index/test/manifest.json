@@ -1,0 +1,4 @@
+[
+  { "name": "registry.index.basic", "compose": "tooling/registry/index/test/index.basic.yaml" },
+  { "name": "registry.index.invalid", "compose": "tooling/registry/index/test/index.invalid.yaml" }
+]

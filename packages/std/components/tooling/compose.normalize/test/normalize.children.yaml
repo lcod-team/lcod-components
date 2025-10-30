@@ -1,0 +1,29 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      composeRef:
+        path: ../../compose/normalize/compose.yaml
+      input:
+        compose:
+          - call: lcod://flow/if@1
+            in:
+              cond: "="
+            children:
+              then:
+                - call: lcod://impl/echo@1
+                  in:
+                    value: "="
+                  out:
+                    result: "="
+      expected:
+        compose:
+          - call: lcod://flow/if@1
+            in:
+              cond: "$.cond"
+            children:
+              then:
+                - call: lcod://impl/echo@1
+                  in:
+                    value: "$.value"
+                  out:
+                    result: "result"

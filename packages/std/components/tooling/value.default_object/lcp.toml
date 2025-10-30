@@ -40,3 +40,6 @@ schema = """
 body = """
 Return the provided value when it is a non-null object; otherwise fall back to
 the supplied default (or an empty object)."""
+
+[docs]
+readme = "README.md"

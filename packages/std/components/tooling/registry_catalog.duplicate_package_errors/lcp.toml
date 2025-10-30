@@ -29,3 +29,6 @@ schema = """
 
 [documentation]
 body = "Produce error messages for duplicate package identifiers."
+
+[docs]
+readme = "README.md"

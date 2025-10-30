@@ -31,3 +31,6 @@ schema = """
 body = """
 Detect whether a path is absolute. Supports Unix-style absolute paths and
 Windows drive-prefixed paths."""
+
+[docs]
+readme = "README.md"

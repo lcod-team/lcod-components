@@ -1,0 +1,154 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const clone = (value) => JSON.parse(JSON.stringify(value ?? null));
+
+          const sources = Array.isArray(state.sources) ? state.sources : [];
+          const registries = [];
+          const registrySeen = new Map();
+          const entries = [];
+          const packages = new Map();
+          const errors = [];
+
+          let globalOrder = 0;
+
+          const normalizePriority = (value, fallback) => {
+            if (Number.isFinite(value)) return Math.trunc(value);
+            if (typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value))) {
+              return Math.trunc(Number(value));
+            }
+            return fallback;
+          };
+
+          const pushRegistry = (registryId, data, priority, raw) => {
+            if (!registryId || typeof registryId !== 'string') return;
+            if (registrySeen.has(registryId)) return;
+            const record = {
+              id: registryId,
+              priority,
+              ...data,
+              raw
+            };
+            registries.push(record);
+            registrySeen.set(registryId, record);
+          };
+
+          const pushComponent = (line, source, priority) => {
+            const id = typeof line.id === 'string' ? line.id : null;
+            const version = typeof line.version === 'string' ? line.version : null;
+            const manifest = typeof line.manifest === 'string' ? line.manifest : null;
+            if (!id || !version || !manifest) return;
+
+            const entry = {
+              id,
+              version,
+              manifest,
+              registryId: source.registryId,
+              priority,
+              order: globalOrder++,
+              raw: clone(line)
+            };
+
+            if (typeof line.sha256 === 'string') {
+              entry.sha256 = line.sha256;
+            }
+            if (line.artifact && typeof line.artifact === 'object') {
+              entry.artifact = clone(line.artifact);
+            }
+
+            entries.push(entry);
+
+            if (!packages.has(id)) {
+              packages.set(id, []);
+            }
+            packages.get(id).push(entry);
+          };
+
+          const parseJsonl = (content, sourceId, acc) => {
+            if (typeof content !== 'string') return;
+            const lines = content.split(/\r?\n/u);
+            for (let i = 0; i < lines.length; i += 1) {
+              const rawLine = lines[i];
+              if (!rawLine || rawLine.trim().length === 0) continue;
+              try {
+                const parsed = JSON.parse(rawLine);
+                acc.push(parsed);
+              } catch (_err) {
+                errors.push(`registry "${sourceId}" line ${i + 1}: invalid JSON`);
+              }
+            }
+          };
+
+          const cmpEntries = (a, b) => {
+            if (a.priority !== b.priority) return a.priority - b.priority;
+            if (a.order !== b.order) return a.order - b.order;
+            return a.version === b.version ? 0 : (a.version > b.version ? -1 : 1);
+          };
+
+          for (const source of sources) {
+            if (!source || typeof source.registryId !== 'string' || !source.registryId) {
+              continue;
+            }
+            const rawPriority = normalizePriority(source.priority, 100);
+            const defaults = source.defaults && typeof source.defaults === 'object'
+              ? clone(source.defaults)
+              : {};
+            const lines = [];
+
+            parseJsonl(source.jsonl, source.registryId, lines);
+
+            if (Array.isArray(source.lines)) {
+              for (const line of source.lines) {
+                if (line && typeof line === 'object') {
+                  lines.push(clone(line));
+                }
+              }
+            }
+
+            for (const line of lines) {
+              if (!line || typeof line.kind !== 'string') continue;
+              const kind = line.kind;
+              const entryPriority = normalizePriority(line.priority, rawPriority);
+              if (kind === 'registry') {
+                const registryId = typeof line.id === 'string' && line.id ? line.id : source.registryId;
+                const registryData = {
+                  ...defaults,
+                  ...clone(line)
+                };
+                delete registryData.kind;
+                delete registryData.id;
+                delete registryData.priority;
+                pushRegistry(registryId, registryData, entryPriority, clone(line));
+              } else if (kind === 'component') {
+                pushComponent(line, { registryId: source.registryId }, entryPriority);
+              }
+            }
+          }
+
+          registries.sort((a, b) => {
+            if (a.priority !== b.priority) return a.priority - b.priority;
+            return a.id.localeCompare(b.id);
+          });
+
+          const packagesResult = {};
+          for (const [id, list] of packages.entries()) {
+            list.sort(cmpEntries);
+            packagesResult[id] = list;
+          }
+
+          return {
+            registries,
+            entries,
+            packages: packagesResult,
+            errors
+          };
+        }
+      input:
+        sources: $.sources
+    out:
+      registries: registries
+      entries: entries
+      packages: packages
+      errors: errors

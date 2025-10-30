@@ -1,0 +1,112 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/make_package_doc@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Generate a package README and (optionally) refresh component artefacts from workspace metadata."
+
+[deps]
+requires = [
+  "lcod://tooling/value/default_object@0.1.0",
+  "lcod://tooling/value/default_array@0.1.0",
+  "lcod://tooling/component/build_artifacts@0.1.0",
+  "lcod://contract/core/fs/read_file@1",
+  "lcod://contract/core/fs/write_file@1",
+  "lcod://contract/core/fs/list_dir@1",
+  "lcod://contract/core/parse/toml@1",
+  "lcod://tooling/script@1",
+  "lcod://flow/foreach@1",
+  "lcod://flow/if@1",
+  "lcod://impl/set@1"
+]
+
+[inputs.packageDescriptorPath]
+summary = "Path to the package descriptor (packages/<name>/lcp.toml)."
+required = true
+schema = """
+{
+  "type": "string",
+  "minLength": 1
+}"""
+
+[inputs.componentsDir]
+summary = "Override the directory holding component descriptors (defaults to <package>/components)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.readmePath]
+summary = "Override the package README destination (defaults to <package>/README.md)."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.write]
+summary = "When true (default), write the package README to disk."
+required = false
+schema = """
+{
+  "type": "boolean",
+  "default": true
+}"""
+
+[inputs.generateComponentDocs]
+summary = "Regenerate component artefacts while scanning the package (defaults to true)."
+required = false
+schema = """
+{
+  "type": "boolean",
+  "default": true
+}"""
+
+[outputs.descriptor]
+summary = "Parsed package descriptor."
+schema = """
+{
+  "type": "object"
+}"""
+
+[outputs.components]
+summary = "Metadata collected for each component in the package."
+schema = """
+{
+  "type": "array",
+  "items": {
+    "type": "object"
+  }
+}"""
+
+[outputs.readme]
+summary = "Generated package README."
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.readmePath]
+summary = "Resolved package README destination."
+schema = """
+{
+  "type": "string"
+}"""
+
+[documentation]
+body = """
+Produces a deterministic README for a workspace package by scanning the sibling
+`components/` directory, summarising every descriptor, and (optionally)
+invoking `make_component_doc` to refresh individual artefacts. The compose can
+be run locally or from CI with:
+
+```
+lcod-run lcod://tooling/make_package_doc@0.1.0 --input '{ "packageDescriptorPath": ".../packages/foo/lcp.toml" }'
+```
+
+Set `generateComponentDocs = false` to only emit the aggregate README without
+touching individual component files.
+"""
+
+[docs]
+readme = "README.md"

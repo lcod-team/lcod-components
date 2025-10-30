@@ -1,0 +1,27 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/resolver/replace/apply@0.1.0"
+version = "0.1.0"
+kind = "function"
+summary = "Compute the final component id after applying resolver replacement rules."
+
+[deps]
+requires = [ "lcod://tooling/script@1" ]
+
+[tool]
+name = "Resolver Replace Apply"
+description = "Traverses alias/spec replacement maps to determine the effective component id and optional override spec, reporting cycles as warnings."
+inputSchema = "schema/apply.in.json"
+outputSchema = "schema/apply.out.json"
+
+[documentation]
+body = """
+Utility component that resolves the effective component identifier according to the resolver configuration:
+
+- walks the `replaceAlias` map until it finds a terminal id or encounters a cycle;
+- if a specific override is present in `replaceSpec`, returns it alongside the resolved id;
+- reports misconfigurations (missing id, alias cycles) through the accumulated warnings.
+
+This helper keeps the replacement logic reusable across resolver flows and easy to unit test."""
+
+[docs]
+readme = "README.md"

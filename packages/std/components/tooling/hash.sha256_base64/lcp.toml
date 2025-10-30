@@ -41,3 +41,6 @@ schema = """
 body = """
 Compute a SHA-256 checksum for a UTF-8 string and expose both the hexadecimal
 and base64 representations."""
+
+[docs]
+readme = "README.md"

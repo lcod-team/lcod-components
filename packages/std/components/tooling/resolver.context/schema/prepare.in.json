@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/resolver/context/prepare input",
+  "type": "object",
+  "properties": {
+    "projectPath": { "type": "string", "minLength": 1 },
+    "cacheRoot": { "type": "string", "minLength": 1 },
+    "normalizedConfig": { "type": "object" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "registryWarnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

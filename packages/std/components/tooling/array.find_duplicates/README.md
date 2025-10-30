@@ -9,14 +9,15 @@ Return duplicated string values present in an array.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `items` | array | No | Array inspected for duplicate string values. |
+| `items` | array | No | Array to inspect. |
 
 ## Outputs
 
 | Name | Type | Description |
 | --- | --- | --- |
-| `duplicates` | array | Unique list of duplicated strings. |
+| `duplicates` | array<string> | Array of duplicated string values. |
 
 ## Notes
 
-Return duplicated string values present in an array.
+Scans the provided array and returns the set of string values that appear more
+than once. Non-string entries are ignored.

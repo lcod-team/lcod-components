@@ -1,0 +1,32 @@
+resolverVersion = "0.1.0"
+schemaVersion = "1.0"
+
+[[components]]
+id = "lcod://tooling/resolver/register_components@0.1.0"
+integrity = "sha256-081fc48f9022f0efe418433cceb5caffe6001b6b381b34a9b9bd71f0f6f9b96a"
+resolved = "lcod://tooling/resolver/register_components@0.1.0"
+
+[[components.dependencies]]
+id = "lcod://tooling/script@1"
+
+[components.dependencies.source]
+reference = "lcod://tooling/script@1"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://axiom/path/join@1"
+
+[components.dependencies.source]
+reference = "lcod://axiom/path/join@1"
+type = "registry"
+
+[[components.dependencies]]
+id = "lcod://tooling/resolver/register@1"
+
+[components.dependencies.source]
+reference = "lcod://tooling/resolver/register@1"
+type = "registry"
+
+[components.source]
+path = "."
+type = "path"

@@ -1,0 +1,5 @@
+[
+  { "name": "normalize.basic", "compose": "tooling/compose/normalize/test/normalize.basic.yaml" },
+  { "name": "normalize.children", "compose": "tooling/compose/normalize/test/normalize.children.yaml" },
+  { "name": "normalize.spread", "compose": "tooling/compose/normalize/test/normalize.spread.yaml" }
+]

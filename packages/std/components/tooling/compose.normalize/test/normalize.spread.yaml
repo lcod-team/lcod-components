@@ -1,0 +1,28 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      composeRef:
+        path: ../../compose/normalize/compose.yaml
+      input:
+        compose:
+          - call: lcod://impl/echo@1
+            in:
+              ...: $.payload
+              ...lock: "="
+              configPath?: "="
+              required: "="
+            out:
+              result: "="
+      expected:
+        compose:
+          - call: lcod://impl/echo@1
+            in:
+              __lcod_spreads__:
+                - source: "$.payload"
+                - source: "$.lock"
+              configPath:
+                __lcod_optional__: true
+                value: "$.configPath"
+              required: "$.required"
+            out:
+              result: "result"

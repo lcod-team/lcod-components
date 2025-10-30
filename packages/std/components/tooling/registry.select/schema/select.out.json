@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/select output",
+  "type": "object",
+  "required": ["entry"],
+  "properties": {
+    "entry": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "object" }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

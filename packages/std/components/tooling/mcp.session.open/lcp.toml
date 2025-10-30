@@ -67,3 +67,6 @@ schema = """
 {
   "type": "string"
 }"""
+
+[docs]
+readme = "README.md"

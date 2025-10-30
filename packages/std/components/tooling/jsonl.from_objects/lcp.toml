@@ -29,3 +29,6 @@ schema = """
 
 [documentation]
 body = "Convert an array of objects into JSON Lines text."
+
+[docs]
+readme = "README.md"

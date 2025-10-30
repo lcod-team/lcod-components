@@ -63,3 +63,6 @@ schema = """
 
 [documentation]
 body = "Serialize a value into JSON text using the standard JSON encode primitive."
+
+[docs]
+readme = "README.md"

@@ -57,3 +57,6 @@ schema = """
 
 [documentation]
 body = "Normalise the top-level catalog document."
+
+[docs]
+readme = "README.md"

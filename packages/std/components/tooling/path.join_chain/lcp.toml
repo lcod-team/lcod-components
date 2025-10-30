@@ -2,18 +2,18 @@ schemaVersion = "2.0"
 id = "lcod://tooling/path/join_chain@0.1.0"
 version = "0.1.0"
 kind = "component"
-summary = "Join a base path with a sequence of segments using path axioms."
+summary = "Join path segments sequentially starting from an optional base."
 
 [palette]
 category = "Filesystem"
-icon = "mdi:vector-polyline"
-tags = [ "path", "join" ]
+icon = "mdi:folder"
+tags = [ "path", "filesystem" ]
 
 [deps]
 requires = [ "lcod://contract/tooling/path/join_chain@1" ]
 
 [inputs.base]
-summary = "Base path (defaults to empty string)."
+summary = "Initial path segment."
 required = false
 schema = """
 {
@@ -21,7 +21,7 @@ schema = """
 }"""
 
 [inputs.segments]
-summary = "Ordered list of segments to append. Nullish entries are ignored."
+summary = "Segments to append in order."
 required = false
 schema = """
 {
@@ -29,7 +29,7 @@ schema = """
 }"""
 
 [outputs.path]
-summary = "Resulting joined path."
+summary = "Resolved path after applying all segments."
 schema = """
 {
   "type": "string"
@@ -37,5 +37,8 @@ schema = """
 
 [documentation]
 body = """
-Join a base path with an ordered list of segments. Null or empty segments are
-skipped, and intermediate joins delegate to the standard `path/join` axiom."""
+Combines an initial path with additional segments using the host platform's
+filesystem semantics. Nullish or empty segments are ignored."""
+
+[docs]
+readme = "README.md"

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/fetch output",
+  "type": "object",
+  "required": ["manifestPath", "manifest", "manifestIntegrity", "entry", "downloaded"],
+  "properties": {
+    "manifestPath": { "type": "string", "minLength": 1 },
+    "manifest": { "type": "object" },
+    "manifestIntegrity": { "type": "string", "minLength": 1 },
+    "artifactPath": { "type": "string" },
+    "artifactIntegrity": { "type": "string" },
+    "downloaded": { "type": "boolean" },
+    "entry": { "type": "object" }
+  },
+  "additionalProperties": true
+}

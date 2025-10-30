@@ -61,3 +61,6 @@ schema = """
 body = """
 Decode a JSON string and ensure the result is an object. When parsing fails or
 produces a non-object value, a fallback object is returned along with a warning."""
+
+[docs]
+readme = "README.md"

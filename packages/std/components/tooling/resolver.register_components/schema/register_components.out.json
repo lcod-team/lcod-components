@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/resolver/register_components output",
+  "type": "object",
+  "properties": {
+    "registered": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of components successfully registered."
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Warnings emitted while resolving or registering components."
+    }
+  },
+  "required": ["registered"],
+  "additionalProperties": false
+}

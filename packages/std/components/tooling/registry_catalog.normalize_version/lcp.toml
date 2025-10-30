@@ -74,3 +74,6 @@ schema = """
 
 [documentation]
 body = "Normalise a single package version entry."
+
+[docs]
+readme = "README.md"

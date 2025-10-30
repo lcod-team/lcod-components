@@ -1,0 +1,20 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/registry/source/load@0.1.0
+          in:
+            projectPath: ./tooling/registry/source/test/fixtures
+            sources:
+              - id: official
+                type: path
+                path: base
+      expected:
+        sources:
+          - registryId: official
+            jsonl: "{\"kind\":\"component\",\"id\":\"lcod://demo/catalog\",\"version\":\"1.0.0\",\"manifest\":\"packages/demo/catalog/1.0.0/manifest.json\"}\n"
+            defaults:
+              id: official
+              type: http
+              url: https://registry.example.com
+        warnings: []

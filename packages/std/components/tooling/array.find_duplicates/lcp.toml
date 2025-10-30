@@ -7,13 +7,13 @@ summary = "Return duplicated string values present in an array."
 [palette]
 category = "Array"
 icon = "mdi:alert-octagon-outline"
-tags = [ "array", "dedupe" ]
+tags = [ "array" ]
 
 [deps]
 requires = [ "lcod://contract/tooling/array/find_duplicates@1" ]
 
 [inputs.items]
-summary = "Array inspected for duplicate string values."
+summary = "Array to inspect."
 required = false
 schema = """
 {
@@ -21,11 +21,17 @@ schema = """
 }"""
 
 [outputs.duplicates]
-summary = "Unique list of duplicated strings."
+summary = "Array of duplicated string values."
 schema = """
 {
-  "type": "array"
+  "type": "array",
+  "items": { "type": "string" }
 }"""
 
 [documentation]
-body = "Return duplicated string values present in an array."
+body = """
+Scans the provided array and returns the set of string values that appear more
+than once. Non-string entries are ignored."""
+
+[docs]
+readme = "README.md"

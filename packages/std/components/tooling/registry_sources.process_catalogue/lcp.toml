@@ -65,3 +65,6 @@ schema = """
 
 [documentation]
 body = "Transform a parsed registry catalogue into inline component entries. The component infers defaults from the catalogue origin, applies priority rules, and returns the lines to inject into the accumulator used by the resolver."
+
+[docs]
+readme = "README.md"

@@ -1,0 +1,247 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input, imports }) => {
+          const entry = input.entry && typeof input.entry === 'object' ? input.entry : {};
+          const registryInput = input.registry && typeof input.registry === 'object' ? input.registry : {};
+          const cache = input.cache && typeof input.cache === 'object' ? input.cache : {};
+          const forceRefresh = input.forceRefresh === true;
+
+          const componentId = typeof entry.id === 'string' ? entry.id : null;
+          const version = typeof entry.version === 'string' ? entry.version : null;
+          const manifestRef = typeof entry.manifest === 'string' ? entry.manifest : null;
+          const registryId = typeof entry.registryId === 'string' ? entry.registryId : (typeof registryInput.id === 'string' ? registryInput.id : null);
+          const cacheRoot = typeof cache.root === 'string' && cache.root ? cache.root : null;
+
+          if (!componentId || !version || !manifestRef) {
+            throw new Error('entry.id, entry.version and entry.manifest are required');
+          }
+          if (!registryId) {
+            throw new Error('registry id is required (entry.registryId or registry.id)');
+          }
+          if (!cacheRoot) {
+            throw new Error('cache.root is required');
+          }
+
+          const manifestsDir = typeof cache.manifestsDir === 'string' && cache.manifestsDir ? cache.manifestsDir : 'manifests';
+          const artifactsDir = typeof cache.artifactsDir === 'string' && cache.artifactsDir ? cache.artifactsDir : 'artifacts';
+
+          const registry = {
+            id: registryId,
+            type: typeof registryInput.type === 'string' ? registryInput.type : undefined,
+            url: typeof registryInput.url === 'string' ? registryInput.url : undefined
+          };
+
+          const sanitizeSegments = (value) => {
+            if (!value || typeof value !== 'string') return [];
+            const trimmed = value.replace(/^lcod:\/\//, '').replace(/@.+$/u, '');
+            return trimmed.split('/').map(segment => segment.replace(/[^A-Za-z0-9._-]/g, '-')).filter(Boolean);
+          };
+
+          const joinPath = async (...segments) => {
+            if (!segments.length) return '';
+            let current = segments[0];
+            for (let i = 1; i < segments.length; i += 1) {
+              const next = await imports.pathJoin({ base: current, segment: segments[i] });
+              current = next?.path ?? current;
+            }
+            return current;
+          };
+
+          const normalizeIntegrity = (value) => {
+            if (typeof value !== 'string' || !value) return null;
+            const trimmed = value.trim();
+            if (!trimmed) return null;
+            return trimmed.startsWith('sha256-') ? trimmed.toLowerCase() : `sha256-${trimmed.toLowerCase()}`;
+          };
+
+          const computeIntegrity = async (data, encoding) => {
+            const res = await imports.hash({ data, encoding });
+            return res && typeof res.hex === 'string' ? `sha256-${res.hex}` : null;
+          };
+
+          const isHttp = (value) => typeof value === 'string' && /^https?:\/\//iu.test(value);
+          const isFileUrl = (value) => typeof value === 'string' && value.startsWith('file://');
+
+          const resolveManifestLocation = async (ref) => {
+            if (!ref) return ref;
+            if (isHttp(ref) || isFileUrl(ref) || ref.startsWith('/')) return ref;
+            if (registry.url && isHttp(registry.url)) {
+              const base = registry.url.endsWith('/') ? registry.url : `${registry.url}/`;
+              return new URL(ref, base).toString();
+            }
+            if (registry.url && isFileUrl(registry.url)) {
+              const basePath = registry.url.slice('file://'.length);
+              return joinPath(basePath, ref);
+            }
+            if (registry.url && registry.url.startsWith('/')) {
+              return joinPath(registry.url, ref);
+            }
+            return ref;
+          };
+
+          const resolveFilePath = async (location) => {
+            if (isFileUrl(location)) return location.slice('file://'.length);
+            return location;
+          };
+
+          const componentSegments = sanitizeSegments(componentId);
+          const manifestDir = await joinPath(cacheRoot, manifestsDir, ...componentSegments, version);
+          const manifestPath = await joinPath(manifestDir, 'manifest.json');
+
+          const expectedManifestIntegrity = normalizeIntegrity(entry.sha256);
+          let manifestText = null;
+          let manifestIntegrity = null;
+          let manifestDownloaded = false;
+
+          if (!forceRefresh) {
+            try {
+              const cached = await imports.fsReadFile({ path: manifestPath, encoding: 'utf-8' });
+              manifestText = typeof cached?.data === 'string' ? cached.data : null;
+              if (manifestText != null) {
+                manifestIntegrity = await computeIntegrity(manifestText, 'utf-8');
+                if (expectedManifestIntegrity && manifestIntegrity !== expectedManifestIntegrity) {
+                  manifestText = null;
+                  manifestIntegrity = null;
+                }
+              }
+            } catch (_err) {
+              // cache miss
+            }
+          }
+
+          if (!manifestText) {
+            const manifestLocation = await resolveManifestLocation(manifestRef);
+            if (isHttp(manifestLocation)) {
+              await imports.httpDownload({ url: manifestLocation, path: manifestPath });
+              manifestDownloaded = true;
+              const fetched = await imports.fsReadFile({ path: manifestPath, encoding: 'utf-8' });
+              manifestText = typeof fetched?.data === 'string' ? fetched.data : null;
+            } else {
+              const sourcePath = await resolveFilePath(manifestLocation);
+              const source = await imports.fsReadFile({ path: sourcePath, encoding: 'utf-8' });
+              manifestText = typeof source?.data === 'string' ? source.data : null;
+              await imports.fsWriteFile({
+                path: manifestPath,
+                data: manifestText ?? '',
+                encoding: 'utf-8',
+                createParents: true
+              });
+              manifestDownloaded = true;
+            }
+
+            if (manifestText == null) {
+              throw new Error(`Failed to read manifest for ${componentId}@${version}`);
+            }
+            manifestIntegrity = await computeIntegrity(manifestText, 'utf-8');
+            if (expectedManifestIntegrity && manifestIntegrity !== expectedManifestIntegrity) {
+              throw new Error(`Manifest integrity mismatch for ${componentId}@${version}: expected ${expectedManifestIntegrity}, got ${manifestIntegrity}`);
+            }
+          }
+
+          if (!manifestIntegrity) {
+            manifestIntegrity = await computeIntegrity(manifestText, 'utf-8');
+          }
+
+          let manifestObject;
+          try {
+            manifestObject = JSON.parse(manifestText);
+          } catch (err) {
+            throw new Error(`Invalid manifest JSON for ${componentId}@${version}: ${err.message}`);
+          }
+
+          let artifactPath = undefined;
+          let artifactIntegrity = undefined;
+          let artifactDownloaded = false;
+
+          if (entry.artifact && typeof entry.artifact === 'object' && typeof entry.artifact.url === 'string') {
+            const artifact = entry.artifact;
+            const artifactSegments = sanitizeSegments(componentId);
+            const artifactDir = await joinPath(cacheRoot, artifactsDir, ...artifactSegments, version);
+
+            const artifactName = (() => {
+              if (typeof artifact.path === 'string' && artifact.path.trim()) {
+                const parts = artifact.path.split('/').filter(Boolean);
+                return parts[parts.length - 1];
+              }
+              const urlNoQuery = artifact.url.split('?')[0];
+              const parts = urlNoQuery.split('/').filter(Boolean);
+              return parts.length ? parts[parts.length - 1] : 'artifact.bin';
+            })();
+
+            artifactPath = await joinPath(artifactDir, artifactName);
+            const expectedArtifactIntegrity = normalizeIntegrity(artifact.sha256);
+
+            let artifactSatisfied = false;
+            if (!forceRefresh && expectedArtifactIntegrity) {
+              try {
+                const cached = await imports.fsReadFile({ path: artifactPath, encoding: 'base64' });
+                const integrity = await computeIntegrity(cached?.data ?? '', 'base64');
+                if (integrity === expectedArtifactIntegrity) {
+                  artifactIntegrity = integrity;
+                  artifactSatisfied = true;
+                }
+              } catch (_err) {
+                // cache miss
+              }
+            }
+
+            if (!artifactSatisfied) {
+              if (isHttp(artifact.url)) {
+                await imports.httpDownload({ url: artifact.url, path: artifactPath });
+                artifactDownloaded = true;
+              } else {
+                const sourcePath = await resolveFilePath(artifact.url);
+                const source = await imports.fsReadFile({ path: sourcePath, encoding: 'base64' });
+                await imports.fsWriteFile({
+                  path: artifactPath,
+                  data: source?.data ?? '',
+                  encoding: 'base64',
+                  createParents: true
+                });
+                artifactDownloaded = true;
+              }
+
+              const cached = await imports.fsReadFile({ path: artifactPath, encoding: 'base64' });
+              artifactIntegrity = await computeIntegrity(cached?.data ?? '', 'base64');
+              if (expectedArtifactIntegrity && artifactIntegrity !== expectedArtifactIntegrity) {
+                throw new Error(`Artifact integrity mismatch for ${componentId}@${version}: expected ${expectedArtifactIntegrity}, got ${artifactIntegrity}`);
+              }
+            }
+
+            if (!artifactIntegrity) {
+              const cached = await imports.fsReadFile({ path: artifactPath, encoding: 'base64' });
+              artifactIntegrity = await computeIntegrity(cached?.data ?? '', 'base64');
+            }
+          }
+
+          return {
+            manifestPath,
+            manifest: manifestObject,
+            manifestIntegrity,
+            artifactPath,
+            artifactIntegrity,
+            downloaded: manifestDownloaded || artifactDownloaded,
+            entry
+          };
+        }
+      input:
+        entry: $.entry
+        registry: $.registry
+        cache: $.cache
+        forceRefresh: $.forceRefresh
+      imports:
+        pathJoin: lcod://axiom/path/join@1
+        fsReadFile: lcod://axiom/fs/read-file@1
+        fsWriteFile: lcod://axiom/fs/write-file@1
+        httpDownload: lcod://axiom/http/download@1
+        hash: lcod://axiom/hash/sha256@1
+    out:
+      manifestPath: manifestPath
+      manifest: manifest
+      manifestIntegrity: manifestIntegrity
+      artifactPath: artifactPath
+      artifactIntegrity: artifactIntegrity
+      downloaded: downloaded
+      entry: entry

@@ -1,0 +1,45 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/resolver/context/prepare@0.1.0
+          in:
+            projectPath: /tmp/project
+            cacheRoot: /var/cache
+            normalizedConfig:
+              sources:
+                foo:
+                  type: path
+                  path: ./packages/foo
+              replaceAlias:
+                foo: bar
+              replaceSpec:
+                bar:
+                  type: path
+                  path: ./overrides/bar
+              allowlist:
+                - lcod://foo/*
+                - lcod://bar/baz
+            warnings:
+              - previous warning
+            registryWarnings:
+              - registry warning
+      expected:
+        projectPath: /tmp/project
+        cacheRoot: /var/cache
+        sources:
+          foo:
+            type: path
+            path: ./packages/foo
+        replaceAlias:
+          foo: bar
+        replaceSpec:
+          bar:
+            type: path
+            path: ./overrides/bar
+        allowlist:
+          - lcod://foo/*
+          - lcod://bar/baz
+        warnings:
+          - previous warning
+          - registry warning

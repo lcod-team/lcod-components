@@ -1,0 +1,21 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input }) => {
+          const buckets = Array.isArray(input.buckets) ? input.buckets : [];
+          const warnings = [];
+          for (const bucket of buckets) {
+            if (!Array.isArray(bucket)) continue;
+            for (const message of bucket) {
+              if (typeof message === 'string' && message.length > 0) {
+                warnings.push(message);
+              }
+            }
+          }
+          return { warnings };
+        }
+      input:
+        buckets: $.buckets
+    out:
+      warnings: =

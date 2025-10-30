@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/resolution output",
+  "type": "object",
+  "required": ["registries", "entries", "packages", "resolved", "warnings"],
+  "properties": {
+    "registries": { "type": "array", "items": { "type": "object" } },
+    "entries": { "type": "array", "items": { "type": "object" } },
+    "packages": { "type": "object" },
+    "resolved": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

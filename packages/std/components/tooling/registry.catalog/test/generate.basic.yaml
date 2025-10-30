@@ -1,0 +1,97 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/registry/catalog/generate@0.1.0
+          in:
+            rootPath: ./tooling/registry/catalog/test/fixtures
+            catalogPath: catalog.json
+          out:
+            catalogue: $
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ state }) => {
+                const expectedRegistry = {
+                  schema: 'lcod-registry@1',
+                  registries: [
+                    { id: 'official', type: 'http', url: 'https://registry.example.com' },
+                    { id: 'staging', type: 'http', url: 'https://staging.example.com' }
+                  ],
+                  namespaces: {
+                    "lcod": { "owners": ["github:lcod-team"], "requireSignature": true }
+                  },
+                  packages: {
+                    "lcod://demo/catalog": { "registry": "official" },
+                    "lcod://demo/inline": { "registry": "staging" }
+                  }
+                };
+                const expectedJsonl = [
+                  {"kind":"registry","id":"official","type":"http","url":"https://registry.example.com"},
+                  {"kind":"registry","id":"staging","type":"http","url":"https://staging.example.com"},
+                  {"kind":"component","id":"lcod://demo/catalog","version":"1.1.0","manifest":"packages/demo/catalog/1.1.0/manifest.json","sha256":"sha-catalog-1.1.0","registryId":"official"},
+                  {"kind":"component","id":"lcod://demo/catalog","version":"1.0.0","manifest":"packages/demo/catalog/1.0.0/manifest.json","sha256":"sha-catalog-1.0.0","registryId":"official"},
+                  {"kind":"component","id":"lcod://demo/inline","version":"0.2.0","manifest":"packages/demo/inline/0.2.0/manifest.json","registryId":"staging","priority":5},
+                  {"kind":"component","id":"lcod://demo/inline","version":"0.1.0","manifest":"packages/demo/inline/0.1.0/manifest.json","registryId":"staging","priority":5}
+                ].map((line) => JSON.stringify(line)).join('\\n') + '\\n';
+
+                return {
+                  packagesJsonlMatches: state.catalogue.packagesJsonl === expectedJsonl,
+                  registryJsonMatches: JSON.stringify(state.catalogue.registryJson) === JSON.stringify(expectedRegistry),
+                  warnings: state.catalogue.warnings
+                };
+              }
+            input:
+              catalogue: $.catalogue
+          out:
+            validation: $
+      expected:
+        catalogue:
+          packagesJsonl: "{\"kind\":\"registry\",\"id\":\"official\",\"type\":\"http\",\"url\":\"https://registry.example.com\"}\n{\"kind\":\"registry\",\"id\":\"staging\",\"type\":\"http\",\"url\":\"https://staging.example.com\"}\n{\"kind\":\"component\",\"id\":\"lcod://demo/catalog\",\"version\":\"1.1.0\",\"manifest\":\"packages/demo/catalog/1.1.0/manifest.json\",\"sha256\":\"sha-catalog-1.1.0\",\"registryId\":\"official\"}\n{\"kind\":\"component\",\"id\":\"lcod://demo/catalog\",\"version\":\"1.0.0\",\"manifest\":\"packages/demo/catalog/1.0.0/manifest.json\",\"sha256\":\"sha-catalog-1.0.0\",\"registryId\":\"official\"}\n{\"kind\":\"component\",\"id\":\"lcod://demo/inline\",\"version\":\"0.2.0\",\"manifest\":\"packages/demo/inline/0.2.0/manifest.json\",\"registryId\":\"staging\",\"priority\":5}\n{\"kind\":\"component\",\"id\":\"lcod://demo/inline\",\"version\":\"0.1.0\",\"manifest\":\"packages/demo/inline/0.1.0/manifest.json\",\"registryId\":\"staging\",\"priority\":5}\n"
+          registryJson:
+            schema: lcod-registry@1
+            registries:
+              - id: official
+                type: http
+                url: https://registry.example.com
+              - id: staging
+                type: http
+                url: https://staging.example.com
+            namespaces:
+              lcod:
+                owners:
+                  - github:lcod-team
+                requireSignature: true
+            packages:
+              lcod://demo/catalog:
+                registry: official
+              lcod://demo/inline:
+                registry: staging
+          packages:
+            - id: lcod://demo/catalog
+              versions:
+                - version: 1.1.0
+                  manifest: packages/demo/catalog/1.1.0/manifest.json
+                  registryId: official
+                  priority: null
+                - version: 1.0.0
+                  manifest: packages/demo/catalog/1.0.0/manifest.json
+                  registryId: official
+                  priority: null
+            - id: lcod://demo/inline
+              versions:
+                - version: 0.2.0
+                  manifest: packages/demo/inline/0.2.0/manifest.json
+                  registryId: staging
+                  priority: 5
+                - version: 0.1.0
+                  manifest: packages/demo/inline/0.1.0/manifest.json
+                  registryId: staging
+                  priority: 5
+          warnings: []
+        validation:
+          packagesJsonlMatches: true
+          registryJsonMatches: true
+          warnings: []
+    out:
+      report: $

@@ -1,0 +1,5 @@
+{
+  "registries": [
+    { "id": "official", "type": "http", "url": "https://registry.example.com" }
+  ]
+}

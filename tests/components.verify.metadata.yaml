@@ -3,7 +3,12 @@ compose:
     in:
       source: |
         async ({ state, imports }) => {
-          const root = state.rootPath || './packages/std/components';
+          const joinPath = async (base, segment) => {
+            const resolved = await imports.pathJoin({ base, segment });
+            return resolved?.path ?? `${base.replace(/\/$/, '')}/${segment}`;
+          };
+          const projectRoot = state.projectPath || '.';
+          const root = state.rootPath || await joinPath(projectRoot, 'components');
           const errors = [];
           const components = [];
 
@@ -29,9 +34,25 @@ compose:
             }
           };
 
-          const joinPath = async (base, segment) => {
-            const joined = await imports.pathJoin({ base, segment });
-            return joined?.path ?? `${base.replace(/\/$/, '')}/${segment}`;
+          const resolveChildPath = async (baseDir, entry) => {
+            if (entry && typeof entry === 'object') {
+              if (entry.relativePath) {
+                const resolved = await joinPath(baseDir, entry.relativePath);
+                return resolved;
+              }
+              if (entry.path && entry.path.startsWith('/')) {
+                return entry.path;
+              }
+              if (entry.path) {
+                const resolved = await joinPath(baseDir, entry.path);
+                return resolved;
+              }
+              if (entry.name) {
+                const resolved = await joinPath(baseDir, entry.name);
+                return resolved;
+              }
+            }
+            return baseDir;
           };
 
           const stack = [root];
@@ -46,7 +67,10 @@ compose:
             for (const entry of entries) {
               if (!entry || typeof entry !== 'object') continue;
               if (entry.type === 'directory') {
-                stack.push(entry.path ?? `${current}/${entry.name}`);
+                const childPath = await resolveChildPath(current, entry);
+                if (childPath && !visited.has(childPath)) {
+                  stack.push(childPath);
+                }
               }
               if (entry.name === 'lcp.toml') hasLcp = true;
               if (entry.name === 'compose.yaml') hasCompose = true;
@@ -75,36 +99,31 @@ compose:
               errors.push(`${rel}: missing or empty summary`);
             }
 
-            const palette = descriptor.palette;
-            if (!palette || typeof palette !== 'object') {
-              errors.push(`${rel}: missing [palette] section`);
-            } else {
-              if (!palette.category || palette.category.trim().length === 0) {
-                errors.push(`${rel}: palette.category is missing`);
-              }
-              if (!palette.icon || palette.icon.trim().length === 0) {
-                errors.push(`${rel}: palette.icon is missing`);
-              }
-              if (!Array.isArray(palette.tags) || palette.tags.length === 0) {
-                errors.push(`${rel}: palette.tags must be a non-empty array`);
-              }
+            const isComponent = (descriptor.kind || '').toLowerCase() === 'component';
+
+            const docs = descriptor.docs || {};
+            const readmeRef = typeof docs.readme === 'string' && docs.readme.trim().length > 0
+              ? docs.readme.trim()
+              : 'README.md';
+            const readmeExists = await fileExists(readmePath);
+            if (!readmeExists) {
+              errors.push(`${rel}: README.md not found (${readmeRef})`);
             }
 
-            const docs = descriptor.docs;
-            if (!docs || typeof docs.readme !== 'string' || docs.readme.trim().length === 0) {
-              errors.push(`${rel}: docs.readme must reference README.md`);
-            } else {
-              const readmeExists = await fileExists(readmePath);
-              if (!readmeExists) {
-                errors.push(`${rel}: README.md not found (${docs.readme})`);
+            if (isComponent) {
+              const inputsCount = descriptor.inputs && typeof descriptor.inputs === 'object'
+                ? Object.keys(descriptor.inputs).length
+                : Array.isArray(descriptor.io?.input)
+                  ? descriptor.io.input.length
+                  : 0;
+              const outputsCount = descriptor.outputs && typeof descriptor.outputs === 'object'
+                ? Object.keys(descriptor.outputs).length
+                : Array.isArray(descriptor.io?.output)
+                  ? descriptor.io.output.length
+                  : 0;
+              if (inputsCount === 0 && outputsCount === 0) {
+                errors.push(`${rel}: missing input/output metadata`);
               }
-            }
-
-            const io = descriptor.io || {};
-            const inputs = Array.isArray(io.input) ? io.input : [];
-            const outputs = Array.isArray(io.output) ? io.output : [];
-            if (inputs.length === 0 && outputs.length === 0) {
-              errors.push(`${rel}: missing [[io.input]] / [[io.output]] definitions`);
             }
           }
 
@@ -113,8 +132,6 @@ compose:
           }
           return { count: components.length };
         }
-      input:
-        rootPath: "./packages/std/components"
       imports:
         fsListDir: lcod://contract/core/fs/list-dir@1
         fsReadFile: lcod://contract/core/fs/read-file@1

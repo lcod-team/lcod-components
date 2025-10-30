@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/compose/normalize@1 input",
+  "type": "object",
+  "required": ["compose"],
+  "additionalProperties": false,
+  "properties": {
+    "compose": {
+      "description": "Array of compose steps (sugar syntax permitted).",
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  }
+}

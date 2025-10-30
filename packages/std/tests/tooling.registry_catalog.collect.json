@@ -25,11 +25,30 @@
               "versions": [
                 {
                   "version": "1.0.0",
-                  "manifest": "tests/fixtures/registry/packages/example/pkg/1.0.0/manifest.json"
+                  "manifest": "packages/example/pkg/1.0.0/manifest.json",
+                  "registryId": "main",
+                  "priority": null
                 }
               ]
             }
           ],
+          "packagesJsonl": "{\"kind\":\"registry\",\"id\":\"main\",\"type\":\"git\",\"url\":\"https://github.com/example\"}\n{\"kind\":\"component\",\"id\":\"lcod://example/pkg\",\"version\":\"1.0.0\",\"manifest\":\"packages/example/pkg/1.0.0/manifest.json\",\"registryId\":\"main\"}\n",
+          "registryJson": {
+            "schema": "lcod-registry@1",
+            "registries": [
+              {
+                "id": "main",
+                "type": "git",
+                "url": "https://github.com/example"
+              }
+            ],
+            "namespaces": {},
+            "packages": {
+              "lcod://example/pkg": {
+                "registry": "main"
+              }
+            }
+          },
           "warnings": []
         }
       }

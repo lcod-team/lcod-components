@@ -73,3 +73,6 @@ schema = """
 
 [documentation]
 body = "Collect registry metadata into JSONL and JSON descriptors."
+
+[docs]
+readme = "README.md"

@@ -33,3 +33,6 @@ schema = """
 {
   "type": "array"
 }"""
+
+[docs]
+readme = "README.md"

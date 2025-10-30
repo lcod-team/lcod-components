@@ -1,0 +1,24 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/registry/source/load@0.1.0
+          in:
+            projectPath: ./
+            sources:
+              - id: inline
+                type: inline
+                lines:
+                  - kind: component
+                    id: lcod://demo/foo
+                    version: 0.1.0
+                    manifest: packages/demo/foo/0.1.0/manifest.json
+      expected:
+        sources:
+          - registryId: inline
+            lines:
+              - kind: component
+                id: lcod://demo/foo
+                version: 0.1.0
+                manifest: packages/demo/foo/0.1.0/manifest.json
+        warnings: []

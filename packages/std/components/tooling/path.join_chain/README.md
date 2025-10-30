@@ -1,24 +1,24 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
-<p><img src="https://api.iconify.design/mdi:vector-polyline.svg?height=48&width=48" alt="Join a base path with a sequence of segments using path axioms." width="48" height="48" /></p>
+<p><img src="https://api.iconify.design/mdi:folder.svg?height=48&width=48" alt="Join path segments sequentially starting from an optional base." width="48" height="48" /></p>
 
 # lcod://tooling/path/join_chain@0.1.0
 
-Join a base path with a sequence of segments using path axioms.
+Join path segments sequentially starting from an optional base.
 
 ## Inputs
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `base` | string | No | Base path (defaults to empty string). |
-| `segments` | array | No | Ordered list of segments to append. Nullish entries are ignored. |
+| `base` | string | No | Initial path segment. |
+| `segments` | array | No | Segments to append in order. |
 
 ## Outputs
 
 | Name | Type | Description |
 | --- | --- | --- |
-| `path` | string | Resulting joined path. |
+| `path` | string | Resolved path after applying all segments. |
 
 ## Notes
 
-Join a base path with an ordered list of segments. Null or empty segments are
-skipped, and intermediate joins delegate to the standard `path/join` axiom.
+Combines an initial path with additional segments using the host platform's
+filesystem semantics. Nullish or empty segments are ignored.

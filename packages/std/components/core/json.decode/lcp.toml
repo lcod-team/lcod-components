@@ -50,3 +50,6 @@ schema = """
 body = """
 Wrapper for the `core/json/decode@1` contract that parses JSON strings into data
 structures."""
+
+[docs]
+readme = "README.md"

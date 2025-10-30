@@ -1,0 +1,17 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          try {
+            const text = JSON.stringify(state.value, Object.keys(state.value || {}).sort(), 0);
+            return { text };
+          } catch (err) {
+            return { text: null, warning: err?.message || String(err) };
+          }
+        }
+      input:
+        value: $.value
+    out:
+      text: text
+      warning: warning

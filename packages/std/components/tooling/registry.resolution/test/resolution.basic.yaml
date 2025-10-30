@@ -1,0 +1,26 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/registry/resolution@0.1.0
+          in:
+            projectPath: ./tooling/registry/source/test/fixtures
+            sources:
+              - id: official
+                type: path
+                path: base
+            requests:
+              - id: lcod://demo/catalog
+                range: "^1.0.0"
+      expected:
+        registries:
+          - id: official
+            url: https://registry.example.com
+            type: http
+        resolved:
+          - id: lcod://demo/catalog
+            entry:
+              version: 1.0.0
+              registryId: official
+              manifest: packages/demo/catalog/1.0.0/manifest.json
+        warnings: []

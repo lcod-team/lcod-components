@@ -1,0 +1,23 @@
+{
+  "schema": "lcod-registry@1",
+  "registries": [
+    { "id": "official", "type": "http", "url": "https://registry.example.com" },
+    { "id": "staging", "type": "http", "url": "https://staging.example.com" }
+  ],
+  "namespaces": {
+    "lcod": { "owners": ["github:lcod-team"], "requireSignature": true }
+  },
+  "packages": [
+    {
+      "id": "lcod://demo/catalog",
+      "registryId": "official",
+      "versionsPath": "packages/demo/catalog/versions.json"
+    },
+    {
+      "id": "lcod://demo/inline",
+      "registryId": "staging",
+      "versionsPath": "packages/demo/inline/versions.json",
+      "priority": 5
+    }
+  ]
+}

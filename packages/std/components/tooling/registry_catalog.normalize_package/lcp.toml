@@ -64,3 +64,6 @@ schema = """
 
 [documentation]
 body = "Validate and normalise a package entry."
+
+[docs]
+readme = "README.md"

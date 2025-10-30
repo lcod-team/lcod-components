@@ -122,3 +122,6 @@ Resolve registry catalogue pointers defined in a `sources.json` specification.
 This component orchestrates dedicated helpers to read remote/local catalogues,
 validate schemas, and return the inline registry source entries consumed by the
 resolver pipeline."""
+
+[docs]
+readme = "README.md"

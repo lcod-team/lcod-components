@@ -1,0 +1,37 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/hash/to_key@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Build a key from text content with optional prefix using SHA-256."
+
+[deps]
+requires = [
+  "lcod://tooling/hash/sha256_base64@0.1.0",
+  "lcod://tooling/script@1"
+]
+
+[inputs.text]
+summary = "Input text to hash."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[inputs.prefix]
+summary = "Optional prefix prepended to the hash."
+required = false
+schema = """
+{
+  "type": "string"
+}"""
+
+[outputs.key]
+summary = "Generated key."
+schema = """
+{
+  "type": "string"
+}"""
+
+[docs]
+readme = "README.md"

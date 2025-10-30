@@ -1,0 +1,339 @@
+compose:
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value:
+        roots: $.roots
+        write: $.write
+        generateComponentDocs: $.generateComponentDocs
+        ignorePatterns: $.ignorePatterns
+    out:
+      params: resolved
+
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value: $.params.roots
+    out:
+      roots: resolved
+
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value: $.params.ignorePatterns
+      fallback:
+        - "/.git/"
+        - "/node_modules/"
+        - "/dist/"
+        - "/target/"
+        - "/.lcod/"
+        - "/build/"
+    out:
+      ignorePatterns: resolved
+
+  - call: lcod://impl/set@1
+    in:
+      params: $.params
+      roots: $.roots
+      ignorePatterns: $.ignorePatterns
+    out:
+      params: params
+      roots: roots
+      ignorePatterns: ignorePatterns
+
+  - call: lcod://flow/foreach@1
+    in:
+      list: $.roots
+    collectPath: $.rootSummary
+    out:
+      processed: results
+    slots:
+      body:
+        - call: lcod://tooling/script@1
+          in:
+            bindings:
+              root:
+                path: $slot.item
+            source: |
+              async ({ bindings }) => {
+                const normalize = (value) => {
+                  const str = String(value || '');
+                  const replaced = str.replace(/\\/g, '/');
+                  return replaced.replace(/\/+$/g, '') || '.';
+                };
+                const rootRaw = bindings.root ?? '';
+                const rootPath = normalize(rootRaw);
+                const label = rootPath === '.' ? '.' : rootPath;
+                return { rootPath, label };
+              }
+          out:
+            rootInfo: $
+
+        - call: lcod://contract/core/fs/list_dir@1
+          in:
+            path: $.rootInfo.rootPath
+            recursive: true
+            pattern: "**/lcp.toml"
+          out:
+            descriptorEntries: entries
+
+        - call: lcod://tooling/value/default_array@0.1.0
+          in:
+            value: $.descriptorEntries
+            fallback: []
+          out:
+            descriptorEntries: resolved
+
+        - call: lcod://flow/foreach@1
+          in:
+            list: $.descriptorEntries
+          collectPath: $.descriptorResult
+          out:
+            descriptorResults: results
+          slots:
+            body:
+              - call: lcod://tooling/script@1
+                in:
+                  bindings:
+                    entry:
+                      path: $slot.item
+                    rootInfo:
+                      path: $.rootInfo
+                    ignorePatterns:
+                      path: $.ignorePatterns
+                  source: |
+                    async ({ bindings }) => {
+                      const entry = bindings.entry || {};
+                      const rawPath = typeof entry === 'string'
+                        ? entry
+                        : (entry.path || entry.file || '');
+                      const entryTypeRaw = typeof entry === 'object' && entry
+                        ? String(entry.type || '').toLowerCase()
+                        : 'file';
+                      const entryType = entryTypeRaw || 'file';
+                      const normalize = (value) => {
+                        const str = String(value || '');
+                        const replaced = str.replace(/\\/g, '/');
+                        return replaced.replace(/\/{2,}/g, '/');
+                      };
+                      const rootPath = normalize(bindings.rootInfo?.rootPath || '');
+                      const fullPath = normalize(rawPath);
+                      const relativePath = fullPath.startsWith(rootPath)
+                        ? fullPath.slice(rootPath.length).replace(/^\/+/, '')
+                        : fullPath;
+                      const ignorePatterns = Array.isArray(bindings.ignorePatterns)
+                        ? bindings.ignorePatterns.map((pattern) => String(pattern || '')).filter(Boolean)
+                        : [];
+                      const ignoredByPattern = ignorePatterns.some((pattern) => fullPath.includes(pattern));
+                      const isFile = entryType === 'file';
+                      const isLcpDescriptor = isFile && fullPath.toLowerCase().endsWith('/lcp.toml');
+                      const ignored = ignoredByPattern || !isFile || !isLcpDescriptor;
+                      const reason = !isFile
+                        ? `not-a-file:${entryType}`
+                        : (!isLcpDescriptor
+                          ? 'not-lcp-toml'
+                          : (ignoredByPattern ? 'ignored-pattern' : ''));
+                      return {
+                        path: fullPath,
+                        relativePath,
+                        entryType,
+                        isLcpDescriptor,
+                        ignored,
+                        reason
+                      };
+                    }
+                out:
+                  entryInfo: $
+
+              - call: lcod://flow/if@1
+                in:
+                  cond: $.entryInfo.ignored
+                slots:
+                  then:
+                    - call: lcod://impl/set@1
+                      in:
+                        path: $.entryInfo.path
+                        relativePath: $.entryInfo.relativePath
+                        status: "ignored"
+                        reason: $.entryInfo.reason
+                      out:
+                        descriptorResult: summary
+                  else:
+                    - call: lcod://tooling/script@1
+                      in:
+                        bindings:
+                          entryInfo:
+                            path: $.entryInfo
+                        source: |
+                          async ({ bindings }) => {
+                            const info = bindings.entryInfo || {};
+                            const path = typeof info.path === 'string' ? info.path : '';
+                            if (!path) {
+                              throw new Error(`tooling.make_repo_docs: missing descriptor path (entryType=${info.entryType || 'unknown'}, reason=${info.reason || ''})`);
+                            }
+                            return {};
+                          }
+                      out:
+                        validatedPath: $
+                    - call: lcod://contract/core/fs/read_file@1
+                      in:
+                        path: $.entryInfo.path
+                        encoding: "utf-8"
+                      out:
+                        descriptorText: data
+
+                    - call: lcod://contract/core/parse/toml@1
+                      in:
+                        text: $.descriptorText
+                      out:
+                        descriptor: value
+
+                    - call: lcod://tooling/script@1
+                      in:
+                        bindings:
+                          descriptor:
+                            path: $.descriptor
+                        source: |
+                          async ({ bindings }) => {
+                            const descriptor = bindings.descriptor || {};
+                            const schemaVersion = String(descriptor.schemaVersion || '').trim();
+                            const kind = String(descriptor.kind || '').trim();
+                            const id = String(descriptor.id || '').trim();
+                            const isV2 = schemaVersion === '2.0';
+                            const isWorkspacePackage = kind === 'workspace-package';
+                            return { schemaVersion, kind, id, isV2, isWorkspacePackage };
+                          }
+                      out:
+                        descriptorInfo: $
+
+                    - call: lcod://flow/if@1
+                      in:
+                        cond: $.descriptorInfo.isV2
+                      slots:
+                        then:
+                          - call: lcod://flow/if@1
+                            in:
+                              cond: $.descriptorInfo.isWorkspacePackage
+                            slots:
+                              then:
+                                - call: lcod://tooling/make_package_doc@0.1.0
+                                  in:
+                                    packageDescriptorPath: $.entryInfo.path
+                                    write: $.params.write
+                                    generateComponentDocs: $.params.generateComponentDocs
+                                  out:
+                                    packageDescriptor: descriptor
+                                    packageComponents: components
+                                    packageReadme: readme
+                                    packageReadmePath: readmePath
+                                    packageReadmeWriteResult: readmeWriteResult
+                                - call: lcod://impl/set@1
+                                  in:
+                                    docType: "package"
+                                    status: "processed"
+                                    readmePath: $.packageReadmePath
+                                    inputSchemaPath: ""
+                                    outputSchemaPath: ""
+                                    descriptorId: $.packageDescriptor.id
+                                    components: $.packageComponents
+                                  out:
+                                    docPayload: value
+                            else:
+                              - call: lcod://tooling/make_component_doc@0.1.0
+                                in:
+                                  descriptorPath: $.entryInfo.path
+                                  write: $.params.write
+                                out:
+                                  componentDescriptor: descriptor
+                                  componentReadme: readme
+                                  componentInputSchema: inputSchema
+                                  componentOutputSchema: outputSchema
+                                  componentReadmePath: readmePath
+                                  componentInputSchemaPath: inputSchemaPath
+                                  componentOutputSchemaPath: outputSchemaPath
+                                  componentReadmeWriteResult: readmeWriteResult
+                                  componentInputSchemaWriteResult: inputSchemaWriteResult
+                                  componentOutputSchemaWriteResult: outputSchemaWriteResult
+                              - call: lcod://impl/set@1
+                                in:
+                                  docType: "component"
+                                  status: "processed"
+                                  readmePath: $.componentReadmePath
+                                  inputSchemaPath: $.componentInputSchemaPath
+                                  outputSchemaPath: $.componentOutputSchemaPath
+                                  descriptorId: $.componentDescriptor.id
+                                out:
+                                  docPayload: value
+                        else:
+                          - call: lcod://impl/set@1
+                            in:
+                              docType: ""
+                              status: "skipped"
+                              reason: "schema-version"
+                              readmePath: ""
+                              inputSchemaPath: ""
+                              outputSchemaPath: ""
+                              descriptorId: ""
+                            out:
+                              docPayload: value
+                      out:
+                        docPayload: docPayload
+
+                    - call: lcod://tooling/script@1
+                      in:
+                        bindings:
+                          entryInfo:
+                            path: $.entryInfo
+                          descriptorInfo:
+                            path: $.descriptorInfo
+                          docPayload:
+                            path: $.docPayload
+                        source: |
+                          async ({ bindings }) => {
+                            const entry = bindings.entryInfo || {};
+                            const info = bindings.descriptorInfo || {};
+                            const payload = bindings.docPayload || {};
+                            const status = payload.status || (info.isV2 ? 'processed' : 'skipped');
+                            const summary = {
+                              path: entry.path || '',
+                              relativePath: entry.relativePath || '',
+                              status,
+                              reason: payload.reason || (status !== 'processed' ? (payload.reason || 'schema-version') : ''),
+                              schemaVersion: info.schemaVersion || '',
+                              kind: info.kind || '',
+                              id: info.id || payload.descriptorId || '',
+                              docType: payload.docType || '',
+                              readmePath: payload.readmePath || '',
+                              inputSchemaPath: payload.inputSchemaPath || '',
+                              outputSchemaPath: payload.outputSchemaPath || ''
+                            };
+                            if (payload.components) {
+                              summary.components = payload.components;
+                            }
+                            return summary;
+                          }
+                      out:
+                        descriptorResult: $
+                out:
+                  summary: descriptorResult
+
+        - call: lcod://tooling/script@1
+          in:
+            bindings:
+              rootInfo:
+                path: $.rootInfo
+              descriptorResults:
+                path: $.descriptorResults
+            source: |
+              async ({ bindings }) => {
+                const descriptors = Array.isArray(bindings.descriptorResults)
+                  ? bindings.descriptorResults
+                  : [];
+                const processed = descriptors.filter((entry) => entry && entry.status === 'processed').length;
+                const skipped = descriptors.filter((entry) => entry && entry.status !== 'processed').length;
+                return {
+                  root: bindings.rootInfo?.label || '',
+                  processedCount: processed,
+                  skippedCount: skipped,
+                  descriptors
+                };
+              }
+          out:
+            rootSummary: $

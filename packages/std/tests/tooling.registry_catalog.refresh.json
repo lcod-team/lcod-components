@@ -20,7 +20,7 @@
       ],
       "expected": {
         "result": {
-          "packagesJsonl": "{"kind":"registry","id":"main","type":"git","url":"https://github.com/example"}\n{"kind":"component","id":"lcod://example/pkg","version":"1.0.0","manifest":"packages/example/pkg/1.0.0/manifest.json","registryId":"main"}\n",
+          "packagesJsonl": "{\"kind\":\"registry\",\"id\":\"main\",\"type\":\"git\",\"url\":\"https://github.com/example\"}\n{\"kind\":\"component\",\"id\":\"lcod://example/pkg\",\"version\":\"1.0.0\",\"manifest\":\"packages/example/pkg/1.0.0/manifest.json\",\"registryId\":\"main\"}\n",
           "warnings": [],
           "errors": []
         }

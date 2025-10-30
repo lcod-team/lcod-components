@@ -68,3 +68,6 @@ schema = """
 
 [documentation]
 body = "Persist registry artefacts when their content changes."
+
+[docs]
+readme = "README.md"

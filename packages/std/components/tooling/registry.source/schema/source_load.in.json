@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/source/load input",
+  "type": "object",
+  "required": ["projectPath", "sources"],
+  "properties": {
+    "projectPath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Base path used to resolve relative registry paths."
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" },
+      "description": "Registry source entries as declared in resolver configuration."
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": {
+          "type": "string",
+          "enum": ["path", "jsonl", "inline"],
+          "default": "path"
+        },
+        "priority": { "type": "integer" },
+        "defaults": { "type": "object" },
+        "path": { "type": "string" },
+        "packagesPath": { "type": "string" },
+        "registryPath": { "type": "string" },
+        "jsonl": { "type": "string" },
+        "lines": { "type": "array", "items": { "type": "object" } }
+      },
+      "additionalProperties": true
+    }
+  }
+}

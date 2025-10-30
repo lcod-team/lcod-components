@@ -43,3 +43,6 @@ schema = """
 
 [documentation]
 body = "Normalise a registry entry declared in catalog.json."
+
+[docs]
+readme = "README.md"

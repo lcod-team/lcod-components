@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/resolver/replace/apply output",
+  "type": "object",
+  "required": ["targetId", "warnings"],
+  "properties": {
+    "targetId": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
+    "override": {
+      "anyOf": [
+        { "type": "object" },
+        { "type": "null" }
+      ]
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,62 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      composeRef:
+        path: ../../registry/index/compose.yaml
+      input:
+        sources:
+          - registryId: local
+            priority: 0
+            lines:
+              - kind: registry
+                id: local
+                type: file
+                url: file:///opt/registry
+              - kind: component
+                id: lcod://demo/catalog
+                version: 1.3.0
+                manifest: file:///opt/registry/catalog/1.3.0/manifest.json
+                sha256: sha256-local-130
+              - kind: component
+                id: lcod://demo/checkout
+                version: 0.1.0
+                manifest: file:///opt/registry/checkout/0.1.0/manifest.json
+          - registryId: official
+            priority: 10
+            defaults:
+              type: http
+              url: https://registry.example.com
+            jsonl: |
+              {"kind":"registry","id":"official","type":"http","url":"https://registry.example.com"}
+              {"kind":"component","id":"lcod://demo/catalog","version":"1.2.0","manifest":"packages/demo/catalog/1.2.0/manifest.json","sha256":"sha256-official-120"}
+              {"kind":"component","id":"lcod://demo/catalog","version":"1.1.0","manifest":"packages/demo/catalog/1.1.0/manifest.json"}
+      expected:
+        registries:
+          - id: local
+            priority: 0
+            type: file
+            url: file:///opt/registry
+          - id: official
+            priority: 10
+            type: http
+            url: https://registry.example.com
+        packages:
+          lcod://demo/catalog:
+            - id: lcod://demo/catalog
+              version: 1.3.0
+              registryId: local
+              manifest: file:///opt/registry/catalog/1.3.0/manifest.json
+            - id: lcod://demo/catalog
+              version: 1.2.0
+              registryId: official
+              manifest: packages/demo/catalog/1.2.0/manifest.json
+            - id: lcod://demo/catalog
+              version: 1.1.0
+              registryId: official
+              manifest: packages/demo/catalog/1.1.0/manifest.json
+          lcod://demo/checkout:
+            - id: lcod://demo/checkout
+              version: 0.1.0
+              registryId: local
+              manifest: file:///opt/registry/checkout/0.1.0/manifest.json
+        errors: []

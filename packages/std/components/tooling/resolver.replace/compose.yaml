@@ -1,0 +1,62 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input }) => {
+          const id = typeof input.id === 'string' && input.id.length > 0
+            ? input.id
+            : null;
+          const replaceAlias = input.replaceAlias && typeof input.replaceAlias === 'object'
+            ? input.replaceAlias
+            : {};
+          const replaceSpec = input.replaceSpec && typeof input.replaceSpec === 'object'
+            ? input.replaceSpec
+            : {};
+
+          const warnings = [];
+          if (!id) {
+            return { targetId: null, override: null, warnings };
+          }
+
+          const visited = new Set();
+          let current = id;
+          let override = null;
+          while (true) {
+            if (Object.prototype.hasOwnProperty.call(replaceSpec, current)) {
+              override = replaceSpec[current];
+              break;
+            }
+            if (!Object.prototype.hasOwnProperty.call(replaceAlias, current)) {
+              break;
+            }
+            const next = replaceAlias[current];
+            if (typeof next !== 'string' || next.length === 0) {
+              break;
+            }
+            if (visited.has(current)) {
+              warnings.push(`Replacement cycle detected: ${[...visited, current, next].join(' -> ')}`);
+              break;
+            }
+            visited.add(current);
+            current = next;
+          }
+
+          let overrideClone = null;
+          if (override && typeof override === 'object') {
+            try {
+              overrideClone = JSON.parse(JSON.stringify(override));
+            } catch (_err) {
+              overrideClone = override;
+            }
+          }
+
+          return { targetId: current, override: overrideClone, warnings };
+        }
+      input:
+        id: $.id
+        replaceAlias: $.replaceAlias
+        replaceSpec: $.replaceSpec
+    out:
+      targetId: =
+      override: =
+      warnings: =

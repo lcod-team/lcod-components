@@ -66,3 +66,6 @@ Materialise the inline registry sources defined by a `sources.json`
 configuration. The component iterates over catalogue pointers, downloads or
 reads their payloads (HTTP, Git or local files), validates the schema, and
 emits inline source entries that can be consumed directly by the resolver."""
+
+[docs]
+readme = "README.md"

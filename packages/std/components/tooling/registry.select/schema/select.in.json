@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/select input",
+  "type": "object",
+  "required": ["packages", "id"],
+  "properties": {
+    "packages": {
+      "type": "object",
+      "description": "Map of component id -> array of registry entries (from registry/index)."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "range": {
+      "type": ["string", "null"],
+      "description": "SemVer range or exact version (optional)."
+    },
+    "registryId": {
+      "type": ["string", "null"],
+      "description": "Optional registry preference."
+    }
+  },
+  "additionalProperties": false
+}

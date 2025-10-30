@@ -1,0 +1,3 @@
+[
+  { "name": "resolver.warnings.merge.basic", "compose": "tooling/resolver/warnings/test/warnings.basic.yaml" }
+]

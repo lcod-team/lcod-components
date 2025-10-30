@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/source/load output",
+  "type": "object",
+  "required": ["sources", "warnings"],
+  "properties": {
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["registryId"],
+        "properties": {
+          "registryId": { "type": "string", "minLength": 1 },
+          "priority": { "type": "integer" },
+          "defaults": { "type": "object" },
+          "jsonl": { "type": "string" },
+          "lines": { "type": "array", "items": { "type": "object" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

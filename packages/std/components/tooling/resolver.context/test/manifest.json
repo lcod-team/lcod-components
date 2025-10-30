@@ -1,0 +1,3 @@
+[
+  { "name": "resolver.context.prepare.basic", "compose": "tooling/resolver/context/test/context.basic.yaml" }
+]

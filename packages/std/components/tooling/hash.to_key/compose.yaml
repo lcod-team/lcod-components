@@ -1,0 +1,22 @@
+compose:
+  - call: lcod://tooling/hash/sha256_base64@0.1.0
+    in:
+      data: $.text
+    out:
+      digest: base64
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const prefix = typeof state.prefix === 'string' && state.prefix.length > 0 ? state.prefix : '';
+          const hash = typeof state.digest === 'string' ? state.digest : '';
+          return {
+            key: prefix ? `${prefix}${hash}` : hash
+          };
+        }
+      input:
+        prefix: $.prefix
+        digest: $.digest
+    out:
+      key: key

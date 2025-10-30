@@ -1,0 +1,20 @@
+compose:
+  - call: lcod://tooling/test_checker@1
+    in:
+      compose:
+        - call: lcod://tooling/resolver/replace/apply@0.1.0
+          in:
+            id: lcod://foo/pkg
+            replaceAlias:
+              lcod://foo/pkg: lcod://bar/pkg
+              lcod://bar/pkg: lcod://baz/pkg
+            replaceSpec:
+              lcod://baz/pkg:
+                type: path
+                path: ./override
+      expected:
+        targetId: lcod://baz/pkg
+        override:
+          type: path
+          path: ./override
+        warnings: []

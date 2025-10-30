@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/resolver/register_components input",
+  "type": "object",
+  "properties": {
+    "specRoot": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1 }
+      ],
+      "description": "Absolute path to the lcod-spec repository containing resolver helpers."
+    }
+  },
+  "additionalProperties": false
+}

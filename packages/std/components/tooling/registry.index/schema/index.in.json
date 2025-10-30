@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tooling/registry/index input",
+  "type": "object",
+  "required": ["sources"],
+  "properties": {
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["registryId"],
+      "properties": {
+        "registryId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the registry providing the JSONL stream (e.g. official, local)."
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Lower values take precedence when ordering entries from multiple registries.",
+          "default": 100
+        },
+        "jsonl": {
+          "type": "string",
+          "description": "Raw packages.jsonl content (UTF-8)."
+        },
+        "lines": {
+          "type": "array",
+          "description": "Optional pre-parsed JSON objects to merge with the JSONL payload.",
+          "items": { "$ref": "#/$defs/jsonlLine" }
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Default registry metadata for entries that omit those fields.",
+          "properties": {
+            "type": { "type": "string" },
+            "url": { "type": "string" },
+            "priority": { "type": "integer" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "jsonlLine": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["registry", "component"]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
