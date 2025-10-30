@@ -7,7 +7,7 @@
     "export:components": "node scripts/export-components.mjs",
     "build:components": "node scripts/build-component-artifacts.mjs",
     "migrate:lcp": "node scripts/migrate-lcp-v2.mjs",
-    "test": "node scripts/run-tests.mjs"
+    "test": "bash scripts/run-tests.sh"
   },
   "dependencies": {
     "@iarna/toml": "^3.0.0",
