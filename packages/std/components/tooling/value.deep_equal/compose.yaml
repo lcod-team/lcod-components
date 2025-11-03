@@ -1,0 +1,41 @@
+compose:
+  - call: lcod://tooling/json/stable_stringify@0.1.0
+    in:
+      value: $.left
+    out:
+      value: leftStable
+
+  - call: lcod://tooling/json/stable_stringify@0.1.0
+    in:
+      value: $.right
+    out:
+      value: rightStable
+
+  - call: lcod://tooling/value/default_array@0.1.0
+    in:
+      value:
+        - $.leftStable
+        - $.rightStable
+    out:
+      resolved: pairValues
+
+  - call: lcod://tooling/array/find_duplicates@0.1.0
+    in:
+      items: $.pairValues
+    out:
+      duplicates: duplicateValues
+
+  - call: lcod://tooling/value/is_defined@0.1.0
+    in:
+      value: $.duplicateValues.0
+    out:
+      ok: isEqual
+
+  - call: lcod://impl/set@1
+    in:
+      result:
+        equal: $.isEqual
+        left: $.leftStable
+        right: $.rightStable
+    out:
+      result: result

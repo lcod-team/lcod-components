@@ -1,0 +1,51 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/value/deep_equal@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Compare two values deeply using stable JSON stringification."
+
+[palette]
+category = "Utility"
+icon = "mdi:compare-horizontal"
+tags = ["value", "compare", "testing"]
+
+[deps]
+requires = [
+  "lcod://tooling/json/stable_stringify@0.1.0",
+  "lcod://tooling/value/default_array@0.1.0",
+  "lcod://tooling/array/find_duplicates@0.1.0",
+  "lcod://tooling/value/is_defined@0.1.0",
+  "lcod://impl/set@1"
+]
+
+[inputs.left]
+summary = "First value to compare."
+required = false
+schema = "{}"
+
+[inputs.right]
+summary = "Second value to compare."
+required = false
+schema = "{}"
+
+[outputs.result]
+summary = "Comparison result containing equality flag and stable representations."
+schema = """
+{
+  "type": "object",
+  "properties": {
+    "equal": { "type": "boolean" },
+    "left": { "type": ["string", "null"] },
+    "right": { "type": ["string", "null"] }
+  },
+  "required": ["equal", "left", "right"]
+}
+"""
+
+[documentation]
+body = """
+Converts both inputs into a deterministic JSON representation (using
+`lcod://tooling/json/stable_stringify@0.1.0`) and compares the resulting
+strings. The component returns both normalised strings alongside the boolean
+`equal` flag so callers can produce diffs or diagnostics.
+"""
