@@ -56,6 +56,14 @@
     "composePath": "packages/std/components/tooling/array.shift/compose.yaml"
   },
   {
+    "id": "lcod://tooling/component/build_artifacts@0.1.0",
+    "composePath": "packages/std/components/tooling/component.build_artifacts/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/compose/normalize@0.1.0",
+    "composePath": "packages/std/components/tooling/compose.normalize/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/fs/read_optional@0.1.0",
     "composePath": "packages/std/components/tooling/fs.read_optional/compose.yaml"
   },
@@ -68,12 +76,20 @@
     "composePath": "packages/std/components/tooling/hash.sha256_base64/compose.yaml"
   },
   {
+    "id": "lcod://tooling/hash/to_key@0.1.0",
+    "composePath": "packages/std/components/tooling/hash.to_key/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/json/decode_object@0.1.0",
     "composePath": "packages/std/components/tooling/json.decode_object/compose.yaml"
   },
   {
     "id": "lcod://tooling/json/read_file@0.1.0",
     "composePath": "packages/std/components/tooling/json.read_file/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/json/stable_stringify@0.1.0",
+    "composePath": "packages/std/components/tooling/json.stable_stringify/compose.yaml"
   },
   {
     "id": "lcod://tooling/json/stringify@0.1.0",
@@ -84,12 +100,40 @@
     "composePath": "packages/std/components/tooling/jsonl.from_objects/compose.yaml"
   },
   {
+    "id": "lcod://tooling/make_component_doc@0.1.0",
+    "composePath": "packages/std/components/tooling/make_component_doc/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/make_package_doc@0.1.0",
+    "composePath": "packages/std/components/tooling/make_package_doc/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/make_repo_docs@0.1.0",
+    "composePath": "packages/std/components/tooling/make_repo_docs/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/mcp/component/scaffold@0.1.0",
     "composePath": "packages/std/components/tooling/mcp.component.scaffold/compose.yaml"
   },
   {
+    "id": "lcod://tooling/mcp/register_local@0.1.0",
+    "composePath": "packages/std/components/tooling/mcp.register_local/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/mcp/session/open@0.1.0",
     "composePath": "packages/std/components/tooling/mcp.session.open/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/object/clone@0.1.0",
+    "composePath": "packages/std/components/tooling/object.clone/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/object/has@0.1.0",
+    "composePath": "packages/std/components/tooling/object.has/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/object/set@0.1.0",
+    "composePath": "packages/std/components/tooling/object.set/compose.yaml"
   },
   {
     "id": "lcod://tooling/path/dirname@0.1.0",
@@ -106,6 +150,10 @@
   {
     "id": "lcod://tooling/path/to_file_url@0.1.0",
     "composePath": "packages/std/components/tooling/path.to_file_url/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/queue/bfs@0.1.0",
+    "composePath": "packages/std/components/tooling/queue.bfs/compose.yaml"
   },
   {
     "id": "lcod://tooling/registry_catalog/collect@0.1.0",
@@ -152,10 +200,6 @@
     "composePath": "packages/std/components/tooling/registry_catalog.validate/compose.yaml"
   },
   {
-    "id": "lcod://tooling/registry_catalog/write_outputs@0.1.0",
-    "composePath": "packages/std/components/tooling/registry_catalog.write_outputs/compose.yaml"
-  },
-  {
     "id": "lcod://tooling/registry_sources/build_inline_entry@0.1.0",
     "composePath": "packages/std/components/tooling/registry_sources.build_inline_entry/compose.yaml"
   },
@@ -196,8 +240,52 @@
     "composePath": "packages/std/components/tooling/registry_sources.resolve/compose.yaml"
   },
   {
+    "id": "lcod://tooling/registry/catalog/generate@0.1.0",
+    "composePath": "packages/std/components/tooling/registry.catalog/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry/fetch@0.1.0",
+    "composePath": "packages/std/components/tooling/registry.fetch/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry/index@0.1.0",
+    "composePath": "packages/std/components/tooling/registry.index/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry/resolution@0.1.0",
+    "composePath": "packages/std/components/tooling/registry.resolution/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry/select@0.1.0",
+    "composePath": "packages/std/components/tooling/registry.select/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/registry/source/load@0.1.0",
+    "composePath": "packages/std/components/tooling/registry.source/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/resolver/context/prepare@0.1.0",
+    "composePath": "packages/std/components/tooling/resolver.context/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/resolver/register_components@0.1.0",
+    "composePath": "packages/std/components/tooling/resolver.register_components/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/resolver/replace/apply@0.1.0",
+    "composePath": "packages/std/components/tooling/resolver.replace/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/resolver/warnings/merge@0.1.0",
+    "composePath": "packages/std/components/tooling/resolver.warnings/compose.yaml"
+  },
+  {
     "id": "lcod://tooling/string/ensure_trailing_newline@0.1.0",
     "composePath": "packages/std/components/tooling/string.ensure_trailing_newline/compose.yaml"
+  },
+  {
+    "id": "lcod://tooling/value/deep_equal@0.1.0",
+    "composePath": "packages/std/components/tooling/value.deep_equal/compose.yaml"
   },
   {
     "id": "lcod://tooling/value/default_array@0.1.0",
