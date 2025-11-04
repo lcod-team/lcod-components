@@ -69,11 +69,7 @@ async function main() {
   entries.sort((a, b) => a.id.localeCompare(b.id));
 
   const outputDir = path.join(repoRoot, 'registry');
-  const outputPath = path.join(outputDir, 'components.std.json');
   await fs.mkdir(outputDir, { recursive: true });
-  const jsonEntries = entries.map(({ id, composePath }) => ({ id, composePath }));
-  await fs.writeFile(outputPath, JSON.stringify(jsonEntries, null, 2) + '\n', 'utf-8');
-
   const jsonlPath = path.join(outputDir, 'components.std.jsonl');
   const manifestId = 'lcod-components/std';
   const manifestVersion = typeof manifest.version === 'string' ? manifest.version : undefined;
@@ -103,9 +99,7 @@ async function main() {
   ];
 
   await fs.writeFile(jsonlPath, `${jsonlLines.join('\n')}\n`, 'utf-8');
-
-  console.log(`Exported ${entries.length} components to ${path.relative(repoRoot, outputPath)}`);
-  console.log(`Exported JSONL manifest to ${path.relative(repoRoot, jsonlPath)}`);
+  console.log(`Exported JSONL manifest with ${entries.length} component(s) to ${path.relative(repoRoot, jsonlPath)}`);
 }
 
 main().catch((err) => {

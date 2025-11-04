@@ -27,11 +27,9 @@ See `docs/PLAN.md` for the high-level roadmap of the initial components.
 
 ## Registry exports
 
-Run `npm run export:components` to regenerate the catalogue pointers consumed by
-`lcod-registry` and downstream tooling. The script now emits both formats:
-
-- `registry/components.std.json` — legacy JSON array of `{ id, composePath }`
-  entries for older consumers.
-- `registry/components.std.jsonl` — streaming manifest list compatible with the
-  new JSONL resolver pipeline (first line describes the manifest, each
-  subsequent line references a component with its compose and lcp paths).
+Run `npm run export:components` to regenerate the streaming catalogue manifest
+consumed by `lcod-registry` and downstream tooling. The command writes
+`registry/components.std.jsonl`, a JSON Lines manifest whose first line
+describes the list (`lcod-manifest/list@1`) and subsequent lines reference
+components with their compose and lcp paths. Legacy JSON exports are no longer
+produced now that the resolver pipeline consumes JSONL directly.
