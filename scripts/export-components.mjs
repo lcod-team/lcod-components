@@ -28,7 +28,12 @@ async function listComponentsFromDir(packageRoot, componentsDir) {
         const componentDir = path.dirname(fullPath);
         const relDir = path.relative(packageRoot, componentDir);
         const composeRel = path.join(relDir, 'compose.yaml').replace(/\\/g, '/');
-        entries.push({ id: componentId, composePath: path.posix.join('packages/std', composeRel) });
+        const lcpRel = path.join(relDir, 'lcp.toml').replace(/\\/g, '/');
+        entries.push({
+          id: componentId,
+          composePath: path.posix.join('packages/std', composeRel),
+          lcpPath: path.posix.join('packages/std', lcpRel)
+        });
       }
     }
   }
@@ -50,9 +55,11 @@ async function main() {
       .filter((entry) => entry && typeof entry.id === 'string' && typeof entry.path === 'string')
       .map((entry) => {
         const composeRel = path.join(entry.path, 'compose.yaml').replace(/\\/g, '/');
+        const lcpRel = path.join(entry.path, 'lcp.toml').replace(/\\/g, '/');
         return {
           id: entry.id,
-          composePath: path.posix.join('packages/std', composeRel)
+          composePath: path.posix.join('packages/std', composeRel),
+          lcpPath: path.posix.join('packages/std', lcpRel)
         };
       });
   } else if (typeof workspace.componentsDir === 'string' && workspace.componentsDir.trim()) {
@@ -64,8 +71,41 @@ async function main() {
   const outputDir = path.join(repoRoot, 'registry');
   const outputPath = path.join(outputDir, 'components.std.json');
   await fs.mkdir(outputDir, { recursive: true });
-  await fs.writeFile(outputPath, JSON.stringify(entries, null, 2) + '\n', 'utf-8');
+  const jsonEntries = entries.map(({ id, composePath }) => ({ id, composePath }));
+  await fs.writeFile(outputPath, JSON.stringify(jsonEntries, null, 2) + '\n', 'utf-8');
+
+  const jsonlPath = path.join(outputDir, 'components.std.jsonl');
+  const manifestId = 'lcod-components/std';
+  const manifestVersion = typeof manifest.version === 'string' ? manifest.version : undefined;
+  const description = 'Standard LCOD tooling components exported from lcod-components.';
+
+  const header = {
+    type: 'manifest',
+    schema: 'lcod-manifest/list@1',
+    id: manifestId,
+    description,
+    package: manifestId,
+    version: manifestVersion
+  };
+
+  const jsonlLines = [
+    JSON.stringify(header),
+    ...entries.map(({ id, composePath, lcpPath }) =>
+      JSON.stringify({
+        type: 'component',
+        id,
+        compose: composePath,
+        lcp: lcpPath,
+        package: manifestId,
+        version: manifestVersion
+      })
+    )
+  ];
+
+  await fs.writeFile(jsonlPath, `${jsonlLines.join('\n')}\n`, 'utf-8');
+
   console.log(`Exported ${entries.length} components to ${path.relative(repoRoot, outputPath)}`);
+  console.log(`Exported JSONL manifest to ${path.relative(repoRoot, jsonlPath)}`);
 }
 
 main().catch((err) => {
