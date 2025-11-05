@@ -36,3 +36,7 @@ jobs:
         run: npm ci
       - name: Check runtime overlap
         run: npm run check:runtime
+      - name: Ensure components manifest is current
+        run: |
+          npm run export:components
+          git diff --exit-code registry/components.std.jsonl
