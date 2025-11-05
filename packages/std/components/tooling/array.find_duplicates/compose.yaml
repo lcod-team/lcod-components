@@ -1,6 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/array/find_duplicates@1
-    in:
-      items: $.items
-    out:
-      duplicates: duplicates

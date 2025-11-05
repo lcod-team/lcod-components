@@ -1,8 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/fs/write_if_changed@1
-    in:
-      path: $.path
-      content: $.content
-      encoding: $.encoding
-    out:
-      changed: changed

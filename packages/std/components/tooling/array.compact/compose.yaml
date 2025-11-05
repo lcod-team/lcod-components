@@ -1,6 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/array/compact@1
-    in:
-      items: $.items
-    out:
-      values: values

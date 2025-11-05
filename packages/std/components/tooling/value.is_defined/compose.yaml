@@ -1,6 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/value/is_defined@1
-    in:
-      value: $.value
-    out:
-      ok: ok

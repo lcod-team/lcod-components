@@ -1,7 +1,0 @@
-
-compose:
-  - call: lcod://axiom/array/length@1
-    in:
-      items: $.items
-    out:
-      length: length

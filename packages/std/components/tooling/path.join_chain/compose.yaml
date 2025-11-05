@@ -1,7 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/path/join_chain@1
-    in:
-      base: $.base
-      segments: $.segments
-    out:
-      path: path

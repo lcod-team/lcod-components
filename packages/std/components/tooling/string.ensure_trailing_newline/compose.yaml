@@ -1,7 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/string/ensure_trailing_newline@1
-    in:
-      text: $.text
-      newline: $.newline
-    out:
-      text: text

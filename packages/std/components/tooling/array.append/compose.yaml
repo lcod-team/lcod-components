@@ -1,9 +1,0 @@
-compose:
-  - call: lcod://contract/tooling/array/append@1
-    in:
-      items: $.items
-      values: $.values
-      value: $.value
-    out:
-      items: items
-      length: length

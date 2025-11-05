@@ -1,9 +1,0 @@
-compose:
-  - call: lcod://contract/core/json/decode@1
-    in:
-      text: $.text
-      allowComments: $.allowComments
-    out:
-      value: value
-      bytes: bytes
-      error: error
