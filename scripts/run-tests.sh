@@ -555,7 +555,21 @@ report_failures() {
   fi
 }
 
-fetch_manifest
+need_manifest=false
+for kernel in "${kernels[@]}"; do
+  if [[ "$kernel" == "java" ]]; then
+    need_manifest=true
+    break
+  fi
+done
+
+if [[ "$need_manifest" == true ]]; then
+  fetch_manifest
+else
+  if [[ -n "$version" ]]; then
+    VERSION="${version#v}"
+  fi
+fi
 prepare_workspaces
 collect_json_suites
 

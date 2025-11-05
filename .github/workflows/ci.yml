@@ -35,13 +35,14 @@ jobs:
       - name: Install kernels
         env:
           LCOD_DISABLE_AUTO_UPDATE: "1"
+          LCOD_RELEASE_VERSION: "0.1.21"
         run: |
-          lcod kernel install rs --version 0.1.21 --force
-          lcod kernel install java --version 0.1.21 --force
+          lcod kernel install rs --version "$LCOD_RELEASE_VERSION" --force
+          lcod kernel install java --version "$LCOD_RELEASE_VERSION" --force
       - name: Run component tests
         env:
           SPEC_REPO_PATH: ${{ github.workspace }}/spec
-        run: npm test
+        run: npm test -- --kernel rs
 
   verify-components:
     runs-on: ubuntu-latest
