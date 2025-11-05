@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout lcod-spec
+        uses: actions/checkout@v4
+        with:
+          repository: lcod-team/lcod-spec
+          path: spec
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -29,12 +34,19 @@ jobs:
           lcod kernel install rs --version 0.1.21 --force
           lcod kernel install java --version 0.1.21 --force
       - name: Run component tests
+        env:
+          SPEC_REPO_PATH: ${{ github.workspace }}/spec
         run: npm test
 
   verify-components:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout lcod-spec
+        uses: actions/checkout@v4
+        with:
+          repository: lcod-team/lcod-spec
+          path: spec
       - name: Install dependencies
         run: npm ci
       - name: Check runtime overlap
