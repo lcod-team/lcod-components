@@ -71,21 +71,33 @@ done
 
 MANIFEST_FILE=""
 VERSION=""
+HAS_MANIFEST=false
 cleanup() {
-  [[ -n "$MANIFEST_FILE" && -f "$MANIFEST_FILE" ]] && rm -f "$MANIFEST_FILE"
+  if [[ -n "$MANIFEST_FILE" && -f "$MANIFEST_FILE" ]]; then
+    rm -f "$MANIFEST_FILE"
+  fi
+  return 0
 }
 trap cleanup EXIT
 
 fetch_manifest() {
-  MANIFEST_FILE=$(mktemp)
+  local tmp
+  tmp=$(mktemp)
   if [[ -n "$version" ]]; then
     local tag="${version#v}"
     local url="https://github.com/lcod-team/lcod-release/releases/download/v${tag}/release-manifest.json"
-    if ! curl -fsSL -H 'User-Agent: lcod-components-test-runner/1.0' "$url" -o "$MANIFEST_FILE"; then
-      echo "[ERROR] Unable to download manifest for version $tag" >&2
-      exit 1
+    if curl -fsSL -H 'User-Agent: lcod-components-test-runner/1.0' "$url" -o "$tmp"; then
+      MANIFEST_FILE="$tmp"
+      VERSION="$tag"
+      HAS_MANIFEST=true
+      return 0
     fi
+    rm -f "$tmp"
+    MANIFEST_FILE=""
     VERSION="$tag"
+    HAS_MANIFEST=false
+    echo "[WARN] Unable to download release-manifest.json for v$tag; falling back to kernel repositories." >&2
+    return 1
   else
     local latest_json
     latest_json=$(curl -fsSL -H 'User-Agent: lcod-components-test-runner/1.0' "https://api.github.com/repos/lcod-team/lcod-release/releases/latest")
@@ -161,6 +173,7 @@ get_kernel_path() {
 }
 
 install_java_from_manifest() {
+  [[ "$HAS_MANIFEST" == true ]] || return 1
   local asset_name
   asset_name=$(jq -r '.kernels.java.assets[] | select(.name | test("^lcod-run-.*\\.jar$")) | .name' "$MANIFEST_FILE" | head -n1)
   if [[ -z "$asset_name" || "$asset_name" == "null" ]]; then
@@ -194,19 +207,49 @@ EOF
 
 install_kernel() {
   local kernel="$1"
-  if [[ "$kernel" == "rs" ]]; then
-    lcod kernel install rs --from-release --version "$VERSION" --force >/dev/null
-  elif [[ "$kernel" == "java" ]]; then
-    if ! lcod kernel install java --from-release --version "$VERSION" --force >/dev/null 2>&1; then
-      install_java_from_manifest || {
-        echo "[ERROR] Failed to install java kernel" >&2
-        exit 1
-      }
+  local repo=""
+  case "$kernel" in
+    rs) repo="lcod-team/lcod-kernel-rs" ;;
+    java) repo="lcod-team/lcod-kernel-java" ;;
+    *) echo "[ERROR] Unsupported kernel: $kernel" >&2; exit 1 ;;
+  esac
+  local base_args=(kernel install "$kernel" --from-release --force)
+  if [[ -n "$VERSION" ]]; then
+    local version_args=("${base_args[@]}" --version "$VERSION")
+    if lcod "${version_args[@]}" >/dev/null 2>&1; then
+      return 0
     fi
-  else
-    echo "[ERROR] Unsupported kernel: $kernel" >&2
+    echo "[WARN] Kernel $kernel v$VERSION not available via aggregate release." >&2
+    if [[ "$kernel" == "java" ]] && install_java_from_manifest; then
+      return 0
+    fi
+    local version_repo_args=("${version_args[@]}" --repo "$repo")
+    if lcod "${version_repo_args[@]}" >/dev/null 2>&1; then
+      echo "[WARN] Installed $kernel v$VERSION directly from $repo." >&2
+      return 0
+    fi
+    echo "[WARN] Falling back to latest published release for $kernel." >&2
+    if lcod "${base_args[@]}" >/dev/null 2>&1; then
+      return 0
+    fi
+    local latest_repo_args=("${base_args[@]}" --repo "$repo")
+    if lcod "${latest_repo_args[@]}" >/dev/null 2>&1; then
+      echo "[WARN] Installed latest $kernel release from $repo." >&2
+      return 0
+    fi
+    echo "[ERROR] Failed to install $kernel kernel" >&2
     exit 1
   fi
+  if lcod "${base_args[@]}" >/dev/null 2>&1; then
+    return 0
+  fi
+  local repo_args=("${base_args[@]}" --repo "$repo")
+  if lcod "${repo_args[@]}" >/dev/null 2>&1; then
+    echo "[WARN] Installed latest $kernel release from $repo." >&2
+    return 0
+  fi
+  echo "[ERROR] Failed to install $kernel kernel" >&2
+  exit 1
 }
 
 probe_compose() {
@@ -564,7 +607,7 @@ for kernel in "${kernels[@]}"; do
 done
 
 if [[ "$need_manifest" == true ]]; then
-  fetch_manifest
+  fetch_manifest || true
 else
   if [[ -n "$version" ]]; then
     VERSION="${version#v}"
