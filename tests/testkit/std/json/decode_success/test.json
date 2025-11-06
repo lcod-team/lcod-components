@@ -1,0 +1,6 @@
+{
+  "id": "std.json.decode.success",
+  "name": "JSON decode succeeds",
+  "description": "Ensure tooling/json/decode_object returns expected structure.",
+  "kernels": ["rs", "node", "java"]
+}

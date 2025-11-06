@@ -1,0 +1,21 @@
+compose:
+  - call: lcod://tooling/testkit.unit@0.1.0
+    in:
+      id: "std.json.decode.success"
+      name: "JSON decode succeeds"
+      targetInput:
+        text: "{\"success\":true}"
+      expect:
+        value:
+          success: true
+        warnings: []
+        error: null
+    children:
+      target:
+        - call: lcod://tooling/json/decode_object@0.1.0
+          in:
+            text: $.text
+          out:
+            value: value
+            warnings: warnings
+            error: error

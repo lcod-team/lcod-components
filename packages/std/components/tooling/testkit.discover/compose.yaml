@@ -1,0 +1,109 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input, imports }) => {
+          const root = typeof input.root === 'string' && input.root.length > 0
+            ? input.root
+            : 'tests/testkit';
+
+          const projectRoot = typeof input.projectRoot === 'string' && input.projectRoot.length > 0
+            ? input.projectRoot
+            : '.';
+
+          const resolvedRoot = await imports.pathJoin({ base: projectRoot, segment: root });
+          const rootPath = resolvedRoot?.path ?? `${projectRoot}/${root}`.replace(/\/+/g, '/');
+
+          const stack = [rootPath];
+          const entries = [];
+
+          const readFile = async (path) => {
+            const result = await imports.fsReadFile({ path, encoding: 'utf-8' }).catch(() => null);
+            if (result && typeof result.data === 'string') return result.data;
+            if (typeof result === 'string') return result;
+            return null;
+          };
+
+          while (stack.length > 0) {
+            const dir = stack.pop();
+            if (!dir) continue;
+            const listResult = await imports.fsListDir({ path: dir }).catch(() => null);
+            const children = Array.isArray(listResult?.entries) ? listResult.entries : [];
+            let hasCompose = false;
+            let descriptorPath = null;
+            let composePath = null;
+
+            for (const entry of children) {
+              if (!entry || typeof entry !== 'object') continue;
+              const entryName = entry.name;
+              if (entry.type === 'directory') {
+                const next = await imports.pathJoin({ base: dir, segment: entryName });
+                stack.push(next?.path ?? `${dir}/${entryName}`);
+              } else if (entry.type === 'file') {
+                if (entryName === 'compose.yaml') {
+                  hasCompose = true;
+                  composePath = await imports.pathJoin({ base: dir, segment: entryName });
+                  composePath = composePath?.path ?? `${dir}/${entryName}`;
+                }
+                if (entryName === 'test.json' || entryName === 'test.yaml' || entryName === 'test.yml') {
+                  descriptorPath = await imports.pathJoin({ base: dir, segment: entryName });
+                  descriptorPath = descriptorPath?.path ?? `${dir}/${entryName}`;
+                }
+              }
+            }
+
+            if (!hasCompose) continue;
+
+            let descriptor = {};
+            if (descriptorPath) {
+              const raw = await readFile(descriptorPath);
+              if (raw) {
+                if (descriptorPath.endsWith('.json')) {
+                  try {
+                    descriptor = JSON.parse(raw);
+                  } catch (error) {
+                    descriptor = { error: { message: error?.message ?? String(error) } };
+                  }
+                }
+              }
+            }
+
+            const composeRaw = await readFile(composePath) ?? '';
+            const hasUnitCall = composeRaw.includes('lcod://tooling/testkit.unit@0.1.0');
+            if (!hasUnitCall) {
+              continue;
+            }
+
+            let testId = descriptor?.id ?? descriptor?.name ?? null;
+
+            let kernels = descriptor?.kernels;
+            if (!Array.isArray(kernels) || kernels.length === 0) {
+              kernels = Array.isArray(input.defaultKernels)
+                ? input.defaultKernels
+                : ['rs', 'node', 'java'];
+            }
+
+            entries.push({
+              id: testId,
+              name: descriptor?.name ?? testId,
+              description: descriptor?.description ?? null,
+              kernels,
+              composePath,
+              descriptorPath,
+              tags: descriptor?.tags ?? null,
+              metadata: descriptor?.metadata ?? null
+            });
+          }
+
+          return { tests: entries };
+        }
+      input:
+        root: $.root
+        projectRoot: $.projectRoot
+        defaultKernels: $.defaultKernels
+      imports:
+        fsListDir: lcod://contract/core/fs/list-dir@1
+        fsReadFile: lcod://contract/core/fs/read-file@1
+        pathJoin: lcod://axiom/path/join@1
+    out:
+      tests: tests
