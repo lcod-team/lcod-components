@@ -1,0 +1,167 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input, imports }, api) => {
+          const now = Date.now();
+          const startedAt = new Date(now).toISOString();
+
+          const result = {
+            id: input.id ?? input.name ?? null,
+            name: input.name ?? null,
+            description: input.description ?? null,
+            metadata: input.metadata ?? null,
+            startedAt,
+            status: "passed",
+            output: null,
+            expect: Object.prototype.hasOwnProperty.call(input, "expect") ? input.expect : undefined,
+            assertion: null,
+            verify: null,
+            setup: null,
+            teardown: null,
+            logs: [],
+          };
+
+          const isMissingSlotError = (error, slot) => {
+            if (!error) return false;
+            if (error.code === "LCOD_SLOT_NOT_FOUND" || error.code === "SLOT_NOT_FOUND") {
+              return true;
+            }
+            const message = String(error.message ?? error);
+            return message.includes(`Slot "${slot}"`) && (message.includes("not provided") || message.includes("not found") || message.includes("missing"));
+          };
+
+          const runSlot = async (slot, payload, { optional = false } = {}) => {
+            try {
+              return await api.runSlot(slot, payload ?? {});
+            } catch (error) {
+              if (optional && isMissingSlotError(error, slot)) {
+                return undefined;
+              }
+              throw error;
+            }
+          };
+
+          let setupResult;
+
+          try {
+            if (input.skipSetup !== true) {
+              const setupPayload = {
+                ...(input.setupInput ?? {}),
+                context: input.context ?? {},
+              };
+              setupResult = await runSlot(
+                "setup",
+                setupPayload,
+                { optional: true }
+              );
+              if (typeof setupResult !== "undefined") {
+                result.setup = setupResult;
+              }
+            }
+
+            const targetPayload = {
+              ...(input.targetInput ?? {}),
+              context: input.context ?? {},
+              setup: setupResult,
+            };
+            const targetResult = await runSlot("target", targetPayload);
+            result.output = typeof targetResult === "undefined" ? null : targetResult;
+
+            if (Object.prototype.hasOwnProperty.call(input, "expect")) {
+              const comparison = await imports.deepEqual({
+                left: result.output,
+                right: input.expect,
+              });
+              const equal = comparison?.result?.equal === true;
+              result.assertion = {
+                equal,
+                actualSnapshot: comparison?.result?.leftStable ?? null,
+                expectedSnapshot: comparison?.result?.rightStable ?? null,
+              };
+              if (!equal) {
+                result.status = "failed";
+              }
+            }
+
+            const verifyPayload = {
+              ...(input.verifyInput ?? {}),
+              output: result.output,
+              expect: input.expect,
+              metadata: result.metadata,
+              assertion: result.assertion,
+              context: input.context ?? {},
+              input,
+            };
+            const verifyResult = await runSlot("verify", verifyPayload, { optional: true });
+            if (typeof verifyResult !== "undefined") {
+              result.verify = verifyResult;
+              const verifyStatus = String(verifyResult?.status ?? "").toLowerCase();
+              if (verifyStatus === "failed" && result.status === "passed") {
+                result.status = "failed";
+              }
+            }
+          } catch (error) {
+            result.status = "error";
+            result.error = {
+              message: error?.message ?? String(error),
+              stack: error?.stack ?? null,
+            };
+          } finally {
+            try {
+              if (input.skipTeardown !== true) {
+                const teardownPayload = {
+                  ...(input.teardownInput ?? {}),
+                  output: result.output,
+                  status: result.status,
+                  metadata: result.metadata,
+                  context: input.context ?? {},
+                };
+                const teardownResult = await runSlot(
+                  "teardown",
+                  teardownPayload,
+                  { optional: true }
+                );
+                if (typeof teardownResult !== "undefined") {
+                  result.teardown = teardownResult;
+                }
+              }
+            } catch (error) {
+              result.teardownError = {
+                message: error?.message ?? String(error),
+                stack: error?.stack ?? null,
+              };
+              if (result.status === "passed") {
+                result.status = "error";
+              }
+            }
+
+            const finishedAtMs = Date.now();
+            result.finishedAt = new Date(finishedAtMs).toISOString();
+            result.durationMs = finishedAtMs - now;
+          }
+
+          return { result };
+        }
+      input:
+        id: $.id
+        name: $.name
+        description: $.description
+        metadata: $.metadata
+        expect: $.expect
+        context: $.context
+        targetInput: $.targetInput
+        setupInput: $.setupInput
+        verifyInput: $.verifyInput
+        teardownInput: $.teardownInput
+        skipSetup: $.skipSetup
+        skipTeardown: $.skipTeardown
+      imports:
+        deepEqual: lcod://tooling/value.deep_equal@0.1.0
+    slots:
+      setup: []
+      target: []
+      verify: []
+      teardown: []
+    out:
+      result: result

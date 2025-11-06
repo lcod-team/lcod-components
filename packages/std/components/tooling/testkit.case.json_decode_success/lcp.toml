@@ -1,0 +1,26 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/testkit/case/json_decode_success@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Example test case exercising tooling/json/decode_object@0.1.0."
+
+[palette]
+category = "Testing"
+icon = "mdi:beaker"
+tags = ["test", "example"]
+
+[deps]
+requires = [
+  "lcod://tooling/testkit/unit@0.1.0",
+  "lcod://tooling/json/decode_object@0.1.0",
+  "lcod://impl/set@1"
+]
+
+[inputs.text]
+summary = "JSON text to decode (defaults to '{\"success\":true}')."
+required = false
+schema = """{"type":"string"}"""
+
+[outputs.result]
+summary = "Test report produced by testkit.unit."
+schema = """{"type":"object"}"""

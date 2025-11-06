@@ -1,0 +1,33 @@
+compose:
+  - call: lcod://tooling/testkit.unit@0.1.0
+    in:
+      id: "tooling.json.decode.success"
+      name: "Decode JSON object (happy path)"
+      expect:
+        value:
+          success: true
+        warnings: []
+        error: null
+    children:
+      setup:
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ input }) => {
+                const text = typeof input.text === "string" && input.text.length > 0
+                  ? input.text
+                  : "{\"success\":true}";
+                return { text };
+              }
+            input:
+              text: $.text
+          out:
+            text: text
+      target:
+        - call: lcod://tooling/json/decode_object@0.1.0
+          in:
+            text: $.setup.text
+          out:
+            value: value
+            warnings: warnings
+            error: error
