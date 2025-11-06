@@ -1,0 +1,28 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/testkit/assemble@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Assemble multiple testkit plans into a kernel-by-test matrix."
+
+[palette]
+category = "Testing"
+icon = "mdi:table-multiple"
+tags = ["test", "automation", "report"]
+
+[deps]
+requires = [
+  "lcod://tooling/script@1",
+  "lcod://impl/set@1"
+]
+
+[inputs.reports]
+summary = "Array of plan reports produced by tooling/testkit.all."
+required = false
+schema = """{"type":"array","items":{"type":"object"}}"""
+
+[slots.reports]
+summary = "Optional slot supplying additional reports (array or single plan)."
+
+[outputs.matrix]
+summary = "Aggregated matrix with kernel summary and per-test statuses."
+schema = """{"type":"object"}"""

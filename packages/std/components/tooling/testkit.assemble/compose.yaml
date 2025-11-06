@@ -1,0 +1,132 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input }, api) => {
+          const collect = [];
+          if (Array.isArray(input.reports)) {
+            collect.push(...input.reports);
+          }
+          const slotResult = await api.runSlot('reports', input).catch((err) => {
+            if (err?.code === 'LCOD_SLOT_NOT_FOUND') {
+              return undefined;
+            }
+            if ((err?.message || '').includes('Slot "reports" not found')) {
+              return undefined;
+            }
+            throw err;
+          });
+          if (Array.isArray(slotResult)) {
+            collect.push(...slotResult);
+          }
+
+          const plans = collect.filter((entry) => entry && typeof entry === 'object');
+          const normalizedPlans = plans.map((plan) => {
+            const kernel = typeof plan.kernel === 'string' ? plan.kernel : (plan.metadata?.kernel ?? null);
+            const cases = Array.isArray(plan.cases) ? plan.cases : Array.isArray(plan.results) ? plan.results : [];
+            return { kernel, cases, raw: plan };
+          });
+
+          const matrix = {};
+          const kernels = new Set();
+
+          const normalizeStatus = (status) => {
+            const value = String(status ?? '').toLowerCase();
+            if (['passed', 'pass', 'success', 'ok'].includes(value)) {
+              return 'passed';
+            }
+            if (['failed', 'fail'].includes(value)) {
+              return 'failed';
+            }
+            if (['error', 'exception'].includes(value)) {
+              return 'error';
+            }
+            if (['skip', 'skipped'].includes(value)) {
+              return 'skipped';
+            }
+            return value || 'unknown';
+          };
+
+          for (const plan of normalizedPlans) {
+            if (!plan.kernel) continue;
+            kernels.add(plan.kernel);
+            for (const testCase of plan.cases) {
+              if (!testCase || typeof testCase !== 'object') continue;
+              const id = testCase.id ?? testCase.name ?? testCase.componentId ?? 'unknown';
+              if (!matrix[id]) {
+                matrix[id] = {
+                  id,
+                  name: testCase.name ?? null,
+                  description: testCase.description ?? null,
+                  metadata: testCase.metadata ?? null,
+                  entries: {}
+                };
+              }
+              matrix[id].entries[plan.kernel] = {
+                status: normalizeStatus(testCase.status),
+                durationMs: testCase.durationMs ?? null,
+                result: testCase,
+              };
+            }
+          }
+
+          const summary = {};
+          for (const kernel of kernels) {
+            summary[kernel] = { total: 0, passed: 0, failed: 0, error: 0, skipped: 0 };
+          }
+
+          for (const testId of Object.keys(matrix)) {
+            const entry = matrix[testId];
+            for (const kernel of kernels) {
+              const kernelSummary = summary[kernel];
+              const cell = entry.entries[kernel];
+              if (!cell) continue;
+              kernelSummary.total += 1;
+              switch (cell.status) {
+                case 'passed':
+                  kernelSummary.passed += 1;
+                  break;
+                case 'failed':
+                  kernelSummary.failed += 1;
+                  break;
+                case 'error':
+                  kernelSummary.error += 1;
+                  break;
+                case 'skipped':
+                  kernelSummary.skipped += 1;
+                  break;
+                default:
+                  break;
+              }
+            }
+          }
+
+          const tests = Object.values(matrix).sort((a, b) => a.id.localeCompare(b.id));
+          const orderedKernels = Array.from(kernels).sort();
+
+          return {
+            kernels: orderedKernels,
+            summary,
+            tests,
+            plans: normalizedPlans.map((item) => item.raw),
+          };
+        }
+      input:
+        reports: $.reports
+    slots:
+      reports: []
+    out:
+      kernels: kernels
+      summary: summary
+      tests: tests
+      plans: plans
+
+  - call: lcod://impl/set@1
+    in:
+      matrix:
+        kernels: $.kernels
+        summary: $.summary
+        tests: $.tests
+        plans: $.plans
+    out:
+      matrix: matrix
