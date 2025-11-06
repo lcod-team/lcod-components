@@ -1,0 +1,120 @@
+compose:
+  - call: lcod://tooling/testkit.discover@0.1.0
+    in:
+      projectRoot: $.projectRoot
+      root: $.root
+      defaultKernels: $.defaultKernels
+    out:
+      discoveredTests: tests
+
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const kernel = typeof state.kernel === 'string' && state.kernel.length > 0
+            ? state.kernel
+            : 'rs';
+          const tests = Array.isArray(state.tests) ? state.tests : [];
+          const filtered = tests.filter((entry) => {
+            if (!entry || typeof entry !== 'object') {
+              return false;
+            }
+            if (!Array.isArray(entry.kernels) || entry.kernels.length === 0) {
+              return true;
+            }
+            return entry.kernels.includes(kernel);
+          });
+          return {
+            kernel,
+            filteredTests: filtered,
+            planId: state.planId ?? `testkit.${kernel}`,
+            planName: state.planName ?? `Testkit (${kernel})`,
+            planDescription: state.planDescription ?? null,
+            planMetadata: state.planMetadata ?? null
+          };
+        }
+      input:
+        kernel: $.kernel
+        tests: $.discoveredTests
+        planId: $.planId
+        planName: $.planName
+        planDescription: $.planDescription
+        planMetadata: $.planMetadata
+    out:
+      kernel: kernel
+      filteredTests: filteredTests
+      planId: planId
+      planName: planName
+      planDescription: planDescription
+      planMetadata: planMetadata
+
+  - call: lcod://flow/foreach@1
+    in:
+      list: $.filteredTests
+    collectPath: $.caseResult
+    children:
+      body:
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ state }, api) => {
+                const componentId = state.componentId;
+                if (!componentId) {
+                  throw new Error('Test descriptor missing componentId');
+                }
+                const payload = state.input ?? {};
+                const output = await api.run(componentId, payload);
+                return { output };
+              }
+            input:
+              componentId: $slot.item.componentId
+              input: $slot.item.input
+          out:
+            output: output
+
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ state }) => {
+                const report = state.output?.result && typeof state.output.result === 'object'
+                  ? { ...state.output.result }
+                  : (state.output && typeof state.output === 'object' ? { ...state.output } : {});
+
+                if (!report.status) {
+                  report.status = 'unknown';
+                }
+
+                report.id = state.entry.id ?? report.id ?? null;
+                report.name = state.entry.name ?? report.name ?? null;
+                report.description = state.entry.description ?? report.description ?? null;
+                report.metadata = state.entry.metadata ?? report.metadata ?? null;
+                report.componentId = state.entry.componentId ?? report.componentId ?? null;
+                report.kernel = state.kernel ?? report.kernel ?? null;
+                report.tags = state.entry.tags ?? report.tags ?? null;
+
+                return { caseResult: report };
+              }
+            input:
+              output: $.output
+              entry: $slot.item
+              kernel: $.kernel
+          out:
+            caseResult: caseResult
+    out:
+      results: results
+
+  - call: lcod://tooling/testkit.plan@0.1.0
+    in:
+      id: $.planId
+      name: $.planName
+      description: $.planDescription
+      metadata: $.planMetadata
+      tests: $.results
+    out:
+      plan: plan
+
+  - call: lcod://impl/set@1
+    in:
+      report: $.plan
+    out:
+      report: report

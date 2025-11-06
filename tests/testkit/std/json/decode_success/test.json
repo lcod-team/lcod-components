@@ -2,5 +2,6 @@
   "id": "std.json.decode.success",
   "name": "JSON decode succeeds",
   "description": "Ensure tooling/json/decode_object returns expected structure.",
-  "kernels": ["rs", "node", "java"]
+  "kernels": ["rs", "node", "java"],
+  "componentId": "lcod://tooling/testkit/case/json_decode_success@0.1.0"
 }

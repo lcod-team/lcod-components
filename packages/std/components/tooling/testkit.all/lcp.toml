@@ -1,0 +1,62 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/testkit/all@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Execute all discovered testkit cases for a given kernel and return an aggregated plan."
+
+[palette]
+category = "Testing"
+icon = "mdi:clipboard-multiple"
+tags = ["test", "automation", "runner"]
+
+[deps]
+requires = [
+  "lcod://tooling/testkit.discover@0.1.0",
+  "lcod://tooling/testkit.plan@0.1.0",
+  "lcod://flow/foreach@1",
+  "lcod://tooling/script@1"
+]
+
+[inputs.kernel]
+summary = "Kernel identifier (e.g. rs, node, java). Defaults to rs."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.projectRoot]
+summary = "Workspace root directory (defaults to current directory)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.root]
+summary = "Relative path containing testkit cases (defaults to tests/testkit)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.defaultKernels]
+summary = "Fallback kernels when a test descriptor does not specify explicit targets."
+required = false
+schema = """{"type":"array","items":{"type":"string"}}"""
+
+[inputs.planId]
+summary = "Override the aggregated plan identifier."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.planName]
+summary = "Override the aggregated plan name."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.planDescription]
+summary = "Optional description attached to the plan."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.planMetadata]
+summary = "Optional metadata forwarded to the aggregated plan."
+required = false
+schema = """{"type":"object"}"""
+
+[outputs.report]
+summary = "Aggregated plan report produced by tooling/testkit.plan."
+schema = """{"type":"object"}"""

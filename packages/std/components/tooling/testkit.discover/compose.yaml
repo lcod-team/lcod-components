@@ -75,6 +75,10 @@ compose:
             }
 
             let testId = descriptor?.id ?? descriptor?.name ?? null;
+            const componentId = typeof descriptor?.componentId === 'string' ? descriptor.componentId : null;
+            const inputPayload = descriptor?.input ?? null;
+            const tags = Array.isArray(descriptor?.tags) ? descriptor.tags : null;
+            const metadata = descriptor?.metadata ?? null;
 
             let kernels = descriptor?.kernels;
             if (!Array.isArray(kernels) || kernels.length === 0) {
@@ -88,10 +92,12 @@ compose:
               name: descriptor?.name ?? testId,
               description: descriptor?.description ?? null,
               kernels,
+              componentId,
+              input: inputPayload,
               composePath,
               descriptorPath,
-              tags: descriptor?.tags ?? null,
-              metadata: descriptor?.metadata ?? null
+              tags,
+              metadata
             });
           }
 
