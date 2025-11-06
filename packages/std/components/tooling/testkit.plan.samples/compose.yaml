@@ -1,0 +1,20 @@
+compose:
+  - call: lcod://tooling/testkit.plan@0.1.0
+    in:
+      id: "sample.json"
+      name: "Sample JSON decode plan"
+    children:
+      tests:
+        - call: lcod://tooling/testkit/case/json_decode_success@0.1.0
+          in:
+            text: "{\"success\":true}"
+          out:
+            result: result
+        - call: lcod://tooling/value/default_array@0.1.0
+          in:
+            value:
+              - $.result
+          out:
+            resolved: results
+        out:
+          results: results

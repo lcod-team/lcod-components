@@ -1,0 +1,155 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ input }, api) => {
+          const startedAt = Date.now();
+          const plan = {
+            id: input.id ?? null,
+            name: input.name ?? null,
+            description: input.description ?? null,
+            metadata: input.metadata ?? null,
+            context: input.context ?? null,
+            status: "empty",
+            startedAt: new Date(startedAt).toISOString(),
+            finishedAt: null,
+            durationMs: null,
+            cases: [],
+            summary: {
+              total: 0,
+              passed: 0,
+              failed: 0,
+              error: 0,
+              skipped: 0
+            }
+          };
+
+          const normalizeCase = (entry) => {
+            if (!entry || typeof entry !== "object") {
+              return {
+                id: null,
+                name: null,
+                status: "error",
+                output: entry
+              };
+            }
+            const status = String(entry.status ?? entry.result?.status ?? entry.result?.statusCode ?? "unknown").toLowerCase();
+            return {
+              id: entry.id ?? entry.result?.id ?? null,
+              name: entry.name ?? entry.result?.name ?? null,
+              description: entry.description ?? entry.result?.description ?? null,
+              metadata: entry.metadata ?? entry.result?.metadata ?? null,
+              status,
+              output: entry.result ?? entry.output ?? entry,
+            };
+          };
+
+          const mergeCases = (collection, source) => {
+            if (!source) {
+              return collection;
+            }
+            if (Array.isArray(source)) {
+              return collection.concat(source);
+            }
+            if (source && typeof source === "object") {
+              if (Array.isArray(source.results)) {
+                return collection.concat(source.results);
+              }
+              if (Array.isArray(source.cases)) {
+                return collection.concat(source.cases);
+              }
+              if (Array.isArray(source.tests)) {
+                return collection.concat(source.tests);
+              }
+              return collection.concat([source]);
+            }
+            return collection;
+          };
+
+          let collected = [];
+          try {
+            if (Array.isArray(input.tests)) {
+              collected = mergeCases(collected, input.tests);
+            }
+
+            const slotPayload = {
+              context: input.context ?? null,
+              metadata: input.metadata ?? null
+            };
+            const slotResult = await api.runSlot("tests", slotPayload).catch((error) => {
+              error.slot = "tests";
+              throw error;
+            });
+            collected = mergeCases(collected, slotResult);
+          } catch (error) {
+            plan.status = "error";
+            plan.error = {
+              message: error?.message ?? String(error),
+              code: error?.code ?? null,
+              slot: error?.slot ?? null,
+              stack: error?.stack ?? null
+            };
+          }
+
+          const cases = collected.map((entry) => normalizeCase(entry));
+          plan.cases = cases;
+
+          for (const item of cases) {
+            const status = item.status ?? "unknown";
+            plan.summary.total += 1;
+            switch (status) {
+              case "pass":
+              case "passed":
+              case "success":
+              case "ok":
+                plan.summary.passed += 1;
+                break;
+              case "fail":
+              case "failed":
+                plan.summary.failed += 1;
+                break;
+              case "error":
+              case "exception":
+                plan.summary.error += 1;
+                break;
+              case "skip":
+              case "skipped":
+                plan.summary.skipped += 1;
+                break;
+              default:
+                plan.summary.skipped += 1;
+                break;
+            }
+          }
+
+          if (plan.status !== "error") {
+            if (plan.summary.failed > 0) {
+              plan.status = "failed";
+            } else if (plan.summary.error > 0) {
+              plan.status = "error";
+            } else if (plan.summary.passed > 0) {
+              plan.status = "passed";
+            } else if (plan.summary.skipped > 0) {
+              plan.status = "skipped";
+            } else {
+              plan.status = "empty";
+            }
+          }
+
+          const finishedAt = Date.now();
+          plan.finishedAt = new Date(finishedAt).toISOString();
+          plan.durationMs = finishedAt - startedAt;
+
+          return { plan };
+        }
+      input:
+        id: $.id
+        name: $.name
+        description: $.description
+        metadata: $.metadata
+        context: $.context
+        tests: $.tests
+    slots:
+      tests: []
+    out:
+      plan: plan
