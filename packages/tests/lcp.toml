@@ -1,0 +1,11 @@
+schemaVersion = "2.0"
+id = "lcod://pkg/tests@0.1.0"
+version = "0.1.0"
+kind = "workspace-package"
+summary = "Local testkit components and fixtures used for validation."
+
+[palette]
+icon = "mdi:beaker"
+
+[workspace]
+componentsDir = "../../tests/testkit"

@@ -6,7 +6,8 @@ kind = "workspace"
 
 [workspace]
 packages = [
-  "std"
+  "std",
+  "tests"
 ]
 
 [workspace.scopeAliases]

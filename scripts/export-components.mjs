@@ -26,13 +26,13 @@ async function listComponentsFromDir(packageRoot, componentsDir) {
           continue;
         }
         const componentDir = path.dirname(fullPath);
-        const relDir = path.relative(packageRoot, componentDir);
+        const relDir = path.relative(repoRoot, componentDir);
         const composeRel = path.join(relDir, 'compose.yaml').replace(/\\/g, '/');
         const lcpRel = path.join(relDir, 'lcp.toml').replace(/\\/g, '/');
         entries.push({
           id: componentId,
-          composePath: path.posix.join('packages/std', composeRel),
-          lcpPath: path.posix.join('packages/std', lcpRel)
+          composePath: composeRel,
+          lcpPath: lcpRel
         });
       }
     }
@@ -42,28 +42,60 @@ async function listComponentsFromDir(packageRoot, componentsDir) {
   return entries;
 }
 
-async function main() {
-  const packageRoot = path.join(repoRoot, 'packages', 'std');
+function listComponentsFromInline(packageRoot, entries) {
+  return entries
+    .filter((entry) => entry && typeof entry.id === 'string' && typeof entry.path === 'string')
+    .map((entry) => {
+      const componentDir = path.resolve(packageRoot, entry.path);
+      const relDir = path.relative(repoRoot, componentDir);
+      const composeRel = path.join(relDir, 'compose.yaml').replace(/\\/g, '/');
+      const lcpRel = path.join(relDir, 'lcp.toml').replace(/\\/g, '/');
+      return {
+        id: entry.id,
+        composePath: composeRel,
+        lcpPath: lcpRel
+      };
+    });
+}
+
+async function collectPackageEntries(packageName) {
+  const packageRoot = path.join(repoRoot, 'packages', packageName);
   const manifestPath = path.join(packageRoot, 'lcp.toml');
-  const manifestRaw = await fs.readFile(manifestPath, 'utf-8');
-  const manifest = toml.parse(manifestRaw);
-  const workspace = manifest?.workspace ?? {};
+  try {
+    const manifestRaw = await fs.readFile(manifestPath, 'utf-8');
+    const manifest = toml.parse(manifestRaw);
+    const workspace = manifest?.workspace ?? {};
+
+    if (Array.isArray(workspace.components) && workspace.components.length > 0) {
+      return listComponentsFromInline(packageRoot, workspace.components);
+    }
+    if (typeof workspace.componentsDir === 'string' && workspace.componentsDir.trim()) {
+      return listComponentsFromDir(packageRoot, workspace.componentsDir.trim());
+    }
+  } catch (err) {
+    console.warn(`Unable to read package manifest for ${packageName}: ${err.message || err}`);
+  }
+  return [];
+}
+
+async function main() {
+  const workspaceManifestPath = path.join(repoRoot, 'workspace.lcp.toml');
+  let workspaceManifest = {};
+  try {
+    const raw = await fs.readFile(workspaceManifestPath, 'utf-8');
+    workspaceManifest = toml.parse(raw);
+  } catch (err) {
+    console.warn(`Unable to load workspace manifest: ${err.message || err}`);
+  }
+
+  const packages = Array.isArray(workspaceManifest.workspace?.packages)
+    ? workspaceManifest.workspace.packages
+    : ['std'];
 
   let entries = [];
-  if (Array.isArray(workspace.components) && workspace.components.length > 0) {
-    entries = workspace.components
-      .filter((entry) => entry && typeof entry.id === 'string' && typeof entry.path === 'string')
-      .map((entry) => {
-        const composeRel = path.join(entry.path, 'compose.yaml').replace(/\\/g, '/');
-        const lcpRel = path.join(entry.path, 'lcp.toml').replace(/\\/g, '/');
-        return {
-          id: entry.id,
-          composePath: path.posix.join('packages/std', composeRel),
-          lcpPath: path.posix.join('packages/std', lcpRel)
-        };
-      });
-  } else if (typeof workspace.componentsDir === 'string' && workspace.componentsDir.trim()) {
-    entries = await listComponentsFromDir(packageRoot, workspace.componentsDir.trim());
+  for (const packageName of packages) {
+    const packageEntries = await collectPackageEntries(packageName);
+    entries = entries.concat(packageEntries);
   }
 
   entries.sort((a, b) => a.id.localeCompare(b.id));
@@ -72,7 +104,9 @@ async function main() {
   await fs.mkdir(outputDir, { recursive: true });
   const jsonlPath = path.join(outputDir, 'components.std.jsonl');
   const manifestId = 'lcod-components/std';
-  const manifestVersion = typeof manifest.version === 'string' ? manifest.version : undefined;
+  const manifestVersion = typeof workspaceManifest.version === 'string'
+    ? workspaceManifest.version
+    : undefined;
   const description = 'Standard LCOD tooling components exported from lcod-components.';
 
   const header = {
