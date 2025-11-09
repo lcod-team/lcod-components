@@ -2,7 +2,7 @@ schemaVersion = "2.0"
 id = "lcod://tooling/testkit/plan@0.1.0"
 version = "0.1.0"
 kind = "component"
-summary = "Aggregate multiple testkit.unit cases, producing a consolidated report."
+summary = "Aggregate multiple testkit/unit cases, producing a consolidated report."
 
 [palette]
 category = "Testing"
@@ -45,7 +45,7 @@ required = false
 schema = """{"type":"array"}"""
 
 [slots.tests]
-summary = "Must produce an array of test results (typically by calling testkit.unit)."
+    summary = "Must produce an array of test results (typically by calling testkit/unit)."
 
 [outputs.plan]
 summary = "Aggregated report with plan metadata, summary counts, and individual cases."

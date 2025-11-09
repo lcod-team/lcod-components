@@ -1,0 +1,14 @@
+schemaVersion = "2.0"
+id = "lcod://tests/testkit/std/json/decode_success@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Regression test ensuring tooling/json/decode_object succeeds on valid payloads."
+
+[deps]
+requires = [
+  "lcod://tooling/testkit/unit@0.1.0",
+  "lcod://tooling/json/decode_object@0.1.0"
+]
+
+[outputs.report]
+summary = "Result forwarded from tooling/testkit/unit."

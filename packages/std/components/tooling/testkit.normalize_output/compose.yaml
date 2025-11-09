@@ -1,0 +1,76 @@
+compose:
+  - call: lcod://tooling/script@1
+    in:
+      source: |
+        async ({ state }) => {
+          const clone = (value) => {
+            if (value === undefined) {
+              return undefined;
+            }
+            if (value === null) {
+              return null;
+            }
+            if (typeof value !== "object") {
+              return value;
+            }
+            if (Array.isArray(value)) {
+              try {
+                return JSON.parse(JSON.stringify(value));
+              } catch (_err) {
+                return [...value];
+              }
+            }
+            try {
+              return JSON.parse(JSON.stringify(value));
+            } catch (_err) {
+              return { ...value };
+            }
+          };
+
+          const ensurePlainObject = (value) =>
+            value && typeof value === "object" && !Array.isArray(value) ? value : null;
+
+          const normalize = (value) => {
+            if (value === undefined) {
+              return null;
+            }
+            if (value === null) {
+              return null;
+            }
+            if (typeof value !== "object" || Array.isArray(value)) {
+              return value;
+            }
+
+            const object = ensurePlainObject(clone(value));
+            if (!object) {
+              return null;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(object, "result")) {
+              const nested = ensurePlainObject(object.result);
+              if (nested) {
+                return normalize(nested);
+              }
+            }
+
+            const hasShape =
+              Object.prototype.hasOwnProperty.call(object, "value") ||
+              Object.prototype.hasOwnProperty.call(object, "warnings") ||
+              Object.prototype.hasOwnProperty.call(object, "error");
+            if (!hasShape) {
+              return object;
+            }
+
+            return {
+              value: Object.prototype.hasOwnProperty.call(object, "value") ? object.value : null,
+              warnings: Array.isArray(object.warnings) ? [...object.warnings] : [],
+              error: Object.prototype.hasOwnProperty.call(object, "error") ? object.error : null
+            };
+          };
+
+          return { value: normalize(state.value) };
+        }
+      input:
+        value: $.value
+    out:
+      value: value

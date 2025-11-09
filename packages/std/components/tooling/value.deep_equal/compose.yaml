@@ -1,15 +1,25 @@
 compose:
-  - call: lcod://tooling/json/stable_stringify@0.1.0
+  - call: lcod://core/json/encode@0.1.0
     in:
       value: $.left
+      sortKeys: true
     out:
-      value: leftStable
+      encodedLeft: $
 
-  - call: lcod://tooling/json/stable_stringify@0.1.0
+  - call: lcod://core/json/encode@0.1.0
     in:
       value: $.right
+      sortKeys: true
     out:
-      value: rightStable
+      encodedRight: $
+
+  - call: lcod://impl/set@1
+    in:
+      leftStable: $.encodedLeft.text
+      rightStable: $.encodedRight.text
+    out:
+      leftStable: leftStable
+      rightStable: rightStable
 
   - call: lcod://tooling/value/default_array@0.1.0
     in:
@@ -17,19 +27,19 @@ compose:
         - $.leftStable
         - $.rightStable
     out:
-      resolved: pairValues
+      pairValues: resolved
 
   - call: lcod://tooling/array/find_duplicates@0.1.0
     in:
       items: $.pairValues
     out:
-      duplicates: duplicateValues
+      duplicateValues: duplicates
 
   - call: lcod://tooling/value/is_defined@0.1.0
     in:
       value: $.duplicateValues.0
     out:
-      ok: isEqual
+      isEqual: ok
 
   - call: lcod://impl/set@1
     in:

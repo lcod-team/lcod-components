@@ -1,5 +1,5 @@
 compose:
-  - call: lcod://tooling/testkit.plan@0.1.0
+  - call: lcod://tooling/testkit/plan@0.1.0
     in:
       id: "sample.json"
       name: "Sample JSON decode plan"

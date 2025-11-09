@@ -1,9 +1,9 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
-<p><img src="https://api.iconify.design/mdi:clipboard-list.svg?height=48&width=48" alt="Aggregate multiple testkit.unit cases, producing a consolidated report." width="48" height="48" /></p>
+<p><img src="https://api.iconify.design/mdi:clipboard-list.svg?height=48&width=48" alt="Aggregate multiple testkit/unit cases, producing a consolidated report." width="48" height="48" /></p>
 
 # lcod://tooling/testkit/plan@0.1.0
 
-Aggregate multiple testkit.unit cases, producing a consolidated report.
+Aggregate multiple testkit/unit cases, producing a consolidated report.
 
 ## Inputs
 
@@ -25,4 +25,4 @@ Aggregate multiple testkit.unit cases, producing a consolidated report.
 ## Slots
 
 ### tests
-Must produce an array of test results (typically by calling testkit.unit).
+Must produce an array of test results (typically by calling testkit/unit).

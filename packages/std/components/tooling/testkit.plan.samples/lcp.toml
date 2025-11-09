@@ -12,7 +12,7 @@ tags = ["test", "example"]
 [deps]
 requires = [
   "lcod://tooling/testkit/plan@0.1.0",
-  "lcod://tooling/testkit/case/json_decode_success@0.1.0",
+  "lcod://tooling/testkit.case/json_decode_success@0.1.0",
   "lcod://tooling/value.default_array@0.1.0"
 ]
 

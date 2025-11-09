@@ -16,7 +16,7 @@ requires = [
 ]
 
 [inputs.reports]
-summary = "Array of plan reports produced by tooling/testkit.all."
+summary = "Array of plan reports produced by tooling/testkit/all."
 required = false
 schema = """{"type":"array","items":{"type":"object"}}"""
 

@@ -69,7 +69,7 @@ compose:
             }
 
             const composeRaw = await readFile(composePath) ?? '';
-            const hasUnitCall = composeRaw.includes('lcod://tooling/testkit.unit@0.1.0');
+            const hasUnitCall = composeRaw.includes('lcod://tooling/testkit/unit@0.1.0');
             if (!hasUnitCall) {
               continue;
             }

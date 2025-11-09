@@ -1,5 +1,5 @@
 schemaVersion = "2.0"
-id = "lcod://tooling/value/deep_equal@0.1.0"
+id = "lcod://tooling/value.deep_equal@0.1.0"
 version = "0.1.0"
 kind = "component"
 summary = "Compare two values deeply using stable JSON stringification."
@@ -11,7 +11,7 @@ tags = ["value", "compare", "testing"]
 
 [deps]
 requires = [
-  "lcod://tooling/json/stable_stringify@0.1.0",
+  "lcod://core/json/encode@0.1.0",
   "lcod://tooling/value/default_array@0.1.0",
   "lcod://tooling/array/find_duplicates@0.1.0",
   "lcod://tooling/value/is_defined@0.1.0",

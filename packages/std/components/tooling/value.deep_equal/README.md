@@ -1,7 +1,7 @@
 <!-- AUTO-GENERATED: edit lcp.toml and run scripts/build-component-artifacts.mjs -->
 <p><img src="https://api.iconify.design/mdi:compare-horizontal.svg?height=48&width=48" alt="Compare two values deeply using stable JSON stringification." width="48" height="48" /></p>
 
-# lcod://tooling/value/deep_equal@0.1.0
+# lcod://tooling/value.deep_equal@0.1.0
 
 Compare two values deeply using stable JSON stringification.
 

@@ -1,167 +1,395 @@
 compose:
-  - call: lcod://tooling/script@1
+  ## Normalize optional inputs
+  - call: lcod://tooling/value/default_object@0.1.0
     in:
-      source: |
-        async ({ input, imports }, api) => {
-          const now = Date.now();
-          const startedAt = new Date(now).toISOString();
+      value: $.context
+      fallback: {}
+    out:
+      contextValue: resolved
 
-          const result = {
-            id: input.id ?? input.name ?? null,
-            name: input.name ?? null,
-            description: input.description ?? null,
-            metadata: input.metadata ?? null,
-            startedAt,
-            status: "passed",
-            output: null,
-            expect: Object.prototype.hasOwnProperty.call(input, "expect") ? input.expect : undefined,
-            assertion: null,
-            verify: null,
-            setup: null,
-            teardown: null,
-            logs: [],
-          };
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.setupInput
+      fallback: {}
+    out:
+      safeSetupInput: resolved
+  - call: lcod://tooling/value/is_object@0.1.0
+    in:
+      value: $.safeSetupInput
+    out:
+      safeSetupIsObject: ok
+  - call: lcod://flow/if@1
+    in:
+      cond: $.safeSetupIsObject
+    out:
+      safeSetupInput: safeSetupInput
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            safeSetupInput: $.safeSetupInput
+          out:
+            safeSetupInput: safeSetupInput
+      else:
+        - call: lcod://impl/set@1
+          in:
+            safeSetupInput: {}
+          out:
+            safeSetupInput: safeSetupInput
 
-          const isMissingSlotError = (error, slot) => {
-            if (!error) return false;
-            if (error.code === "LCOD_SLOT_NOT_FOUND" || error.code === "SLOT_NOT_FOUND") {
-              return true;
-            }
-            const message = String(error.message ?? error);
-            return message.includes(`Slot "${slot}"`) && (message.includes("not provided") || message.includes("not found") || message.includes("missing"));
-          };
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.targetInput
+      fallback: {}
+    out:
+      safeTargetInput: resolved
+  - call: lcod://tooling/value/is_object@0.1.0
+    in:
+      value: $.safeTargetInput
+    out:
+      safeTargetIsObject: ok
+  - call: lcod://flow/if@1
+    in:
+      cond: $.safeTargetIsObject
+    out:
+      safeTargetInput: safeTargetInput
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            safeTargetInput: $.safeTargetInput
+          out:
+            safeTargetInput: safeTargetInput
+      else:
+        - call: lcod://impl/set@1
+          in:
+            safeTargetInput: {}
+          out:
+            safeTargetInput: safeTargetInput
 
-          const runSlot = async (slot, payload, { optional = false } = {}) => {
-            try {
-              return await api.runSlot(slot, payload ?? {});
-            } catch (error) {
-              if (optional && isMissingSlotError(error, slot)) {
-                return undefined;
-              }
-              throw error;
-            }
-          };
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.verifyInput
+      fallback: {}
+    out:
+      safeVerifyInput: resolved
+  - call: lcod://tooling/value/is_object@0.1.0
+    in:
+      value: $.safeVerifyInput
+    out:
+      safeVerifyIsObject: ok
+  - call: lcod://flow/if@1
+    in:
+      cond: $.safeVerifyIsObject
+    out:
+      safeVerifyInput: safeVerifyInput
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            safeVerifyInput: $.safeVerifyInput
+          out:
+            safeVerifyInput: safeVerifyInput
+      else:
+        - call: lcod://impl/set@1
+          in:
+            safeVerifyInput: {}
+          out:
+            safeVerifyInput: safeVerifyInput
 
-          let setupResult;
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.teardownInput
+      fallback: {}
+    out:
+      safeTeardownInput: resolved
+  - call: lcod://tooling/value/is_object@0.1.0
+    in:
+      value: $.safeTeardownInput
+    out:
+      safeTeardownIsObject: ok
+  - call: lcod://flow/if@1
+    in:
+      cond: $.safeTeardownIsObject
+    out:
+      safeTeardownInput: safeTeardownInput
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            safeTeardownInput: $.safeTeardownInput
+          out:
+            safeTeardownInput: safeTeardownInput
+      else:
+        - call: lcod://impl/set@1
+          in:
+            safeTeardownInput: {}
+          out:
+            safeTeardownInput: safeTeardownInput
 
-          try {
-            if (input.skipSetup !== true) {
-              const setupPayload = {
-                ...(input.setupInput ?? {}),
-                context: input.context ?? {},
-              };
-              setupResult = await runSlot(
-                "setup",
-                setupPayload,
-                { optional: true }
-              );
-              if (typeof setupResult !== "undefined") {
-                result.setup = setupResult;
-              }
-            }
+  ## Setup slot
+  - call: lcod://flow/if@1
+    in:
+      cond: $.skipSetup
+    out:
+      setupCall: setupCall
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            setupCall:
+              ran: false
+              result: null
+              error: null
+          out:
+            setupCall: setupCall
+      else:
+        - call: lcod://core/object/merge@0.1.0
+          in:
+            left: $.safeSetupInput
+            right:
+              context: $.contextValue
+          out:
+            setupPayload: value
+        - call: lcod://contract/compose/run_slot@1
+          in:
+            slot: setup
+            state: $.setupPayload
+            optional: true
+          out:
+            setupRan: ran
+            setupResult: result
+            setupError: error
+        - call: lcod://impl/set@1
+          in:
+            setupCall:
+              ran: $.setupRan
+              result: $.setupResult
+              error: $.setupError
+          out:
+            setupCall: setupCall
 
-            const targetPayload = {
-              ...(input.targetInput ?? {}),
-              context: input.context ?? {},
-              setup: setupResult,
-            };
-            const targetResult = await runSlot("target", targetPayload);
-            result.output = typeof targetResult === "undefined" ? null : targetResult;
+  ## Target slot
+  - call: lcod://core/object/merge@0.1.0
+    in:
+      left: $.safeTargetInput
+      right:
+        context: $.contextValue
+        setup: $.setupCall.result
+    out:
+      targetPayload: value
 
-            if (Object.prototype.hasOwnProperty.call(input, "expect")) {
-              const comparison = await imports.deepEqual({
-                left: result.output,
-                right: input.expect,
-              });
-              const equal = comparison?.result?.equal === true;
-              result.assertion = {
-                equal,
-                actualSnapshot: comparison?.result?.leftStable ?? null,
-                expectedSnapshot: comparison?.result?.rightStable ?? null,
-              };
-              if (!equal) {
-                result.status = "failed";
-              }
-            }
+  - call: lcod://contract/compose/run_slot@1
+    in:
+      slot: target
+      state: $.targetPayload
+    out:
+      targetRan: ran
+      targetResult: result
+      targetError: error
 
-            const verifyPayload = {
-              ...(input.verifyInput ?? {}),
-              output: result.output,
-              expect: input.expect,
-              metadata: result.metadata,
-              assertion: result.assertion,
-              context: input.context ?? {},
-              input,
-            };
-            const verifyResult = await runSlot("verify", verifyPayload, { optional: true });
-            if (typeof verifyResult !== "undefined") {
-              result.verify = verifyResult;
-              const verifyStatus = String(verifyResult?.status ?? "").toLowerCase();
-              if (verifyStatus === "failed" && result.status === "passed") {
-                result.status = "failed";
-              }
-            }
-          } catch (error) {
-            result.status = "error";
-            result.error = {
-              message: error?.message ?? String(error),
-              stack: error?.stack ?? null,
-            };
-          } finally {
-            try {
-              if (input.skipTeardown !== true) {
-                const teardownPayload = {
-                  ...(input.teardownInput ?? {}),
-                  output: result.output,
-                  status: result.status,
-                  metadata: result.metadata,
-                  context: input.context ?? {},
-                };
-                const teardownResult = await runSlot(
-                  "teardown",
-                  teardownPayload,
-                  { optional: true }
-                );
-                if (typeof teardownResult !== "undefined") {
-                  result.teardown = teardownResult;
-                }
-              }
-            } catch (error) {
-              result.teardownError = {
-                message: error?.message ?? String(error),
-                stack: error?.stack ?? null,
-              };
-              if (result.status === "passed") {
-                result.status = "error";
-              }
-            }
+  - call: lcod://impl/set@1
+    in:
+      targetCall:
+        ran: $.targetRan
+        result: $.targetResult
+        error: $.targetError
+    out:
+      targetCall: targetCall
 
-            const finishedAtMs = Date.now();
-            result.finishedAt = new Date(finishedAtMs).toISOString();
-            result.durationMs = finishedAtMs - now;
-          }
+  - call: lcod://flow/if@1
+    in:
+      cond: $.targetCall.ran
+    out:
+      normalizedOutput: normalizedOutput
+    slots:
+      then:
+        - call: lcod://tooling/testkit/normalize_output@0.1.0
+          in:
+            value: $.targetCall.result
+          out:
+            normalizedOutput: value
+      else:
+        - call: lcod://impl/set@1
+          in:
+            normalizedOutput: null
+          out:
+            normalizedOutput: normalizedOutput
 
-          return { result };
-        }
-      input:
+  ## Expect comparison
+  - call: lcod://tooling/value/is_defined@0.1.0
+    in:
+      value: $.expect
+    out:
+      expectProvided: ok
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.expectProvided
+    out:
+      comparison: comparison
+    slots:
+      then:
+        - call: lcod://tooling/value.deep_equal@0.1.0
+          in:
+            left: $.normalizedOutput
+            right: $.expect
+          out:
+            comparisonResult: result
+        - call: lcod://impl/set@1
+          in:
+            comparison:
+              equal: $.comparisonResult.equal
+              actualSnapshot: $.comparisonResult.left
+              expectedSnapshot: $.comparisonResult.right
+          out:
+            comparison: comparison
+      else:
+        - call: lcod://impl/set@1
+          in:
+            comparison:
+              equal: true
+              actualSnapshot: null
+              expectedSnapshot: null
+          out:
+            comparison: comparison
+
+  - call: lcod://tooling/value/is_defined@0.1.0
+    in:
+      value: $.targetCall.error
+    out:
+      targetHasError: ok
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.targetHasError
+    out:
+      successValue: successValue
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            successValue: false
+          out:
+            successValue: successValue
+      else:
+        - call: lcod://flow/if@1
+          in:
+            cond: $.expectProvided
+          out:
+            successValue: successValue
+          slots:
+            then:
+              - call: lcod://impl/set@1
+                in:
+                  successValue: $.comparison.equal
+                out:
+                  successValue: successValue
+            else:
+              - call: lcod://impl/set@1
+                in:
+                  successValue: true
+                out:
+                  successValue: successValue
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.expectProvided
+    out:
+      difference: difference
+    slots:
+      then:
+        - call: lcod://impl/set@1
+          in:
+            difference:
+              actual: $.comparison.actualSnapshot
+              expected: $.comparison.expectedSnapshot
+          out:
+            difference: difference
+      else:
+        - call: lcod://impl/set@1
+          in:
+            difference: null
+          out:
+            difference: difference
+
+  ## Verify slot
+  - call: lcod://core/object/merge@0.1.0
+    in:
+      left: $.safeVerifyInput
+      right:
+        context: $.contextValue
+        output: $.normalizedOutput
+        expect: $.expect
+        assertion: $.comparison
+    out:
+      verifyPayload: value
+
+  - call: lcod://contract/compose/run_slot@1
+    in:
+      slot: verify
+      state: $.verifyPayload
+      optional: true
+    out:
+      verifyRan: ran
+      verifyResult: result
+      verifyError: error
+
+  - call: lcod://impl/set@1
+    in:
+      verifyCall:
+        ran: $.verifyRan
+        result: $.verifyResult
+        error: $.verifyError
+    out:
+      verifyCall: verifyCall
+
+  ## Teardown slot
+  - call: lcod://core/object/merge@0.1.0
+    in:
+      left: $.safeTeardownInput
+      right:
+        context: $.contextValue
+        output: $.normalizedOutput
+        status: $.successValue
+    out:
+      teardownPayload: value
+
+  - call: lcod://contract/compose/run_slot@1
+    in:
+      slot: teardown
+      state: $.teardownPayload
+      optional: true
+    out:
+      teardownRan: ran
+      teardownResult: result
+      teardownError: error
+
+  - call: lcod://impl/set@1
+    in:
+      teardownCall:
+        ran: $.teardownRan
+        result: $.teardownResult
+        error: $.teardownError
+    out:
+      teardownCall: teardownCall
+
+  ## Final report
+  - call: lcod://impl/set@1
+    in:
+      result:
         id: $.id
         name: $.name
         description: $.description
         metadata: $.metadata
+        success: $.successValue
+        output: $.normalizedOutput
         expect: $.expect
-        context: $.context
-        targetInput: $.targetInput
-        setupInput: $.setupInput
-        verifyInput: $.verifyInput
-        teardownInput: $.teardownInput
-        skipSetup: $.skipSetup
-        skipTeardown: $.skipTeardown
-      imports:
-        deepEqual: lcod://tooling/value.deep_equal@0.1.0
-    slots:
-      setup: []
-      target: []
-      verify: []
-      teardown: []
+        difference: $.difference
+        setup: $.setupCall
+        target: $.targetCall
+        verify: $.verifyCall
+        teardown: $.teardownCall
+        assertion: $.comparison
     out:
       result: result

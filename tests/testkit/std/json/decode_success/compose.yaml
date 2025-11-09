@@ -1,5 +1,5 @@
 compose:
-  - call: lcod://tooling/testkit.unit@0.1.0
+  - call: lcod://tooling/testkit/unit@0.1.0
     in:
       id: "std.json.decode.success"
       name: "JSON decode succeeds"
@@ -10,7 +10,9 @@ compose:
           success: true
         warnings: []
         error: null
-    children:
+    out:
+      report: result
+    slots:
       target:
         - call: lcod://tooling/json/decode_object@0.1.0
           in:

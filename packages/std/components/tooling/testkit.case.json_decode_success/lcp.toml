@@ -1,5 +1,5 @@
 schemaVersion = "2.0"
-id = "lcod://tooling/testkit/case/json_decode_success@0.1.0"
+id = "lcod://tooling/testkit.case/json_decode_success@0.1.0"
 version = "0.1.0"
 kind = "component"
 summary = "Example test case exercising tooling/json/decode_object@0.1.0."
@@ -22,5 +22,5 @@ required = false
 schema = """{"type":"string"}"""
 
 [outputs.result]
-summary = "Test report produced by testkit.unit."
+summary = "Test report produced by testkit/unit."
 schema = """{"type":"object"}"""

@@ -11,8 +11,8 @@ tags = ["test", "automation", "runner"]
 
 [deps]
 requires = [
-  "lcod://tooling/testkit.discover@0.1.0",
-  "lcod://tooling/testkit.plan@0.1.0",
+  "lcod://tooling/testkit/discover@0.1.0",
+  "lcod://tooling/testkit/plan@0.1.0",
   "lcod://flow/foreach@1",
   "lcod://tooling/script@1"
 ]
@@ -58,5 +58,5 @@ required = false
 schema = """{"type":"object"}"""
 
 [outputs.report]
-summary = "Aggregated plan report produced by tooling/testkit.plan."
+summary = "Aggregated plan report produced by tooling/testkit/plan."
 schema = """{"type":"object"}"""

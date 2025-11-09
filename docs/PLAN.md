@@ -28,15 +28,18 @@ those reusable blocks.
    - Interact with storage (GitHub release, S3, etc.).
 
 5. **Testkit orchestration** ([#11](https://github.com/lcod-team/lcod-components/issues/11)):
-   - Define a `tooling/testkit.unit@1` component able to run a compose-based test
+   - Define a `tooling/testkit/unit@1` component able to run a compose-based test
      (setup, target compose with slots, expectations, metrics) inside the current kernel.
-   - Provide a `tooling/testkit.plan@1` aggregator that discovers unit tests (glob
+   - Provide a `tooling/testkit/plan@1` aggregator that discovers unit tests (glob
      or explicit list), executes them sequentially/parallel in a single kernel
      instance, and emits a structured report.
    - Add helper stubs (`tooling/testkit/emitter@1`, `tooling/testkit/spy@1`, …)
      to generate fixtures and capture slot activity.
    - Update the repository runner (`scripts/run-tests.mjs`) to drive the plan and
      collect per-kernel matrices.
+   - Refactor the testkit components to rely on the future `compose/run_slot@1` contract
+     and declarative scope helpers rather than `tooling/script`, so tests remain
+     pure composes end-to-end.
 
 The focus for the next iteration is milestone 2 and 5: replicate the behaviour of
 the current `package-runtime` / registry catalog scripts through declarative

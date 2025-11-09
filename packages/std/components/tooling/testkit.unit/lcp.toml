@@ -11,8 +11,14 @@ tags = ["test", "quality", "automation"]
 
 [deps]
 requires = [
-  "lcod://tooling/script@1",
-  "lcod://tooling/value.deep_equal@0.1.0"
+  "lcod://flow/if@1",
+  "lcod://tooling/value.deep_equal@0.1.0",
+  "lcod://tooling/value/default_object@0.1.0",
+  "lcod://tooling/value/is_defined@0.1.0",
+  "lcod://core/object/merge@0.1.0",
+  "lcod://contract/compose/run_slot@1",
+  "lcod://tooling/testkit/normalize_output@0.1.0",
+  "lcod://impl/set@1"
 ]
 
 [inputs.id]
@@ -88,7 +94,7 @@ summary = "Optional verification hook receiving { output, expect, metadata, asse
 summary = "Optional cleanup hook executed after the test."
 
 [outputs.result]
-summary = "Structured report for the test case."
+summary = "Simplified report for the test case."
 schema = """
 {
   "type": "object",
@@ -97,26 +103,29 @@ schema = """
     "name": { "type": ["string", "null"] },
     "description": { "type": ["string", "null"] },
     "metadata": { "type": ["object", "null"] },
-    "status": { "type": "string" },
-    "startedAt": { "type": "string" },
-    "finishedAt": { "type": "string" },
-    "durationMs": { "type": "number" },
+    "success": { "type": "boolean" },
     "output": {},
     "expect": {},
+    "difference": {
+      "type": ["object", "null"],
+      "properties": {
+        "actual": {},
+        "expected": {}
+      }
+    },
     "assertion": {
       "type": ["object", "null"],
       "properties": {
         "equal": { "type": ["boolean", "null"] },
-        "actualSnapshot": { "type": ["string", "null"] },
-        "expectedSnapshot": { "type": ["string", "null"] }
+        "actualSnapshot": {},
+        "expectedSnapshot": {}
       }
     },
-    "verify": {},
-    "setup": {},
-    "teardown": {},
-    "error": { "type": ["object", "null"] },
-    "teardownError": { "type": ["object", "null"] }
+    "setup": { "type": ["object", "null"] },
+    "target": { "type": ["object", "null"] },
+    "verify": { "type": ["object", "null"] },
+    "teardown": { "type": ["object", "null"] }
   },
-  "required": ["status", "startedAt", "finishedAt", "durationMs"]
+  "required": ["success"]
 }
 """

@@ -1,5 +1,5 @@
 compose:
-  - call: lcod://tooling/testkit.unit@0.1.0
+  - call: lcod://tooling/testkit/unit@0.1.0
     in:
       id: "tooling.json.decode.success"
       name: "Decode JSON object (happy path)"

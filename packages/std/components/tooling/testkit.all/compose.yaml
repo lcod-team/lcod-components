@@ -1,5 +1,5 @@
 compose:
-  - call: lcod://tooling/testkit.discover@0.1.0
+  - call: lcod://tooling/testkit/discover@0.1.0
     in:
       projectRoot: $.projectRoot
       root: $.root
@@ -103,7 +103,7 @@ compose:
     out:
       results: results
 
-  - call: lcod://tooling/testkit.plan@0.1.0
+  - call: lcod://tooling/testkit/plan@0.1.0
     in:
       id: $.planId
       name: $.planName

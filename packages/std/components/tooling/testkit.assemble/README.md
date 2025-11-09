@@ -9,7 +9,7 @@ Assemble multiple testkit plans into a kernel-by-test matrix.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `reports` | array<object> | No | Array of plan reports produced by tooling/testkit.all. |
+| `reports` | array<object> | No | Array of plan reports produced by tooling/testkit/all. |
 
 ## Outputs
 

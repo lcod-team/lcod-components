@@ -22,4 +22,4 @@ Execute all discovered testkit cases for a given kernel and return an aggregated
 
 | Name | Type | Description |
 | --- | --- | --- |
-| `report` | object | Aggregated plan report produced by tooling/testkit.plan. |
+| `report` | object | Aggregated plan report produced by tooling/testkit/plan. |
