@@ -9,11 +9,15 @@ compose:
           in:
             text: "{\"success\":true}"
           out:
-            result: result
+            successResult: result
+        - call: lcod://tooling/testkit/case/json_decode_failure@0.1.0
+          out:
+            failureResult: result
         - call: lcod://tooling/value/default_array@0.1.0
           in:
             value:
-              - $.result
+              - $.successResult
+              - $.failureResult
           out:
             resolved: results
         out:

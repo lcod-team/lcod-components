@@ -33,6 +33,8 @@ those reusable blocks.
    - Provide a `tooling/testkit/plan@1` aggregator that discovers unit tests (glob
      or explicit list), executes them sequentially/parallel in a single kernel
      instance, and emits a structured report.
+   - Guard against regressions by adding nested examples (e.g. `std/json/decode_failure`
+     where one `testkit.unit` validates another).
    - Add helper stubs (`tooling/testkit/emitter@1`, `tooling/testkit/spy@1`, …)
      to generate fixtures and capture slot activity.
    - Update the repository runner (`scripts/run-tests.mjs`) to drive the plan and

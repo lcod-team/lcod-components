@@ -1,0 +1,21 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/testkit.case/json_decode_failure@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Regression guard ensuring tooling/json/decode_object mismatches are detected."
+icon = "mdi:shield-alert"
+
+[deps]
+requires = [
+  "lcod://tooling/testkit/unit@0.1.0",
+  "lcod://tooling/json/decode_object@0.1.0",
+  "lcod://tooling/script@1.0.0"
+]
+
+[inputs.text]
+type = "string"
+summary = "JSON text to decode (defaults to '{\"success\":true}')."
+required = false
+
+[outputs.result]
+summary = "Test report produced by testkit/unit."

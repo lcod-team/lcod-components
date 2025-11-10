@@ -1,0 +1,65 @@
+compose:
+  - call: lcod://tooling/testkit/unit@0.1.0
+    in:
+      id: "tooling.json.decode.failure.guard"
+      name: "Detect JSON decode regressions"
+      targetInput:
+        text: "{\"success\":true}"
+      expect:
+        value:
+          detectedFailure: true
+        warnings: []
+        error: null
+    children:
+      target:
+        - call: lcod://tooling/testkit/unit@0.1.0
+          in:
+            id: "tooling.json.decode.failure.inner"
+            name: "Inner decode guard"
+            targetInput:
+              text: $.text
+            expect:
+              value:
+                success: false
+              warnings: []
+              error:
+                message: "Expected decode failure"
+          children:
+            target:
+              - call: lcod://tooling/json/decode_object@0.1.0
+                in:
+                  text: $.text
+                out:
+                  value: value
+                  warnings: warnings
+                  error: error
+          out:
+            innerReport: result
+        - call: lcod://flow/if@1
+          in:
+            cond: $.innerReport.success
+          out:
+            detectedFailure: detectedFailure
+          slots:
+            then:
+              - call: lcod://impl/set@1
+                in:
+                  detectedFailure: false
+                out:
+                  detectedFailure: detectedFailure
+            else:
+              - call: lcod://impl/set@1
+                in:
+                  detectedFailure: true
+                out:
+                  detectedFailure: detectedFailure
+        - call: lcod://impl/set@1
+          in:
+            value:
+              detectedFailure: $.detectedFailure
+            warnings: []
+            error: null
+          out:
+            value: value
+            warnings: warnings
+            error: error

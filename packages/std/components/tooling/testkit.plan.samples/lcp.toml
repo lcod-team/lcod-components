@@ -2,7 +2,7 @@ schemaVersion = "2.0"
 id = "lcod://tooling/testkit/plan/sample@0.1.0"
 version = "0.1.0"
 kind = "component"
-summary = "Demonstration plan aggregating a single JSON decode test case."
+summary = "Demonstration plan aggregating JSON decode success/failure guards."
 
 [palette]
 category = "Testing"
@@ -13,6 +13,7 @@ tags = ["test", "example"]
 requires = [
   "lcod://tooling/testkit/plan@0.1.0",
   "lcod://tooling/testkit.case/json_decode_success@0.1.0",
+  "lcod://tooling/testkit.case/json_decode_failure@0.1.0",
   "lcod://tooling/value.default_array@0.1.0"
 ]
 

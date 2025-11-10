@@ -26,7 +26,7 @@ Run an embedded compose-based test case inside the current kernel.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| `result` | object | Structured report for the test case. |
+| `result` | object | Simplified report for the test case. |
 
 ## Slots
 

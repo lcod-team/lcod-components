@@ -1,0 +1,15 @@
+schemaVersion = "2.0"
+id = "lcod://tests/testkit/std/json/decode_failure@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Regression guard ensuring testkit/unit flags JSON decode mismatches."
+
+[deps]
+requires = [
+  "lcod://tooling/testkit/unit@0.1.0",
+  "lcod://tooling/json/decode_object@0.1.0",
+  "lcod://tooling/script@1.0.0"
+]
+
+[outputs.report]
+summary = "Result forwarded from tooling/testkit/unit."
