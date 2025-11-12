@@ -10,8 +10,11 @@ Discover compose-based test cases following common conventions.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `root` | string | No | Relative path (from projectRoot) where testkit cases live (default: tests/testkit). |
-| `projectRoot` | string | No | Workspace root (default: current directory). |
+| `projectRoot` | string | No | Absolute path to the repository root containing tests/testkit (defaults to working directory). |
+| `projectPath` | string | No | Alias for projectRoot maintained for compatibility. |
 | `defaultKernels` | array<string> | No | Fallback kernel list when a test does not specify explicit targets. |
+| `directories` | array<string> | No | Optional subset of directories (relative to root) to scan. Defaults to all. |
+| `includeHidden` | boolean | No | Include tests whose descriptor sets discoverable=false (default: false). |
 
 ## Outputs
 

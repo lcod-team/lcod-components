@@ -29,3 +29,28 @@ It understands a subset of Semantic Versioning:
 
 [docs]
 readme = "README.md"
+
+[inputs.packages]
+summary = "Map of component id -> array of registry entries (from registry/index)."
+required = true
+schema = """{"type":"object","description":"Map of component id -> array of registry entries (from registry/index)."}"""
+
+[inputs.id]
+summary = "Input field id."
+required = true
+schema = """{"type":"string","minLength":1}"""
+
+[inputs.range]
+summary = "SemVer range or exact version (optional)."
+required = false
+schema = """{"type":["string","null"],"description":"SemVer range or exact version (optional)."}"""
+
+[inputs.registryId]
+summary = "Optional registry preference."
+required = false
+schema = """{"type":["string","null"],"description":"Optional registry preference."}"""
+
+[outputs.entry]
+summary = "Output field entry."
+required = true
+schema = """{"oneOf":[{"type":"null"},{"type":"object"}]}"""

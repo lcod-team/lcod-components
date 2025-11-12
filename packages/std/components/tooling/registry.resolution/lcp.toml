@@ -33,3 +33,43 @@ resolver compose."""
 
 [docs]
 readme = "README.md"
+
+[inputs.projectPath]
+summary = "Input field projectPath."
+required = true
+schema = """{"type":"string","minLength":1}"""
+
+[inputs.sources]
+summary = "Input field sources."
+required = false
+schema = """{"type":"array","items":{"type":"object"}}"""
+
+[inputs.requests]
+summary = "Input field requests."
+required = false
+schema = """{"type":"array","items":{"type":"object","required":["id"],"properties":{"id":{"type":"string","minLength":1},"range":{"type":["string","null"]},"registryId":{"type":["string","null"]}}}}"""
+
+[outputs.registries]
+summary = "Output field registries."
+required = true
+schema = """{"type":"array","items":{"type":"object"}}"""
+
+[outputs.entries]
+summary = "Output field entries."
+required = true
+schema = """{"type":"array","items":{"type":"object"}}"""
+
+[outputs.packages]
+summary = "Output field packages."
+required = true
+schema = """{"type":"object"}"""
+
+[outputs.resolved]
+summary = "Output field resolved."
+required = true
+schema = """{"type":"array","items":{"type":"object"}}"""
+
+[outputs.warnings]
+summary = "Output field warnings."
+required = true
+schema = """{"type":"array","items":{"type":"string"}}"""

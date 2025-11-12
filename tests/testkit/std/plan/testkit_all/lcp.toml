@@ -1,0 +1,31 @@
+schemaVersion = "2.0"
+id = "lcod://tests/testkit/std/plan/testkit_all@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Integration test ensuring tooling/testkit/all reports success and failure cases."
+
+[deps]
+requires = [
+  "lcod://tooling/testkit/unit@0.1.0",
+  "lcod://tooling/testkit/all@0.1.0",
+  "lcod://tooling/script@1",
+  "lcod://impl/set@1"
+]
+
+[inputs.kernel]
+summary = "Kernel identifier propagated to tooling/testkit/all (default: rs)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.root]
+summary = "Root directory passed to tooling/testkit/all (default: tests/testkit)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.directories]
+summary = "Optional list of sub-directories to scan (default: std/json + std/plan/fixtures)."
+required = false
+schema = """{"type":"array","items":{"type":"string"}}"""
+
+[outputs.report]
+summary = "Result forwarded from tooling/testkit/unit."

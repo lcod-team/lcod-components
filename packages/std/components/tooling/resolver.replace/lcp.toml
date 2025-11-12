@@ -25,3 +25,32 @@ This helper keeps the replacement logic reusable across resolver flows and easy 
 
 [docs]
 readme = "README.md"
+
+[inputs.id]
+summary = "Input field id."
+required = true
+schema = """{"type":"string","minLength":1}"""
+
+[inputs.replaceAlias]
+summary = "Input field replaceAlias."
+required = false
+schema = """{"type":"object"}"""
+
+[inputs.replaceSpec]
+summary = "Input field replaceSpec."
+required = false
+schema = """{"type":"object"}"""
+
+[outputs.targetId]
+summary = "Output field targetId."
+required = true
+schema = """{"anyOf":[{"type":"string","minLength":1},{"type":"null"}]}"""
+
+[outputs.override]
+summary = "Output field override."
+schema = """{"anyOf":[{"type":"object"},{"type":"null"}]}"""
+
+[outputs.warnings]
+summary = "Output field warnings."
+required = true
+schema = """{"type":"array","items":{"type":"string"}}"""

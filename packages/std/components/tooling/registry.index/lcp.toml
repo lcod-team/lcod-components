@@ -46,3 +46,28 @@ groups versions per component so resolvers can pick the newest compatible one.
 
 [docs]
 readme = "README.md"
+
+[inputs.sources]
+summary = "Input field sources."
+required = true
+schema = """{"type":"array","items":{"$ref":"#/$defs/source"},"minItems":1}"""
+
+[outputs.registries]
+summary = "Output field registries."
+required = true
+schema = """{"type":"array","items":{"$ref":"#/$defs/registry"}}"""
+
+[outputs.entries]
+summary = "Output field entries."
+required = true
+schema = """{"type":"array","items":{"$ref":"#/$defs/componentEntry"}}"""
+
+[outputs.packages]
+summary = "Output field packages."
+required = true
+schema = """{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/componentEntry"}}}"""
+
+[outputs.errors]
+summary = "Output field errors."
+required = true
+schema = """{"type":"array","items":{"type":"string"}}"""

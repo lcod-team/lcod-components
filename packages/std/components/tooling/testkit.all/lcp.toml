@@ -12,7 +12,6 @@ tags = ["test", "automation", "runner"]
 [deps]
 requires = [
   "lcod://tooling/testkit/discover@0.1.0",
-  "lcod://tooling/testkit/plan@0.1.0",
   "lcod://flow/foreach@1",
   "lcod://tooling/script@1"
 ]
@@ -22,13 +21,18 @@ summary = "Kernel identifier (e.g. rs, node, java). Defaults to rs."
 required = false
 schema = """{"type":"string"}"""
 
-[inputs.projectRoot]
-summary = "Workspace root directory (defaults to current directory)."
+[inputs.root]
+summary = "Relative path containing testkit cases (defaults to tests/testkit)."
 required = false
 schema = """{"type":"string"}"""
 
-[inputs.root]
-summary = "Relative path containing testkit cases (defaults to tests/testkit)."
+[inputs.projectRoot]
+summary = "Absolute path to the repository root (defaults to working directory)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.projectPath]
+summary = "Legacy alias for projectRoot."
 required = false
 schema = """{"type":"string"}"""
 
@@ -57,6 +61,16 @@ summary = "Optional metadata forwarded to the aggregated plan."
 required = false
 schema = """{"type":"object"}"""
 
+[inputs.directories]
+summary = "Optional list of sub-directories within tests/testkit to execute."
+required = false
+schema = """{"type":"array","items":{"type":"string"}}"""
+
+[inputs.includeHidden]
+summary = "Include cases whose descriptors set discoverable=false (default: false)."
+required = false
+schema = """{"type":"boolean"}"""
+
 [outputs.report]
-summary = "Aggregated plan report produced by tooling/testkit/plan."
+summary = "Aggregated plan report containing normalized test cases."
 schema = """{"type":"object"}"""

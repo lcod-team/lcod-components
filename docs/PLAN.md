@@ -32,9 +32,13 @@ those reusable blocks.
      (setup, target compose with slots, expectations, metrics) inside the current kernel.
    - Provide a `tooling/testkit/plan@1` aggregator that discovers unit tests (glob
      or explicit list), executes them sequentially/parallel in a single kernel
-     instance, and emits a structured report.
+     instance, and emits a structured report. `tooling/testkit/all@0.1.0` now
+     performs discovery + execution per kernel while `tooling/testkit/assemble`
+     merges the resulting plans into a matrix.
    - Guard against regressions by adding nested examples (e.g. `std/json/decode_failure`
      where one `testkit.unit` validates another).
+   - Document the repository convention (`tests/testkit/**`) so every package
+     exposes the same structure (see `docs/TESTKIT.md`).
    - Add helper stubs (`tooling/testkit/emitter@1`, `tooling/testkit/spy@1`, …)
      to generate fixtures and capture slot activity.
    - Update the repository runner (`scripts/run-tests.mjs`) to drive the plan and
@@ -54,3 +58,6 @@ components, and introduce the compose-native testkit.
   `tooling/registry/source/load`).
 - Write a small compose that runs the existing registry catalog pipeline end to
   end.
+- Finalise the testkit plan runner (`tooling/testkit/all@…`) that automatically
+  scans `tests/testkit/**/compose.yaml` in the current workspace and executes
+  them in a single kernel instance.

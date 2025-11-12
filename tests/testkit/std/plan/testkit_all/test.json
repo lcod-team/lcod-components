@@ -1,0 +1,11 @@
+{
+  "id": "std.plan.testkit_all",
+  "name": "Aggregated testkit report",
+  "description": "Ensures tooling/testkit/all surfaces both success and failure cases.",
+  "kernels": ["rs", "node", "java"],
+  "componentId": "lcod://tests/testkit/std/plan/testkit_all@0.1.0",
+  "discoverable": false,
+  "metadata": {
+    "group": "plan"
+  }
+}

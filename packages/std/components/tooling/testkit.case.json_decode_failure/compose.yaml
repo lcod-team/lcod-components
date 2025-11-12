@@ -63,3 +63,5 @@ compose:
             value: value
             warnings: warnings
             error: error
+    out:
+      result: result

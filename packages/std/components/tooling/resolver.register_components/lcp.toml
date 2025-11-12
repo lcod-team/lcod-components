@@ -22,3 +22,17 @@ body = "Registers shared resolver helper components (registry loaders, selectors
 
 [docs]
 readme = "README.md"
+
+[inputs.specRoot]
+summary = "Absolute path to the lcod-spec repository containing resolver helpers."
+required = false
+schema = """{"anyOf":[{"type":"null"},{"type":"string","minLength":1}],"description":"Absolute path to the lcod-spec repository containing resolver helpers."}"""
+
+[outputs.registered]
+summary = "Number of components successfully registered."
+required = true
+schema = """{"type":"integer","minimum":0,"description":"Number of components successfully registered."}"""
+
+[outputs.warnings]
+summary = "Warnings emitted while resolving or registering components."
+schema = """{"type":"array","items":{"type":"string"},"description":"Warnings emitted while resolving or registering components."}"""

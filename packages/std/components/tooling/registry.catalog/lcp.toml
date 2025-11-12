@@ -11,6 +11,16 @@ requires = [
   "lcod://axiom/fs/read-file@1"
 ]
 
+[inputs.rootPath]
+summary = "Registry repository root used to resolve relative paths (defaults to current directory)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.catalogPath]
+summary = "Path to the catalog descriptor (e.g. catalog.json) relative to rootPath."
+required = false
+schema = """{"type":"string"}"""
+
 [tool]
 name = "Registry Catalog Generator"
 description = "Builds registry indexes (JSON/JSONL) from catalog and versions metadata."
@@ -76,3 +86,23 @@ file (newest first)."""
 
 [docs]
 readme = "README.md"
+
+[outputs.packagesJsonl]
+summary = "Serialized JSONL catalogue containing registry and component entries."
+required = true
+schema = """{"type":"string","description":"Serialized JSONL catalogue containing registry and component entries."}"""
+
+[outputs.registryJson]
+summary = "Registry JSON descriptor ready to be written to registry.json."
+required = true
+schema = """{"type":"object","description":"Registry JSON descriptor ready to be written to registry.json."}"""
+
+[outputs.packages]
+summary = "Diagnostics per package (versions, registries, priority metadata)."
+required = true
+schema = """{"type":"array","items":{"type":"object"},"description":"Diagnostics per package (versions, registries, priority metadata)."}"""
+
+[outputs.warnings]
+summary = "Non-fatal issues encountered while generating the catalogue."
+required = true
+schema = """{"type":"array","items":{"type":"string"},"description":"Non-fatal issues encountered while generating the catalogue."}"""

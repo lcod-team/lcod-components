@@ -13,9 +13,10 @@ tags = ["test", "automation", "discovery"]
 requires = [
   "lcod://tooling/script@1",
   "lcod://tooling/yaml/parse@0.1.0",
-  "lcod://axiom/path/join@1",
   "lcod://contract/core/fs/list-dir@1",
-  "lcod://contract/core/fs/read-file@1"
+  "lcod://contract/core/fs/read-file@1",
+  "lcod://axiom/path/join@1",
+  "lcod://axiom/toml/parse@1"
 ]
 
 [inputs.root]
@@ -24,7 +25,12 @@ required = false
 schema = """{"type":"string"}"""
 
 [inputs.projectRoot]
-summary = "Workspace root (default: current directory)."
+summary = "Absolute path to the repository root containing tests/testkit (defaults to working directory)."
+required = false
+schema = """{"type":"string"}"""
+
+[inputs.projectPath]
+summary = "Alias for projectRoot maintained for compatibility."
 required = false
 schema = """{"type":"string"}"""
 
@@ -32,6 +38,16 @@ schema = """{"type":"string"}"""
 summary = "Fallback kernel list when a test does not specify explicit targets."
 required = false
 schema = """{"type":"array","items":{"type":"string"}}"""
+
+[inputs.directories]
+summary = "Optional subset of directories (relative to root) to scan. Defaults to all."
+required = false
+schema = """{"type":"array","items":{"type":"string"}}"""
+
+[inputs.includeHidden]
+summary = "Include tests whose descriptor sets discoverable=false (default: false)."
+required = false
+schema = """{"type":"boolean"}"""
 
 [outputs.tests]
 summary = "Discovered test specifications (id, name, kernels, composePath, metadata)."

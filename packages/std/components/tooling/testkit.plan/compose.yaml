@@ -1,4 +1,10 @@
 compose:
+  - call: lcod://impl/set@1
+    in:
+      precomputedTests: $.entries
+    out:
+      precomputedTests: precomputedTests
+
   - call: lcod://tooling/script@1
     in:
       source: |
@@ -68,8 +74,15 @@ compose:
 
           let collected = [];
           try {
-            if (Array.isArray(input.tests)) {
-              collected = mergeCases(collected, input.tests);
+            const provided = Array.isArray(input.entries)
+              ? input.entries
+              : (Array.isArray(input.entries?.results)
+                ? input.entries.results
+                : (Array.isArray(input.tests)
+                  ? input.tests
+                  : (Array.isArray(input.tests?.results) ? input.tests.results : [])));
+            if (provided.length > 0) {
+              collected = mergeCases(collected, provided);
             }
 
             const slotPayload = {
@@ -148,7 +161,7 @@ compose:
         description: $.description
         metadata: $.metadata
         context: $.context
-        tests: $.tests
+        entries: $.precomputedTests
     slots:
       tests: []
     out:

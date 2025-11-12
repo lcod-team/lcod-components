@@ -39,7 +39,7 @@ summary = "Context object forwarded to the tests slot."
 required = false
 schema = """{"type":"object"}"""
 
-[inputs.tests]
+[inputs.entries]
 summary = "Optional array of precomputed test results to merge (useful for static reporting)."
 required = false
 schema = """{"type":"array"}"""

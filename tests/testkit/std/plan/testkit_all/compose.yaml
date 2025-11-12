@@ -1,0 +1,64 @@
+compose:
+  - call: lcod://tooling/testkit/unit@0.1.0
+    in:
+      id: "std.plan.testkit_all"
+      name: "Aggregated testkit report"
+      targetInput:
+        kernel: $.kernel
+        root: $.root
+        directories: $.directories
+      expect:
+        value:
+          total: 3
+          passed: 2
+          failed: 1
+          error: 0
+          skipped: 0
+        warnings: []
+        error: null
+    slots:
+      target:
+        - call: lcod://tooling/script@1
+          in:
+            source: |
+              async ({ input }) => {
+                const kernel = typeof input.kernel === 'string' && input.kernel.length > 0
+                  ? input.kernel
+                  : 'rs';
+                const root = typeof input.root === 'string' && input.root.length > 0
+                  ? input.root
+                  : 'tests/testkit';
+                const directories = Array.isArray(input.directories) && input.directories.length > 0
+                  ? input.directories
+                  : ['std/json', 'std/plan/fixtures'];
+                return { kernel, root, directories };
+              }
+            input:
+              kernel: $.kernel
+              root: $.root
+              directories: $.directories
+          out:
+            resolvedKernel: kernel
+            resolvedRoot: root
+            resolvedDirectories: directories
+
+        - call: lcod://tooling/testkit/all@0.1.0
+          in:
+            kernel: $.resolvedKernel
+            root: $.resolvedRoot
+            directories: $.resolvedDirectories
+            includeHidden: true
+          out:
+            aggregatedReport: report
+
+        - call: lcod://impl/set@1
+          in:
+            value: $.aggregatedReport.summary
+            warnings: []
+            error: null
+          out:
+            value: value
+            warnings: warnings
+            error: error
+    out:
+      report: result

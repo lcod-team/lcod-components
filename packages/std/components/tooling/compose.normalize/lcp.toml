@@ -94,3 +94,13 @@ The shared component keeps these improvements aligned across documentation, fixt
 
 [docs]
 readme = "README.md"
+
+[inputs.compose]
+summary = "Array of compose steps (sugar syntax permitted)."
+required = true
+schema = """{"description":"Array of compose steps (sugar syntax permitted).","type":"array","items":{"type":"object"}}"""
+
+[outputs.compose]
+summary = "Normalized array of compose steps (explicit mappings)."
+required = true
+schema = """{"description":"Normalized array of compose steps (explicit mappings).","type":"array","items":{"type":"object"}}"""

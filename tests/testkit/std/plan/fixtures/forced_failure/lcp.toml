@@ -1,0 +1,14 @@
+schemaVersion = "2.0"
+id = "lcod://tests/testkit/std/plan/fixtures/forced_failure@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Hidden regression test that intentionally fails to verify reporting."
+
+[deps]
+requires = [
+  "lcod://tooling/testkit/unit@0.1.0",
+  "lcod://impl/set@1"
+]
+
+[outputs.report]
+summary = "Result forwarded from tooling/testkit/unit."

@@ -14,7 +14,7 @@ Aggregate multiple testkit/unit cases, producing a consolidated report.
 | `description` | string | No | Optional free-text description of the plan. |
 | `metadata` | object | No | Plan-level metadata forwarded to the tests slot. |
 | `context` | object | No | Context object forwarded to the tests slot. |
-| `tests` | array | No | Optional array of precomputed test results to merge (useful for static reporting). |
+| `entries` | array | No | Optional array of precomputed test results to merge (useful for static reporting). |
 
 ## Outputs
 

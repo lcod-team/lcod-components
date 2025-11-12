@@ -31,3 +31,23 @@ ready to feed `tooling/registry/index@0.1.0`.
 
 [docs]
 readme = "README.md"
+
+[inputs.projectPath]
+summary = "Base path used to resolve relative registry paths."
+required = true
+schema = """{"type":"string","minLength":1,"description":"Base path used to resolve relative registry paths."}"""
+
+[inputs.sources]
+summary = "Registry source entries as declared in resolver configuration."
+required = true
+schema = """{"type":"array","items":{"$ref":"#/$defs/source"},"description":"Registry source entries as declared in resolver configuration."}"""
+
+[outputs.sources]
+summary = "Output field sources."
+required = true
+schema = """{"type":"array","items":{"type":"object","required":["registryId"],"properties":{"registryId":{"type":"string","minLength":1},"priority":{"type":"integer"},"defaults":{"type":"object"},"jsonl":{"type":"string"},"lines":{"type":"array","items":{"type":"object"}}},"additionalProperties":true}}"""
+
+[outputs.warnings]
+summary = "Output field warnings."
+required = true
+schema = """{"type":"array","items":{"type":"string"}}"""

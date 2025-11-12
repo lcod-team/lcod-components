@@ -1,0 +1,24 @@
+compose:
+  - call: lcod://tooling/testkit/unit@0.1.0
+    in:
+      id: "std.plan.forced.failure"
+      name: "Forced failure regression guard"
+      expect:
+        value:
+          actual: 0
+        warnings: []
+        error: null
+    slots:
+      target:
+        - call: lcod://impl/set@1
+          in:
+            value:
+              actual: 42
+            warnings: []
+            error: null
+          out:
+            value: value
+            warnings: warnings
+            error: error
+    out:
+      report: result

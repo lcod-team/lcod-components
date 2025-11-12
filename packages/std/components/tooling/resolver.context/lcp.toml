@@ -26,3 +26,62 @@ The component is a lightweight wrapper around a single `tooling/script@1` step s
 
 [docs]
 readme = "README.md"
+
+[inputs.projectPath]
+summary = "Input field projectPath."
+required = false
+schema = """{"type":"string","minLength":1}"""
+
+[inputs.cacheRoot]
+summary = "Input field cacheRoot."
+required = false
+schema = """{"type":"string","minLength":1}"""
+
+[inputs.normalizedConfig]
+summary = "Input field normalizedConfig."
+required = false
+schema = """{"type":"object"}"""
+
+[inputs.warnings]
+summary = "Input field warnings."
+required = false
+schema = """{"type":"array","items":{"type":"string"}}"""
+
+[inputs.registryWarnings]
+summary = "Input field registryWarnings."
+required = false
+schema = """{"type":"array","items":{"type":"string"}}"""
+
+[outputs.projectPath]
+summary = "Output field projectPath."
+required = true
+schema = """{"type":"string","minLength":1}"""
+
+[outputs.cacheRoot]
+summary = "Output field cacheRoot."
+required = true
+schema = """{"type":"string","minLength":1}"""
+
+[outputs.sources]
+summary = "Output field sources."
+required = true
+schema = """{"type":"object"}"""
+
+[outputs.replaceAlias]
+summary = "Output field replaceAlias."
+required = true
+schema = """{"type":"object","additionalProperties":{"type":"string"}}"""
+
+[outputs.replaceSpec]
+summary = "Output field replaceSpec."
+required = true
+schema = """{"type":"object"}"""
+
+[outputs.allowlist]
+summary = "Output field allowlist."
+schema = """{"anyOf":[{"type":"array","items":{"type":"string","minLength":1}},{"type":"null"}]}"""
+
+[outputs.warnings]
+summary = "Output field warnings."
+required = true
+schema = """{"type":"array","items":{"type":"string"}}"""

@@ -1,0 +1,9 @@
+{
+  "id": "std.plan.forced.failure",
+  "name": "Forced failure regression guard",
+  "description": "Intentionally failing test used to validate aggregated reports.",
+  "kernels": ["rs", "node", "java"],
+  "componentId": "lcod://tests/testkit/std/plan/fixtures/forced_failure@0.1.0",
+  "discoverable": false,
+  "tags": ["fixture", "failure"]
+}

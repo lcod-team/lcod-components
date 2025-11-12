@@ -3,5 +3,5 @@
   "name": "JSON decode mismatch is detected",
   "description": "Ensure a nested testkit/unit guard spots regressions in tooling/json/decode_object.",
   "kernels": ["rs", "node", "java"],
-  "componentId": "lcod://tooling/testkit/case/json_decode_failure@0.1.0"
+  "componentId": "lcod://tests/testkit/std/json/decode_failure@0.1.0"
 }

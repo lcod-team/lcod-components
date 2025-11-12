@@ -18,3 +18,13 @@ body = "Simple utility to merge warning arrays from different resolver stages. E
 
 [docs]
 readme = "README.md"
+
+[inputs.buckets]
+summary = "Input field buckets."
+required = true
+schema = """{"type":"array","items":{}}"""
+
+[outputs.warnings]
+summary = "Output field warnings."
+required = true
+schema = """{"type":"array","items":{"type":"string"}}"""
