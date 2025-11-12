@@ -1,0 +1,20 @@
+compose:
+  - call: lcod://axiom/state/raw_input@1
+    out:
+      rawInput: value
+
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.rawInput
+      fallback: {}
+    out:
+      normalizedRaw: resolved
+
+  - call: lcod://impl/set@1
+    in:
+      result:
+        rawInput: $.normalizedRaw
+        sanitized:
+          expect: $.expect
+    out:
+      result: result

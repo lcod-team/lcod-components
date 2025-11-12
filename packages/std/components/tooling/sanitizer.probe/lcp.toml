@@ -1,0 +1,21 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/sanitizer/probe@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Expose raw vs sanitized compose inputs for testing."
+
+[deps]
+requires = [
+  "lcod://axiom/state/raw_input@1",
+  "lcod://tooling/value/default_object@0.1.0",
+  "lcod://impl/set@1"
+]
+
+[inputs.expect]
+summary = "Snapshot of expected sanitized inputs."
+required = false
+schema = """{"type":"object"}"""
+
+[outputs.result]
+summary = "Object containing raw and sanitized payloads."
+schema = """{"type":"object"}"""

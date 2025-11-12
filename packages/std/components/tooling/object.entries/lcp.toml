@@ -1,0 +1,23 @@
+schemaVersion = "2.0"
+id = "lcod://tooling/object/entries@0.1.0"
+version = "0.1.0"
+kind = "component"
+summary = "Return the entries of an object as [key, value] tuples."
+
+[deps]
+requires = [
+  "lcod://tooling/value/default_object@0.1.0",
+  "lcod://tooling/array/append@0.1.0",
+  "lcod://flow/foreach@1",
+  "lcod://flow/if@1",
+  "lcod://impl/set@1"
+]
+
+[inputs.value]
+summary = "Object whose entries should be enumerated."
+required = false
+schema = """{"type":["object","null"]}"""
+
+[outputs.entries]
+summary = "Array of [key, value] pairs extracted from the object."
+schema = """{"type":"array","items":{"type":"array","items":[{"type":"string"},{}]}}"""

@@ -1,0 +1,40 @@
+compose:
+  - call: lcod://tooling/value/default_object@0.1.0
+    in:
+      value: $.value
+    out:
+      normalized: resolved
+
+  - call: lcod://impl/set@1
+    in:
+      entries: []
+    out:
+      entries: entries
+
+  - call: lcod://flow/if@1
+    in:
+      cond: $.normalized
+    out:
+      entries: entries
+    slots:
+      then:
+        - call: lcod://flow/foreach@1
+          in:
+            list: ${.normalized | keys}
+          slots:
+            body:
+              - call: lcod://tooling/array/append@0.1.0
+                in:
+                  items: $.entries
+                  values:
+                    - - $slot.item
+                      - ${.normalized[$slot.item]}
+                  clone: false
+                out:
+                  entries: items
+
+  - call: lcod://impl/set@1
+    in:
+      entries: $.entries
+    out:
+      entries: entries
