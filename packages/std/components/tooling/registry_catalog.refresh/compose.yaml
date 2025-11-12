@@ -15,44 +15,19 @@ compose:
     out:
       validationErrors: errors
       validationPackages: packages
-  - call: lcod://flow/if@1
+  - call: lcod://tooling/value/default_array@0.1.0
     in:
-      cond: $.collectWarnings
-    children:
-      else:
-        - call: lcod://impl/set@1
-          in:
-            collectWarnings: []
-          out:
-            collectWarnings: collectWarnings
+      value: $.collectWarnings
+      fallback: []
     out:
-      collectWarnings: collectWarnings
-    slots:
-      else:
-        - call: lcod://impl/set@1
-          in:
-            collectWarnings: []
-          out:
-            collectWarnings: collectWarnings
-  - call: lcod://flow/if@1
+      collectWarnings: resolved
+
+  - call: lcod://tooling/value/default_array@0.1.0
     in:
-      cond: $.validationErrors
-    children:
-      else:
-        - call: lcod://impl/set@1
-          in:
-            validationErrors: []
-          out:
-            validationErrors: validationErrors
+      value: $.validationErrors
+      fallback: []
     out:
-      validationErrors: validationErrors
-    slots:
-      else:
-        - call: lcod://impl/set@1
-          in:
-            validationErrors: []
-          out:
-            validationErrors: validationErrors
+      validationErrors: resolved
   - call: lcod://impl/set@1
     in:
       packagesJsonl: $.collectedPackagesJsonl

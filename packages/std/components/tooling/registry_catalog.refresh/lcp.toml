@@ -12,7 +12,7 @@ tags = [ "catalog", "pipeline" ]
 [deps]
 requires = [
   "lcod://impl/set@1",
-  "lcod://flow/if@1",
+  "lcod://tooling/value/default_array@0.1.0",
   "lcod://tooling/array/flatten@0.1.0",
   "lcod://tooling/registry_catalog/collect@0.1.0",
   "lcod://tooling/registry_catalog/validate@0.1.0"
