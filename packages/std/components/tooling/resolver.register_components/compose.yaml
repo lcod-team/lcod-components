@@ -3,9 +3,15 @@ compose:
     in:
       source: |
         async ({ state, imports }) => {
-          const specRoot = typeof state.specRoot === 'string' && state.specRoot.length > 0
+          let specRoot = typeof state.specRoot === 'string' && state.specRoot.length > 0
             ? state.specRoot
             : null;
+          if (!specRoot && typeof process !== 'undefined' && process && process.env) {
+            const envRoot = process.env.SPEC_REPO_PATH || '';
+            if (typeof envRoot === 'string' && envRoot.length > 0) {
+              specRoot = envRoot;
+            }
+          }
           const warnings = [];
           if (!specRoot) {
             warnings.push('resolver/register_components: specRoot is missing');
